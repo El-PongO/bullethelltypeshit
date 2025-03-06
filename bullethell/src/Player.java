@@ -1,0 +1,33 @@
+import java.awt.*;
+
+public class Player {
+    private int x, y;
+    private int size = 10;
+
+    public Player(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int getHitboxSize() { // ini buat hitbox player
+        return size;
+    }
+
+    public void updatePosition(int mouseX, int mouseY) {
+        this.x = mouseX;  // gerakan buat sekarang itu pake mouse, mungkin lebih gampang dari pada WASD atau arrow key
+        this.y = mouseY; // tapi ini ya pre-alpha so stfu
+    }
+
+    public boolean checkCollision(Bullet bullet) {
+        double distance = Math.sqrt(Math.pow(x - bullet.getX(), 2) + Math.pow(y - bullet.getY(), 2)); // ini buat hitbox player
+        return distance < (size / 2 + bullet.getHitboxSize() / 2);
+    }
+
+    public void draw(Graphics g) {
+        g.setColor(Color.RED); // gambar dot nya yg di cursor
+        g.fillOval(x - size / 2, y - size / 2, size, size);
+    }
+
+    public int getX() { return x; }
+    public int getY() { return y; }
+}
