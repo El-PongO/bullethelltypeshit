@@ -6,7 +6,12 @@ public class Bullet {
     private int size = 20;
     private int speed;
     private double directionX, directionY;
+    private Color color = Color.RED; 
 
+    public void setColor(Color color) {
+        this.color = color;
+    }
+    
     public Bullet(int targetX, int targetY, int speed) {
         Random rand = new Random(); // Random ya kamu
 
@@ -34,6 +39,21 @@ public class Bullet {
         directionY = diffY / length; 
     } 
 
+    public Bullet(int startX, int startY, int targetX, int targetY, int speed) {//iki gae bullet bek e player
+        this.x = startX;
+        this.y = startY;
+        this.size = 10; 
+        this.speed = speed;
+    
+        double diffX = targetX - startX;
+        double diffY = targetY - startY;
+        double length = Math.sqrt(diffX * diffX + diffY * diffY);
+    
+        directionX = diffX / length;
+        directionY = diffY / length;
+    }
+    
+
     public void update() {
         x += directionX * speed; // ini buat gerakin bullet nya
         y += directionY * speed;
@@ -44,7 +64,7 @@ public class Bullet {
     }
 
     public void draw(Graphics g) {
-        g.setColor(Color.RED);
+        g.setColor(color);
         g.fillOval(x, y, size, size);
     }
 

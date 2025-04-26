@@ -24,10 +24,15 @@ public class Player {
     }
 
     public void draw(Graphics g) {
-        g.setColor(Color.RED); // gambar dot nya yg di cursor
+        g.setColor(Color.BLUE); // gambar dot nya yg di cursor
         g.fillOval(x - size / 2, y - size / 2, size, size);
     }
 
     public int getX() { return x; }
     public int getY() { return y; }
+    public void move(int dx, int dy) {
+        x += dx;
+        y += dy;//gae movement e player receiver wasd ne
+    }
+    
 }

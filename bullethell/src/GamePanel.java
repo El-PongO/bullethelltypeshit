@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.*;
 
-public class GamePanel extends JPanel implements MouseMotionListener, MouseListener {
+public class GamePanel extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
 
     private Player player;
     private ArrayList<Bullet> bullets;
@@ -18,6 +18,9 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private double bulletSpeedMultiplier = 1.0;
 
+    private boolean upPressed, downPressed, leftPressed, rightPressed;
+    private int mouseX, mouseY;//beberapa tambahan idk mousex sama mousey gae apa aku agak minta chatgpt soale:" )
+    private ArrayList<Bullet> playerBullets = new ArrayList<>();
 
     public GamePanel() {
         this.player = new Player(500, 400); 
@@ -26,6 +29,9 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
         addMouseMotionListener(this);
         addMouseListener(this);
+        addKeyListener(this);
+        setFocusable(true);//gae keyboard
+        requestFocusInWindow();
 
         spawnTimer = new Timer(spawnDelay, e -> {
             spawnBullet();
@@ -72,6 +78,28 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private void updateGame() {
         if (gameState == GameState.PLAYING) {
+            if (upPressed) player.move(0, -5);//gae wasd
+            if (downPressed) player.move(0, 5);
+            if (leftPressed) player.move(-5, 0);
+            if (rightPressed) player.move(5, 0);
+            for (Bullet bullet : playerBullets) {
+                bullet.update();
+            }
+            ArrayList<Bullet> bulletsToRemove = new ArrayList<>();//dari sini{
+            ArrayList<Bullet> playerBulletsToRemove = new ArrayList<>();
+
+            for (Bullet pBullet : playerBullets) {
+                for (Bullet eBullet : bullets) {
+                    double distance = Math.sqrt(Math.pow(pBullet.getX() - eBullet.getX(), 2) + Math.pow(pBullet.getY() - eBullet.getY(), 2));
+                    if (distance < (pBullet.getHitboxSize() / 2 + eBullet.getHitboxSize() / 2)) {
+                        bulletsToRemove.add(eBullet);
+                        playerBulletsToRemove.add(pBullet);
+                    }
+                }
+            }
+
+            bullets.removeAll(bulletsToRemove);
+            playerBullets.removeAll(playerBulletsToRemove);//sampai sini} itu gae peluru musuh ngilang lek kene tembak
             bullets.removeIf(Bullet::isOutOfBounds); // fungsi untuk menghapus bullet yang keluar layar (agak sulit jelasinya, apalahi di pahami)
             for (Bullet bullet : bullets) {
                 bullet.update();
@@ -116,6 +144,9 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         for (Bullet bullet : bullets) {
             bullet.draw(g);
         }
+        for (Bullet bullet : playerBullets) {
+            bullet.draw(g);//pelurue kene
+        }
     }
 
     private void drawGameOver(Graphics g) {
@@ -132,16 +163,25 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     public void mousePressed(MouseEvent e) {
         if (gameState == GameState.MENU || gameState == GameState.GAME_OVER) {
             startGame();
+        } else if (gameState == GameState.PLAYING && e.getButton() == MouseEvent.BUTTON1) { // Left click
+            shootBullet(e.getX(), e.getY()); //ya tau lah iki apa dari nama function
         }
     }
+    private void shootBullet(int targetX, int targetY) {
+        Bullet b = new Bullet(player.getX(), player.getY(), targetX, targetY, 10);
+        b.setColor(Color.GREEN);//gae buat warna bullet seng ditembak player hijau
+        playerBullets.add(b);
+    }
+    
 
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        if (gameState == GameState.PLAYING) {
-            player.updatePosition(e.getX(), e.getY());
-            repaint();
-        }
-    }
+
+    // @Override
+    // public void mouseMoved(MouseEvent e) {
+    //     if (gameState == GameState.PLAYING) {
+            
+    //         repaint();
+    //     } iki tak comment soal ga dipakai sempet keapus so ye im sorry but iki gae movement pakai mouse tadi tp ws tak ganti pakai keyboard
+    // }
 
     @Override
     public void mouseDragged(MouseEvent e) {} //gerakkan mouse
@@ -154,4 +194,28 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     public void mouseEntered(MouseEvent e) {} // masuk mouse ke dalam window
     @Override
     public void mouseExited(MouseEvent e) {} // ya bisa di baca sendiri lah km ws tua berjembut
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (gameState != GameState.PLAYING) return;
+        int code = e.getKeyCode();
+        if (code == KeyEvent.VK_W) upPressed = true;
+        if (code == KeyEvent.VK_S) downPressed = true;
+        if (code == KeyEvent.VK_A) leftPressed = true;
+        if (code == KeyEvent.VK_D) rightPressed = true;
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (gameState != GameState.PLAYING) return;
+        int code = e.getKeyCode();
+        if (code == KeyEvent.VK_W) upPressed = false;
+        if (code == KeyEvent.VK_S) downPressed = false;
+        if (code == KeyEvent.VK_A) leftPressed = false;
+        if (code == KeyEvent.VK_D) rightPressed = false;
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {} // unused
+
 }
