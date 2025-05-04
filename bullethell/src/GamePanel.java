@@ -99,10 +99,22 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
             for (Bullet bullet : playerBullets) {
                 bullet.update();
             }
-            ArrayList<Bullet> bulletsToRemove = new ArrayList<>();//dari sini{
+            ArrayList<Bullet> bulletsToRemove = new ArrayList<>();
             ArrayList<Bullet> playerBulletsToRemove = new ArrayList<>();
+            
+            // for (Bullet pBullet : playerBullets) { //iki bullet seng lama idk like again chatgpt makes the bullet of the enemy into a new variable
+            //     for (Bullet eBullet : bullets) {
+            //         double distance = Math.sqrt(Math.pow(pBullet.getX() - eBullet.getX(), 2) + Math.pow(pBullet.getY() - eBullet.getY(), 2));
+            //         if (distance < (pBullet.getHitboxSize() / 2 + eBullet.getHitboxSize() / 2)) {
+            //             bulletsToRemove.add(eBullet);
+            //             playerBulletsToRemove.add(pBullet);
+            //         }
+            //     }
+            // }
+            // bullets.removeAll(bulletsToRemove);
+            // playerBullets.removeAll(playerBulletsToRemove);
 
-            for (Bullet pBullet : playerBullets) {
+            for (Bullet pBullet : playerBullets) {//dari sini{
                 for (Bullet eBullet : enemyBullets) {
                     double distance = Math.sqrt(Math.pow(pBullet.getX() - eBullet.getX(), 2) + Math.pow(pBullet.getY() - eBullet.getY(), 2));
                     if (distance < (pBullet.getHitboxSize() / 2 + eBullet.getHitboxSize() / 2)) {
@@ -111,7 +123,6 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
                     }
                 }
             }
-            
             enemyBullets.removeAll(bulletsToRemove);
             playerBullets.removeAll(playerBulletsToRemove);//sampai sini} itu gae peluru musuh ngilang lek kene tembak
 
@@ -150,6 +161,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
                 }
             }
             enemyBullets.removeIf(Bullet::isOutOfBounds);
+            //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
             repaint();
         }
     }
