@@ -22,6 +22,9 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     private int mouseX, mouseY;//beberapa tambahan idk mousex sama mousey gae apa aku agak minta chatgpt soale:" )
     private ArrayList<Bullet> playerBullets = new ArrayList<>();
 
+    private ArrayList<Enemy> enemies = new ArrayList<>();
+    private ArrayList<Bullet> enemyBullets = new ArrayList<>();
+
     public GamePanel() {
         this.player = new Player(500, 400); 
         this.bullets = new ArrayList<>();
@@ -34,7 +37,8 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         requestFocusInWindow();
 
         spawnTimer = new Timer(spawnDelay, e -> {
-            spawnBullet();
+            // spawnBullet();
+            spawnEnemy();
             updateSpawnDelay();
         });
         spawnTimer.setRepeats(false);
@@ -45,7 +49,9 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     private void startGame() {
         gameState = GameState.PLAYING;
         player = new Player(500, 400); // Default spawn nya Player, 500 x 400 karena ukuran layar 1000 x 800, jadi di tengah
-        bullets.clear();
+        bullets.clear();// skrg cuman buat bullet player
+        enemies.clear();//spawn enemy sama pelurunya
+        enemyBullets.clear();
         spawnDelay = 2000;
         spawnTimer.start();
         gameLoop.start();
@@ -57,24 +63,32 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         }
     }
     
-
-    private void spawnBullet() {
-        int baseSpeed = 2 + rand.nextInt(3); // speed bullet mulai dari 2 + random 1-3
-        int speed = (int) (baseSpeed * bulletSpeedMultiplier);
-
-        bullets.add(new Bullet(player.getX(), player.getY(), speed));
-
-        if (bulletSpeedMultiplier < 2.0) {
-            bulletSpeedMultiplier += 0.1; // ini, tiap 1 bullet spawn, speed akan di tambah 0.1, bisa jadi chaotic saat 10+ detik
-        }
-
-        if (spawnDelay > 300) {
-            spawnDelay -= 50; // ini juga buat biar game nya lebih susah, setiap 1 bullet spawn, delay nya akan berkurang 50ms
-        }
-
+    private void spawnEnemy() {
+        int spawnX = rand.nextInt(getWidth());
+        int spawnY = rand.nextInt(getHeight());
+        enemies.add(new Enemy(spawnX, spawnY));
         spawnTimer.setInitialDelay(spawnDelay);
         spawnTimer.restart();
     }
+    
+
+    // private void spawnBullet() {
+    //     int baseSpeed = 2 + rand.nextInt(3); // speed bullet mulai dari 2 + random 1-3
+    //     int speed = (int) (baseSpeed * bulletSpeedMultiplier);
+
+    //     bullets.add(new Bullet(player.getX(), player.getY(), speed));
+
+    //     if (bulletSpeedMultiplier < 2.0) {
+    //         bulletSpeedMultiplier += 0.1; // ini, tiap 1 bullet spawn, speed akan di tambah 0.1, bisa jadi chaotic saat 10+ detik
+    //     }
+
+    //     if (spawnDelay > 300) {
+    //         spawnDelay -= 50; // ini juga buat biar game nya lebih susah, setiap 1 bullet spawn, delay nya akan berkurang 50ms
+    //     }
+
+    //     spawnTimer.setInitialDelay(spawnDelay);
+    //     spawnTimer.restart();
+    // }
 
     private void updateGame() {
         if (gameState == GameState.PLAYING) {
@@ -89,7 +103,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
             ArrayList<Bullet> playerBulletsToRemove = new ArrayList<>();
 
             for (Bullet pBullet : playerBullets) {
-                for (Bullet eBullet : bullets) {
+                for (Bullet eBullet : enemyBullets) {
                     double distance = Math.sqrt(Math.pow(pBullet.getX() - eBullet.getX(), 2) + Math.pow(pBullet.getY() - eBullet.getY(), 2));
                     if (distance < (pBullet.getHitboxSize() / 2 + eBullet.getHitboxSize() / 2)) {
                         bulletsToRemove.add(eBullet);
@@ -97,9 +111,25 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
                     }
                 }
             }
-
-            bullets.removeAll(bulletsToRemove);
+            
+            enemyBullets.removeAll(bulletsToRemove);
             playerBullets.removeAll(playerBulletsToRemove);//sampai sini} itu gae peluru musuh ngilang lek kene tembak
+
+            ArrayList<Enemy> enemiesToRemove = new ArrayList<>();
+            for (Bullet pBullet : playerBullets) {
+                for (Enemy enemy : enemies) {
+                    if (enemy.checkCollision(pBullet)) {
+                        enemiesToRemove.add(enemy);
+                        playerBulletsToRemove.add(pBullet); // this line removes the bullet
+                        break; // optional: to avoid 1 bullet hitting multiple enemies
+                    }
+                }
+            }
+
+            enemies.removeAll(enemiesToRemove);
+            playerBullets.removeAll(playerBulletsToRemove);
+            //sini untuk remove musuh
+
             bullets.removeIf(Bullet::isOutOfBounds); // fungsi untuk menghapus bullet yang keluar layar (agak sulit jelasinya, apalahi di pahami)
             for (Bullet bullet : bullets) {
                 bullet.update();
@@ -108,6 +138,18 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
                     return;
                 }
             }
+
+            for (Enemy enemy : enemies) {//gae musuh bisa nembak
+                enemy.update(player, enemyBullets);
+            }
+            for (Bullet bullet : enemyBullets) {
+                bullet.update();
+                if (player.checkCollision(bullet)) {
+                    gameOver();
+                    return;
+                }
+            }
+            enemyBullets.removeIf(Bullet::isOutOfBounds);
             repaint();
         }
     }
@@ -146,6 +188,12 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         }
         for (Bullet bullet : playerBullets) {
             bullet.draw(g);//pelurue kene
+        }
+        for (Enemy enemy : enemies) {
+            enemy.draw(g);
+        }
+        for (Bullet bullet : enemyBullets) {
+            bullet.draw(g);
         }
     }
 
