@@ -6,30 +6,42 @@ import javax.swing.*;
 
 public class GamePanel extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
 
+    // ========================= PLAYER =====================================================
     private Player player;
+
+    // ========================= ENEMY =====================================================
+    private ArrayList<Enemy> enemies = new ArrayList<>();
+
+    // ========================= BULLET =====================================================
     private ArrayList<Bullet> bullets;
+    private ArrayList<Bullet> playerBullets = new ArrayList<>();
+    private ArrayList<Bullet> enemyBullets = new ArrayList<>();
+
+    // ========================= LOGIC =====================================================
     private Random rand;
     private int spawnDelay = 1000;
     private Timer spawnTimer, gameLoop;
-
     private enum GameState { MENU, PLAYING, GAME_OVER, SETTING }
     private GameState gameState = GameState.MENU;
-    private MainMenu mainMenu = new MainMenu();
-
     private double bulletSpeedMultiplier = 1.0;
 
+    // ========================= UI =====================================================
+    private MainMenu mainMenu = new MainMenu();
+    private Game_over gameover = new Game_over();
+
+    // ========================= KEY MOVEMENT =====================================================
     private boolean upPressed, downPressed, leftPressed, rightPressed;
     private int mouseX, mouseY;//beberapa tambahan idk mousex sama mousey gae apa aku agak minta chatgpt soale:" )
-    private ArrayList<Bullet> playerBullets = new ArrayList<>();
-
-    private ArrayList<Enemy> enemies = new ArrayList<>();
-    private ArrayList<Bullet> enemyBullets = new ArrayList<>();
+    
+    
+    // ========================= BUTTON =====================================================
     Button buttonstart = new Button("Start");
     Button buttonoption = new Button("Option");
     Button buttonexit = new Button("Exit");
     Button buttonrestart = new Button("Restart");
     Button buttonback = new Button("Back");
 
+    // ========================= MAIN =====================================================
     public GamePanel() {
         this.player = new Player(500, 400); 
         this.bullets = new ArrayList<>();
@@ -63,19 +75,18 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         gameLoop.start();
         
         // set button to invisible when game start
-        buttonstart.setInvisible();
-        buttonoption.setInvisible();
-        buttonexit.setInvisible();
-        buttonback.setInvisible();
-        buttonrestart.setInvisible();
+        Setbuttonvisibility(2);
     }
 
-    private void updateSpawnDelay() {
-        if (spawnDelay > 300) {
-            spawnDelay -= 50;
-        }
+    private void gameOver() {
+        gameState = GameState.GAME_OVER;
+        spawnTimer.stop();
+        gameLoop.stop();
+
+        repaint();
     }
-    
+
+    // ========================= SPAWN =====================================================
     private void spawnEnemy() {
         int spawnX = rand.nextInt(getWidth());
         int spawnY = rand.nextInt(getHeight());
@@ -102,6 +113,13 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     //     spawnTimer.setInitialDelay(spawnDelay);
     //     spawnTimer.restart();
     // }
+
+    // ========================= GAME UPDATE =====================================================
+    private void updateSpawnDelay() {
+        if (spawnDelay > 300) {
+            spawnDelay -= 50;
+        }
+    }
 
     private void updateGame() {
         if (gameState == GameState.PLAYING) {
@@ -179,14 +197,8 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         }
     }
 
-    private void gameOver() {
-        gameState = GameState.GAME_OVER;
-        spawnTimer.stop();
-        gameLoop.stop();
-
-        repaint();
-    }
-
+    
+    // ========================= PAINT COMPONENT =====================================================
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -227,46 +239,15 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private void drawGameOver(Graphics g) {
         setLayout(null);
-        g.setColor(new Color(28, 51, 92));
-        g.fillRect(0, 0, getWidth(), getHeight()); // gambar Game over
-        g.setColor(Color.RED);
-        g.setFont(new Font("Arial", Font.BOLD, 50));
-        g.drawString("Game Over", 370, 330);
-
-        buttonrestart.setBound(420, 370, 160, 50);
-        buttonback.setBound(420, 440, 160, 50);
-        buttonback.setVisible();
-        buttonrestart.setVisible();
-        buttonrestart.addActionListener(e -> startGame());
-        buttonback.addActionListener(e -> {
-            gameState = GameState.MENU;
-            buttonstart.setVisible();
-            buttonoption.setVisible();
-            buttonexit.setVisible();
-            buttonback.setInvisible();
-            buttonrestart.setInvisible();
-            repaint();
-        });
-        add(buttonrestart.new_button);
-        add(buttonback.new_button);
+        gameover.draw(g, getWidth(), getHeight());
+        Setbuttonvisibility(3);
     }
 
     private void drawOptionSetting(Graphics g){
 
     }
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-        // if (gameState == GameState.MENU || gameState == GameState.GAME_OVER) {
-        //     startGame();
-        // } else if (gameState == GameState.PLAYING && e.getButton() == MouseEvent.BUTTON1) { // Left click
-        //     shootBullet(e.getX(), e.getY()); //ya tau lah iki apa dari nama function
-        // }
-
-        if (gameState == GameState.PLAYING && e.getButton() == MouseEvent.BUTTON1){
-            shootBullet(e.getX(), e.getY()); //ya tau lah iki apa dari nama function
-        }
-    }
+    // ========================= LOGIC =====================================================
     private void shootBullet(int targetX, int targetY) {
         Bullet b = new Bullet(player.getX(), player.getY(), targetX, targetY, 10);
         b.setColor(Color.GREEN);//gae buat warna bullet seng ditembak player hijau
@@ -290,11 +271,52 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         // Exit Button
         buttonexit.setBound(420, 510, 160, 50);
         buttonexit.addActionListener(e -> System.exit(0));
+        // Restart Button
+        buttonrestart.setBound(420, 370, 160, 50);
+        buttonrestart.addActionListener(e -> startGame());
+        // Back Button
+        buttonback.setBound(420, 440, 160, 50);
+        buttonback.addActionListener(e -> {
+            gameState = GameState.MENU;
+            Setbuttonvisibility(1);
+            repaint();
+        });
+        
         add(buttonstart.new_button);
         add(buttonoption.new_button);
         add(buttonexit.new_button);
+        add(buttonrestart.new_button);
+        add(buttonback.new_button);
     }
 
+    public void Setbuttonvisibility(int i){
+        switch (i) { 
+            case 1: // 1 pindah ke menu
+                buttonstart.setVisible();
+                buttonoption.setVisible();
+                buttonexit.setVisible();
+                buttonrestart.setInvisible();
+                buttonback.setInvisible();
+                break;
+            case 2: // 2 buat start game
+                buttonstart.setInvisible();
+                buttonoption.setInvisible();
+                buttonexit.setInvisible();
+                buttonback.setInvisible();
+                buttonrestart.setInvisible();
+                break;
+            case 3: // game over
+                buttonrestart.setVisible();
+                buttonback.setVisible();
+                buttonstart.setInvisible();
+                buttonoption.setInvisible();
+                buttonexit.setInvisible();
+                break;
+            default:
+                break;
+        }
+    }
+    // ========================= FUNCTION =====================================================
     // @Override
     // public void mouseMoved(MouseEvent e) {
     //     if (gameState == GameState.PLAYING) {
@@ -302,6 +324,19 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     //         repaint();
     //     } iki tak comment soal ga dipakai sempet keapus so ye im sorry but iki gae movement pakai mouse tadi tp ws tak ganti pakai keyboard
     // }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        // if (gameState == GameState.MENU || gameState == GameState.GAME_OVER) {
+        //     startGame();
+        // } else if (gameState == GameState.PLAYING && e.getButton() == MouseEvent.BUTTON1) { // Left click
+        //     shootBullet(e.getX(), e.getY()); //ya tau lah iki apa dari nama function
+        // }
+
+        if (gameState == GameState.PLAYING && e.getButton() == MouseEvent.BUTTON1){
+            shootBullet(e.getX(), e.getY()); //ya tau lah iki apa dari nama function
+        }
+    }
 
     @Override
     public void mouseDragged(MouseEvent e) {} //gerakkan mouse
