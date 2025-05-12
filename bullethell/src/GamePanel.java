@@ -92,10 +92,10 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private void updateGame() {
         if (gameState == GameState.PLAYING) {
-            if (upPressed) player.move(0, -5);//gae wasd
-            if (downPressed) player.move(0, 5);
-            if (leftPressed) player.move(-5, 0);
-            if (rightPressed) player.move(5, 0);
+            if (upPressed && player.getY()>0) player.move(0, -5);//gae wasd
+            if (downPressed && player.getY()<760) player.move(0, 5);
+            if (leftPressed && player.getX()>0) player.move(-5, 0);
+            if (rightPressed && player.getX()<985) player.move(5, 0);
             for (Bullet bullet : playerBullets) {
                 bullet.update();
             }
@@ -218,7 +218,6 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         g.setFont(new Font("Arial", Font.PLAIN, 30));
         g.drawString("Click to Restart", 420, 400);
     }
-
     @Override
     public void mousePressed(MouseEvent e) {
         if (gameState == GameState.MENU || gameState == GameState.GAME_OVER) {
@@ -250,6 +249,8 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     public void mouseEntered(MouseEvent e) {} // masuk mouse ke dalam window
     @Override
     public void mouseExited(MouseEvent e) {} // ya bisa di baca sendiri lah km ws tua berjembut
+    @Override
+    public void mouseMoved(MouseEvent e) {} // mouse gerak
 
     @Override
     public void keyPressed(KeyEvent e) {
