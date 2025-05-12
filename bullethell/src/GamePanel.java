@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.*;
@@ -27,6 +28,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     // ========================= UI =====================================================
     private MainMenu mainMenu = new MainMenu();
+    private Settingmenu settingmenu = new Settingmenu();
     private Game_over gameover = new Game_over();
 
     // ========================= KEY MOVEMENT =====================================================
@@ -35,7 +37,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     
     
     // ========================= BUTTON =====================================================
-    Button buttonstart = new Button("Start");
+    Button buttonstart = new Button("Play");
     Button buttonoption = new Button("Option");
     Button buttonexit = new Button("Exit");
     Button buttonrestart = new Button("Restart");
@@ -204,18 +206,31 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         super.paintComponent(g);
 
         if (gameState == GameState.MENU) {
+            positionMenuButtons();
             drawMenu(g);
         } else if (gameState == GameState.PLAYING) {
             drawGame(g);
         } else if (gameState == GameState.GAME_OVER) {
+            positionMenuButtons();
             drawGameOver(g);
         }else if (gameState == GameState.SETTING){
+            positionMenuButtons();
             drawOptionSetting(g);
         }
     }
 
     private void drawMenu(Graphics g) {
         mainMenu.draw(g, getWidth(), getHeight()); //untuk mempelajari lebih lanjut liat bro code di YT: https://www.youtube.com/watch?v=KcEvHq8Pqs0
+        // g.setFont(new Font("Arial", Font.PLAIN, 16));
+        // g.setColor(Color.CYAN);
+        // FontMetrics fm = g.getFontMetrics();
+        // int textX = 20;
+        // int textY = getHeight() - 20;
+        // g.drawString(linkText, textX, textY);
+
+        // int textWidth = fm.stringWidth(linkText);
+        // int textHeight = fm.getHeight();
+        // linkBounds = new Rectangle(textX, textY - textHeight + 5, textWidth, textHeight);
     }                                               // (ak gk di sponsor untuk bilang ini)           
 
     private void drawGame(Graphics g) {
@@ -244,7 +259,8 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     }
 
     private void drawOptionSetting(Graphics g){
-
+        setLayout(null);
+        settingmenu.draw(g, getWidth(), getHeight());
     }
 
     // ========================= LOGIC =====================================================
@@ -257,37 +273,71 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     private void innitmenubutton(){ // buat fungsi button
         setLayout(null);
         // Start Button
-        buttonstart.setBound(420, 370, 160, 50);
         buttonstart.addActionListener(e -> startGame());
         // Option Button
-        buttonoption.setBound(420, 440, 160, 50);
         buttonoption.addActionListener(e -> {
             gameState = GameState.SETTING;
-            buttonstart.setInvisible();
-            buttonoption.setInvisible();
-            buttonexit.setInvisible();
+            settingmenu.setActiveTab("video"); // untuk setting aku default ke video
+            Setbuttonvisibility(4);
             repaint();
         });
         // Exit Button
-        buttonexit.setBound(420, 510, 160, 50);
         buttonexit.addActionListener(e -> System.exit(0));
         // Restart Button
-        buttonrestart.setBound(420, 370, 160, 50);
         buttonrestart.addActionListener(e -> startGame());
         // Back Button
-        buttonback.setBound(420, 440, 160, 50);
         buttonback.addActionListener(e -> {
             gameState = GameState.MENU;
             Setbuttonvisibility(1);
             repaint();
         });
-        
+
         add(buttonstart.new_button);
         add(buttonoption.new_button);
         add(buttonexit.new_button);
         add(buttonrestart.new_button);
         add(buttonback.new_button);
     }
+
+    private void positionMenuButtons() { // set position untuk button 
+        int panelWidth = getWidth();
+        int panelHeight = getHeight(); 
+    
+        int buttonWidth = 160;
+        int buttonHeight = 50;
+        int centerX = (panelWidth - buttonWidth) / 2; // ambil koordinat tengah dari x
+    
+        // Space between buttons
+        int spacing = 10;
+    
+        // For MENU
+        if (gameState == GameState.MENU) {
+            setLayout(null);
+            int baseX = 20; // Slightly to the right from true bottom-left
+            int baseY = panelHeight - 3 * (buttonHeight + spacing) - 40; // Slightly upward from bottom
+
+            buttonstart.setBound(baseX, baseY, buttonWidth, buttonHeight); // inisial untuk setboundnya X, Y, width, height
+            buttonoption.setBound(baseX, baseY + buttonHeight + spacing, buttonWidth, buttonHeight);
+            buttonexit.setBound(baseX, baseY + 2 * (buttonHeight + spacing), buttonWidth, buttonHeight);
+        }
+        
+        // For SETTINGS
+        if (gameState == GameState.SETTING) {
+            buttonWidth = 160;
+            buttonHeight = 50;
+            int baseX = 20;
+            int baseY = getHeight() - buttonHeight - 20; // Bottom left
+        
+            buttonback.setBound(baseX, baseY, buttonWidth, buttonHeight);
+        }
+
+        // For GAME_OVER
+        if (gameState == GameState.GAME_OVER) {
+            buttonrestart.setBound(centerX, panelHeight / 2, buttonWidth, buttonHeight); 
+            buttonback.setBound(centerX, panelHeight / 2 + buttonHeight + spacing, buttonWidth, buttonHeight);
+        }
+    }
+    
 
     public void Setbuttonvisibility(int i){
         switch (i) { 
@@ -312,18 +362,25 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
                 buttonoption.setInvisible();
                 buttonexit.setInvisible();
                 break;
+            case 4: // settings
+                buttonstart.setInvisible();
+                buttonoption.setInvisible();
+                buttonexit.setInvisible();
+                buttonrestart.setInvisible();
+                buttonback.setVisible();
+                break;
             default:
                 break;
         }
     }
     // ========================= FUNCTION =====================================================
-    // @Override
-    // public void mouseMoved(MouseEvent e) {
-    //     if (gameState == GameState.PLAYING) {
-            
-    //         repaint();
-    //     } iki tak comment soal ga dipakai sempet keapus so ye im sorry but iki gae movement pakai mouse tadi tp ws tak ganti pakai keyboard
-    // }
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        if (gameState == GameState.SETTING) { // buat cek hover mouse
+            settingmenu.handleMouseMoved(e.getX(), e.getY());
+            repaint();
+        }
+    }
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -342,13 +399,22 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     public void mouseDragged(MouseEvent e) {} //gerakkan mouse
 
     @Override
-    public void mouseClicked(MouseEvent e) {} // click mouse (buat main menu dan gameover)
+    public void mouseClicked(MouseEvent e) { // buat deteksi klik
+        if (gameState == GameState.SETTING) {
+            settingmenu.handleMouseClicked(e.getX(), e.getY()); 
+            repaint();
+        }else if (gameState == GameState.MENU){
+            mainMenu.handleMouseClick(e);
+        }
+    } // click mouse (buat main menu dan gameover)
+
     @Override
     public void mouseReleased(MouseEvent e) {} // lepas mouse
     @Override
     public void mouseEntered(MouseEvent e) {} // masuk mouse ke dalam window
     @Override
     public void mouseExited(MouseEvent e) {} // ya bisa di baca sendiri lah km ws tua berjembut
+
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -373,9 +439,6 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     @Override
     public void keyTyped(KeyEvent e) {} // unused
 
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        
-    }
+    
 
 }

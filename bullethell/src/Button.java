@@ -9,9 +9,11 @@ public class Button {
     public Button(String nama){
         this.nama=nama;
         new_button = new JButton(nama);
+        // new_button.setContentAreaFilled(false);
+        // new_button.setBorderPainted(false);
         new_button.setBackground(Color.DARK_GRAY);
         new_button.setForeground(Color.WHITE); // text color
-        new_button.setFont(new Font("Arial", Font.BOLD, 18)); 
+        new_button.setFont(new Font("Arial", Font.BOLD, 20)); 
         new_button.setFocusPainted(false); // ilangin focus border
         new_button.setBorder(BorderFactory.createLineBorder(Color.WHITE)); // kasi border putih
     }
@@ -40,5 +42,12 @@ public class Button {
         new_button.addActionListener(listener);
     }
 
+    public Rectangle getBounds(){
+        return new_button.getBounds();
+    }
+
+    public void alignleft(){
+        // new_button.setHorizontalAlignment(SwingConstants.LEFT);
+    }
 }
 
