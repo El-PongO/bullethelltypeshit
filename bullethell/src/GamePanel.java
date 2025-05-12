@@ -221,16 +221,6 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private void drawMenu(Graphics g) {
         mainMenu.draw(g, getWidth(), getHeight()); //untuk mempelajari lebih lanjut liat bro code di YT: https://www.youtube.com/watch?v=KcEvHq8Pqs0
-        // g.setFont(new Font("Arial", Font.PLAIN, 16));
-        // g.setColor(Color.CYAN);
-        // FontMetrics fm = g.getFontMetrics();
-        // int textX = 20;
-        // int textY = getHeight() - 20;
-        // g.drawString(linkText, textX, textY);
-
-        // int textWidth = fm.stringWidth(linkText);
-        // int textHeight = fm.getHeight();
-        // linkBounds = new Rectangle(textX, textY - textHeight + 5, textWidth, textHeight);
     }                                               // (ak gk di sponsor untuk bilang ini)           
 
     private void drawGame(Graphics g) {
