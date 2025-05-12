@@ -224,14 +224,10 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         if (gameState == GameState.MENU || gameState == GameState.GAME_OVER) {
             startGame();
         } else if (gameState == GameState.PLAYING && e.getButton() == MouseEvent.BUTTON1) { // Left click
-            shootBullet(e.getX(), e.getY()); //ya tau lah iki apa dari nama function
+            player.shootBullet(e.getX(), e.getY(), playerBullets); //ya tau lah iki apa dari nama function
         }
     }
-    private void shootBullet(int targetX, int targetY) {
-        Bullet b = new Bullet(player.getX(), player.getY(), targetX, targetY, 10);
-        b.setColor(Color.GREEN);//gae buat warna bullet seng ditembak player hijau
-        playerBullets.add(b);
-    }
+    // Shoot dipindah ke player
     
 
 
