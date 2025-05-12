@@ -275,4 +275,10 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     @Override
     public void keyTyped(KeyEvent e) {} // unused
 
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'mouseMoved'");
+    }
+
 }
