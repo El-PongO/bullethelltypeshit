@@ -35,7 +35,7 @@ public class Player {
         x += dx;
         y += dy;//gae movement e player receiver wasd ne
     }
-
+    
     void shootBullet(int targetX, int targetY, ArrayList<Bullet> playerBullets) {
         Bullet b = new Bullet(x, y, targetX, targetY, 10);
         b.setColor(Color.GREEN);//gae buat warna bullet seng ditembak player hijau
