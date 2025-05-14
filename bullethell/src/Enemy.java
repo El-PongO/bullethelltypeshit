@@ -14,21 +14,31 @@ public class Enemy {
     }
 
     public void update(Player player, java.util.List<Bullet> enemyBullets) {
-        int behavior = rand.nextInt(3); // 0, 1, or 2
+        // Behavior soul knight
+        int behavior = rand.nextInt(3); // 0, 1, or 2 
         int dx = 0, dy = 0;
 
         // Behavior 1: move toward or away from player based on distance
         double distance = Math.hypot(player.getX() - x, player.getY() - y);
-        
-        if (distance > 150) {
-            dx = (player.getX() > x) ? 1 : -1;
-            dy = (player.getY() > y) ? 1 : -1;
+        if (behavior == 0) {
+            if (distance > 150) {
+                dx = (player.getX() > x) ? 1 : -1;
+                dy = (player.getY() > y) ? 1 : -1;
+            } else {
+                dx = (player.getX() < x) ? 1 : -1;
+                dy = (player.getY() < y) ? 1 : -1;
+            }
         }
-        
-        if (cooldownTimer > 0) {
-            cooldownTimer--;
+
+        // Behavior 2: random lateral movement or idle
+        if (behavior == 1) {
+            int move = rand.nextInt(3); // 0 = left, 1 = right, 2 = idle
+            if (move == 0) dx = -1;
+            if (move == 1) dx = 1;
         }
-        else{
+
+        // Behavior 3: shoot if cooldown is ready
+        if (behavior == 2 && cooldownTimer <= 0) {
             enemyBullets.add(new Bullet(x, y, player.getX(), player.getY(), 5));
             cooldownTimer = shootCooldown;
         }
@@ -36,7 +46,7 @@ public class Enemy {
         x += dx * 2; // move speed
         y += dy * 2;
 
-        
+        if (cooldownTimer > 0) cooldownTimer--;
     }
 
     public void draw(Graphics g) {

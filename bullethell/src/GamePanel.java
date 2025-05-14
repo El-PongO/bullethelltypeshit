@@ -125,10 +125,10 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private void updateGame() {
         if (gameState == GameState.PLAYING) {
-            if (upPressed) player.move(0, -5);//gae wasd
-            if (downPressed) player.move(0, 5);
-            if (leftPressed) player.move(-5, 0);
-            if (rightPressed) player.move(5, 0);
+            if (upPressed && player.getY()>12) player.move(0, -5);//gae wasd
+            if (downPressed && player.getY()<getHeight()-12) player.move(0, 5);
+            if (leftPressed && player.getX()>12) player.move(-5, 0);
+            if (rightPressed && player.getX()<getWidth()-12) player.move(5, 0);
             for (Bullet bullet : playerBullets) {
                 bullet.update();
             }
@@ -381,7 +381,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         // }
 
         if (gameState == GameState.PLAYING && e.getButton() == MouseEvent.BUTTON1){
-            shootBullet(e.getX(), e.getY()); //ya tau lah iki apa dari nama function
+            player.shootBullet(e.getX(), e.getY(), playerBullets); //ya tau lah iki apa dari nama function
         }
     }
 
