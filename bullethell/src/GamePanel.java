@@ -125,10 +125,40 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private void updateGame() {
         if (gameState == GameState.PLAYING) {
-            if (upPressed && player.getY()>12) player.move(0, -5);//gae wasd
-            if (downPressed && player.getY()<getHeight()-12) player.move(0, 5);
-            if (leftPressed && player.getX()>12) player.move(-5, 0);
-            if (rightPressed && player.getX()<getWidth()-12) player.move(5, 0);
+            if (upPressed || downPressed || leftPressed || rightPressed){
+                player.idling=false; // cek player kalau jalan berati tidak idle
+
+                if (upPressed && player.getY()>2){ //gae wasd
+                    player.move(0, -5);
+                    player.direction="up"; // ini set directionnya
+                } 
+                if (downPressed && player.getY()<getHeight()-42){
+                    player.move(0, 5);
+                    player.direction="down";
+                } 
+                if (leftPressed && player.getX()>2){
+                    player.move(-5, 0);
+                    player.direction="left";
+                } 
+                if (rightPressed && player.getX()<getWidth()-42){
+                    player.move(5, 0);
+                    player.direction="right";
+                } 
+
+                player.spritecounter++; // delay buat ganti jenis sprite
+                if (player.spritecounter > 12){ // di panggil 5x tiap jalan program (60/12)
+                    if (player.spritenum==1){
+                        player.spritenum=2;
+                    }else if (player.spritenum==2){
+                        player.spritenum=1;
+                    }
+                    player.spritecounter=0; // kalau sudah ganti varian set counter ke 0
+                }
+            }else{
+                player.idling=true;
+                player.spritenum=1; // set sprite ke 1
+            }
+            
             for (Bullet bullet : playerBullets) {
                 bullet.update();
             }
@@ -227,7 +257,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         g.setColor(new Color(28, 51, 92));
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        player.draw(g);
+        player.draw((Graphics2D) g);
         for (Bullet bullet : bullets) {
             bullet.draw(g);
         }

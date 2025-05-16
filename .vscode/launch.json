@@ -9,6 +9,13 @@
             "name": "App",
             "request": "launch",
             "mainClass": "App",
+            "projectName": "bullethelltypeshit_730b22ca"
+        },
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "App",
             "projectName": "bullethelltypeshit_76d39e96"
         },
         {
