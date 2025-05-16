@@ -1,2 +1,0 @@
-1. kalo game over dan player masih jalan, kemudian pilih restart objek player bakal jalan terus
-2. array bisa out of bound
