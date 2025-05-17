@@ -220,17 +220,24 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     private void drawMenu(Graphics g) {
         mainMenu.draw(g, getWidth(), getHeight()); //untuk mempelajari lebih lanjut liat bro code di YT: https://www.youtube.com/watch?v=KcEvHq8Pqs0
     }                                               // (ak gk di sponsor untuk bilang ini)           
-
+    GameMap map = new GameMap(); // buat map
     private void drawGame(Graphics g) {
-        g.setColor(new Color(28, 51, 92));
-        g.fillRect(0, 0, getWidth(), getHeight());
+        Graphics2D g2d = (Graphics2D) g;
+        
+        // Draw background
+        g2d.setColor(new Color(28, 51, 92));
+        g2d.fillRect(0, 0, getWidth(), getHeight());
 
-        player.draw((Graphics2D) g);
+        // Draw map first
+        map.draw(g2d, player);
+        
+        // Draw game objects
+        player.draw(g2d);
         for (Bullet bullet : bullets) {
             bullet.draw(g);
         }
         for (Bullet bullet : playerBullets) {
-            bullet.draw(g);//pelurue kene
+            bullet.draw(g);
         }
         for (Enemy enemy : enemies) {
             enemy.draw(g);
