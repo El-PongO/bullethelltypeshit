@@ -97,6 +97,7 @@ public class Player {
             }
         }
         
+        // Draw relative to camera position
         g.drawImage(bimage, x, y, 40, 40, null);
     }
 
@@ -108,12 +109,17 @@ public class Player {
     }
     
     void shootBullet(int targetX, int targetY, ArrayList<Bullet> playerBullets) {
-        Bullet b = new Bullet(x, y, targetX, targetY, 10);
-        b.setColor(Color.GREEN);//gae buat warna bullet seng ditembak player hijau
+        // Calculate position offset to shoot from center of player
+        int centerX = x + 20; // Half of player width (40)
+        int centerY = y + 20; // Half of player height (40)
+        
+        // Create bullet directly towards target position
+        Bullet b = new Bullet(centerX, centerY, targetX, targetY, 10);
+        b.setColor(Color.GREEN);
         playerBullets.add(b);
     }
 
-    void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int height,int width){       
+    public void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int height,int width){       
         if (upPressed || downPressed || leftPressed || rightPressed){
             this.idling=false; // cek player kalau jalan berati tidak idle
 
@@ -149,4 +155,3 @@ public class Player {
         }
     }
 }
-
