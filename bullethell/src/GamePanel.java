@@ -22,8 +22,8 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     private Random rand;
     private int spawnDelay = 1000;
     private Timer spawnTimer, gameLoop;
-    private enum GameState { MENU, PLAYING, GAME_OVER, SETTING }
-    private GameState gameState = GameState.MENU;
+    public enum GameState { MENU, PLAYING, GAME_OVER, SETTING }
+    static GameState gameState = GameState.MENU;
     private double bulletSpeedMultiplier = 1.0;
 
     // ========================= UI =====================================================
@@ -50,6 +50,9 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     Button buttonrestart = new Button("Restart");
     Button buttonback = new Button("Back");
 
+    // ========================= CURSOR =====================================================
+    private CursorManager cursormanager = new CursorManager();
+
     // ========================= MAIN =====================================================
     public GamePanel() {
         this.player = new Player(500, 400); 
@@ -64,6 +67,13 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         innitmenubutton(); // buat button
         sfxmanager();
         musicmanager();
+        cursormanager();
+
+        // Set up "pointer" cursor for buttons
+        Button.setupGlowCursor(cursormanager, "pointer", this);
+
+        cursormanager.setCursor(this, "cursor"); // Default cursor
+
 
         spawnTimer = new Timer(spawnDelay, e -> {
             // spawnBullet();
@@ -89,10 +99,14 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         
         // set button to invisible when game start
         Setbuttonvisibility(2);
+
+        // ganti cursor ke crosshair
+        cursormanager.setCursor(this, "crosshair");
     }
 
     private void gameOver() {
         gameState = GameState.GAME_OVER;
+        cursormanager.setCursor(this, "cursor"); // ganti cursor ke default
         music1.fadeOut(1500);
         spawnTimer.stop();
         gameLoop.stop();
@@ -408,13 +422,20 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     }
     // ========================= FUNCTION =====================================================
     public void sfxmanager(){
-        soundsfx.load("dice", "/Audio/Sfx/Dice_Roll.wav");
+        soundsfx.load("dice", "/Audio/Sfx/Dice_Roll.wav"); // test sfx
         soundsfx.load("shoot", "/Audio/Sfx/Atk_LeweiGun.wav");
     }
 
     public void musicmanager(){
-        musiclobby.load("/Audio/Music/lobby.wav");
+        musiclobby.load("/Audio/Music/lobby.wav"); // test music
         music1.load("/Audio/Music/game1.wav");
+    }
+
+    public void cursormanager() { // aku gak bisa nemu crosshair yang lebih bagus dari ini, kalo ketemu boleh coba pasang
+        cursormanager.loadInvisibleCursor("cursor");
+        cursormanager.loadCursor("cursor", "/custom/cursor.png", new Point(0, 0), 32, 32);
+        cursormanager.loadCursor("pointer", "/custom/pointer.png", new Point(5, 2), 32, 32);
+        cursormanager.loadCursor("crosshair", "/custom/crosshair.png", new Point(16, 16), 32, 32);
     }
 
     @Override
@@ -482,7 +503,4 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     @Override
     public void keyTyped(KeyEvent e) {} // unused
-
-    
-
 }

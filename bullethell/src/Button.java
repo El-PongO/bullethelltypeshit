@@ -5,6 +5,9 @@ import javax.swing.*;
 public class Button {
     public JButton new_button;
     String nama;
+    private static CursorManager cursorManager;
+    private static String glowCursorName;
+    private static Component targetComponent;
 
     public Button(String nama){
         this.nama=nama;
@@ -16,6 +19,30 @@ public class Button {
         new_button.setFont(new Font("Arial", Font.BOLD, 20)); 
         new_button.setFocusPainted(false); // ilangin focus border
         new_button.setBorder(BorderFactory.createLineBorder(Color.WHITE)); // kasi border putih
+
+        new_button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (cursorManager != null && glowCursorName != null && targetComponent != null) {
+                    cursorManager.setCursor(targetComponent, glowCursorName); // Set "pointer" cursor
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (cursorManager != null && targetComponent != null) {
+                    if (GamePanel.gameState != GamePanel.GameState.PLAYING) { // Only reset if not playing
+                        cursorManager.setCursor(targetComponent, "cursor"); // Reset to default custom cursor
+                    }
+                }
+            }
+        });
+    }
+
+    public static void setupGlowCursor(CursorManager cm, String cursorName, Component component) {
+        cursorManager = cm;
+        glowCursorName = cursorName;
+        targetComponent = component;
     }
 
     public void setBound(int x, int y, int width, int height){
