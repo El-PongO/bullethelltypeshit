@@ -1,6 +1,5 @@
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.*;
 
 public class MainPanel extends JPanel {
     // Game state management
