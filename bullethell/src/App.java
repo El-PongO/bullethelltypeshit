@@ -1,6 +1,4 @@
-
-import javax.swing.JFrame;
-
+import javax.swing.JFrame; 
 public class App {
     public static void main(String[] args) throws Exception {
         JFrame window = new JFrame(); // JFrame itu yg buat bikin window. pelajari lebih lanjut di chatgpt
