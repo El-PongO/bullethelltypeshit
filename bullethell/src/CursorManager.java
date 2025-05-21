@@ -1,11 +1,8 @@
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
 public class CursorManager {
     private final Map<String, Cursor> cursors = new HashMap<>();
     private final Toolkit toolkit = Toolkit.getDefaultToolkit();
