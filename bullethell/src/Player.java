@@ -5,13 +5,14 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 public class Player {
-    private int x, y;
-    private int size = 10;
+    static int x, y;
+    static int size = 10;
     public String direction;
     public boolean idling;
     public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2;
     public int spritecounter=0;
     public int spritenum=1;
+
     public Player(int x, int y) {
         this.x = x;
         this.y = y;
@@ -20,18 +21,28 @@ public class Player {
         idling=true;
     }
 
-    public int getHitboxSize() { // ini buat hitbox player
+    public int getHitboxSize() { // Player Hitbox
         return size;
     }
-
-    public void updatePosition(int mouseX, int mouseY) {
-        this.x = mouseX;  // gerakan buat sekarang itu pake mouse, mungkin lebih gampang dari pada WASD atau arrow key
-        this.y = mouseY; // tapi ini ya pre-alpha so stfu
-    }
-
-    public boolean checkCollision(Bullet bullet) {
-        double distance = Math.sqrt(Math.pow(x - bullet.getX(), 2) + Math.pow(y - bullet.getY(), 2)); // ini buat hitbox player
-        return distance < (size / 2 + bullet.getHitboxSize() / 2);
+    // public void updatePosition(int mouseX, int mouseY) {
+    //     this.x = mouseX;  // gerakan buat sekarang itu pake mouse, mungkin lebih gampang dari pada WASD atau arrow key
+    //     this.y = mouseY; // tapi ini ya pre-alpha so stfu
+    // }
+    public boolean checkCollision(ArrayList<Enemy> enemies, ArrayList<Bullet>  enemyBullet) {
+        Rectangle playerBounds = new Rectangle(x, y, size, size);
+        for (Enemy enemy : enemies) {
+            Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
+            if (playerBounds.intersects(enemyBounds)) {
+                return true;
+            }
+        }
+        for (Bullet bullet : enemyBullet) {
+            Rectangle bulletBound = new Rectangle(bullet.x, bullet.y, bullet.size, bullet.size);
+            if (playerBounds.intersects(bulletBound)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void getPlayerImage(){

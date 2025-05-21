@@ -1,9 +1,10 @@
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Enemy {
-    private int x, y;
-    private int size = 15;
+    int x, y;
+    int size = 15;
     private int shootCooldown = 60; // frames
     private int cooldownTimer = 0;
     private Random rand = new Random();
@@ -60,5 +61,15 @@ public class Enemy {
     public boolean checkCollision(Bullet bullet) {
         double distance = Math.hypot(x - bullet.getX(), y - bullet.getY());
         return distance < (size / 2 + bullet.getHitboxSize() / 2);
+    }
+    public Bullet checkCollision(ArrayList<Bullet>  playerBullets) {
+        Rectangle enemyBounds = new Rectangle(x, y, size, size);
+        for (Bullet bullet : playerBullets) {
+            Rectangle bulletBound = new Rectangle(bullet.x, bullet.y, bullet.size, bullet.size);
+            if (enemyBounds.intersects(bulletBound)) {
+                return bullet;
+            }
+        }
+        return null;
     }
 }

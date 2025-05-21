@@ -2,8 +2,8 @@ import java.awt.*;
 import java.util.Random;
 
 public class Bullet {
-    private int x, y;
-    private int size = 20;
+    int x, y;
+    int size = 20;
     private int speed;
     private double directionX, directionY;
     private Color color = Color.RED; 
