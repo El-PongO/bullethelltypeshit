@@ -7,11 +7,23 @@ import javax.imageio.ImageIO;
 public class Player {
     private int x, y;
     private int size = 10;
+    private int speed = 5; // speed player
+    private int dashspeed = 15; // dash distance
+    private boolean isDashing = false;
+    private boolean isInvincible = false; // Invincibility flag
+    private long dashDuration = 200; // Dash duration in milliseconds
+    private long invincibilityDuration = 200; // Invincibility duration (same as dash duration)
+    private long dashStartTime = 0; // When the current dash started
+    private int maxDashCharges = 2; // Maximum number of dash charges 
+    private int currentDashCharges = maxDashCharges; // Current number of dash charges ambil dari (maxDashCharges)
+    private int dashChargeCooldown = 5000; // Cooldown time for dash charges in milliseconds
+    private long lastChargeTime = 0; // Last time a dash charge was used
     public String direction;
     public boolean idling;
     public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2;
     public int spritecounter=0;
     public int spritenum=1;
+
     public Player(int x, int y) {
         this.x = x;
         this.y = y;
@@ -20,8 +32,56 @@ public class Player {
         idling=true;
     }
 
+    public void move(int dx, int dy) {
+        int currentSpeed = isDashing ? dashspeed : speed;
+        x += dx * currentSpeed;
+        y += dy * currentSpeed;
+    }
+
+    public void dash() {
+        long currentTime = System.currentTimeMillis();
+        if (currentDashCharges > 0 && !isDashing) {
+            isDashing = true;
+            isInvincible = true; // Set invincibility when dashing
+            dashStartTime = currentTime;
+            currentDashCharges--; // Consume one dash charge
+        }
+    }
+
+    public void updateDash() {
+        long currentTime = System.currentTimeMillis();
+
+        // End dash after the duration
+        if (isDashing && currentTime - dashStartTime >= dashDuration) {
+            isDashing = false;
+        }
+
+        // End invincibility after the duration
+        if (isInvincible && currentTime - dashStartTime >= invincibilityDuration) {
+            isInvincible = false;
+        }
+
+        // Recharge dash charges
+        if (currentDashCharges < maxDashCharges && currentTime - lastChargeTime >= dashChargeCooldown) {
+            currentDashCharges++;
+            lastChargeTime = currentTime; // Reset recharge timer
+        }
+    }
+    
+    public boolean isInvincible() {
+        return isInvincible; // Return the invincibility status
+    }
+
     public int getHitboxSize() { // ini buat hitbox player
         return size;
+    }
+
+    public int getCurrentDashCharges() {
+        return currentDashCharges;
+    }
+
+    public int getMaxDashCharges() {
+        return maxDashCharges;
     }
 
     public void updatePosition(int mouseX, int mouseY) {
@@ -102,10 +162,6 @@ public class Player {
 
     public int getX() { return x; }
     public int getY() { return y; }
-    public void move(int dx, int dy) {
-        x += dx;
-        y += dy;//gae movement e player receiver wasd ne
-    }
     
     void shootBullet(int targetX, int targetY, ArrayList<Bullet> playerBullets) {
         Bullet b = new Bullet(x, y, targetX, targetY, 10);

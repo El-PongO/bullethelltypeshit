@@ -53,6 +53,9 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
     // ========================= CURSOR =====================================================
     private CursorManager cursormanager = new CursorManager();
 
+    // ========================= LIAN LAIN =====================================================
+    private Game_clock gameClock = new Game_clock();
+
     // ========================= MAIN =====================================================
     public GamePanel() {
         this.player = new Player(500, 400); 
@@ -71,9 +74,10 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
         // Set up "pointer" cursor for buttons
         Button.setupGlowCursor(cursormanager, "pointer", this);
-
         cursormanager.setCursor(this, "cursor"); // Default cursor
 
+        // Set up game clock
+        add(gameClock.label);
 
         spawnTimer = new Timer(spawnDelay, e -> {
             // spawnBullet();
@@ -87,8 +91,8 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private void startGame() {
         gameState = GameState.PLAYING;
-        music1.fadeIn(3000);
-        music1.loop();
+        // music1.fadeIn(3000);
+        // music1.loop();
         player = new Player(500, 400); // Default spawn nya Player, 500 x 400 karena ukuran layar 1000 x 800, jadi di tengah
         bullets.clear();// skrg cuman buat bullet player
         enemies.clear();//spawn enemy sama pelurunya
@@ -100,6 +104,11 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         // set button to invisible when game start
         Setbuttonvisibility(2);
 
+        // start timer
+        gameClock.setPosition(getWidth()/2, 5, 100, 50);
+        gameClock.setVisible(true);
+        gameClock.timer.start();
+
         // ganti cursor ke crosshair
         cursormanager.setCursor(this, "crosshair");
     }
@@ -110,7 +119,8 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         music1.fadeOut(1500);
         spawnTimer.stop();
         gameLoop.stop();
-
+        gameClock.reset();
+        gameClock.setVisible(false);
         repaint();
     }
 
@@ -151,23 +161,24 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
     private void updateGame() {
         if (gameState == GameState.PLAYING) {
+            player.updateDash(); // update dash state
             if (upPressed || downPressed || leftPressed || rightPressed){
                 player.idling=false; // cek player kalau jalan berati tidak idle
 
                 if (upPressed && player.getY()>2){ //gae wasd
-                    player.move(0, -5);
+                    player.move(0, -1);
                     player.direction="up"; // ini set directionnya
                 } 
                 if (downPressed && player.getY()<getHeight()-42){
-                    player.move(0, 5);
+                    player.move(0, 1);
                     player.direction="down";
                 } 
                 if (leftPressed && player.getX()>2){
-                    player.move(-5, 0);
+                    player.move(-1, 0);
                     player.direction="left";
                 } 
                 if (rightPressed && player.getX()<getWidth()-42){
-                    player.move(5, 0);
+                    player.move(1, 0);
                     player.direction="right";
                 } 
 
@@ -233,7 +244,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
             bullets.removeIf(Bullet::isOutOfBounds); // fungsi untuk menghapus bullet yang keluar layar (agak sulit jelasinya, apalahi di pahami)
             for (Bullet bullet : bullets) {
                 bullet.update();
-                if (player.checkCollision(bullet)) {
+                if (player.checkCollision(bullet) && !player.isInvincible()) {
                     gameOver(); // cek collsion
                     return;
                 }
@@ -244,7 +255,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
             }
             for (Bullet bullet : enemyBullets) {
                 bullet.update();
-                if (player.checkCollision(bullet)) {
+                if (player.checkCollision(bullet) && !player.isInvincible()) {
                     gameOver();
                     return;
                 }
@@ -296,6 +307,11 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         for (Bullet bullet : enemyBullets) {
             bullet.draw(g);
         }
+
+        // Draw dash charges (buat debug doang nanti di kasi UInya)
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 20);
     }
 
     private void drawGameOver(Graphics g) {
@@ -456,7 +472,7 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
 
         if (gameState == GameState.PLAYING && e.getButton() == MouseEvent.BUTTON1){
             player.shootBullet(e.getX(), e.getY(), playerBullets); //ya tau lah iki apa dari nama function
-            Sfx.play("shoot");
+            Sfx.playWithRandomPitch("shoot");
         }
     }
 
@@ -489,6 +505,10 @@ public class GamePanel extends JPanel implements MouseMotionListener, MouseListe
         if (code == KeyEvent.VK_S) downPressed = true;
         if (code == KeyEvent.VK_A) leftPressed = true;
         if (code == KeyEvent.VK_D) rightPressed = true;
+        if (code == KeyEvent.VK_SHIFT) {
+            player.dash(); // dash
+            System.out.println("Dash activated! " + player.direction);
+        }
     }
 
     @Override

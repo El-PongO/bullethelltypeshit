@@ -5,6 +5,9 @@ public class Settingmenu {
     private int selectedIndex = -1; // current active tab
     private String[] categories = {"Video", "Audio", "Controls", "Others"}; // list isinya
 
+    // Object list untuk menampung semua setting
+    protected FPScounter fpsCounter = new FPScounter(); // FPS counter object
+    
     public Settingmenu() {
         categoryBounds = new Rectangle[categories.length];
     }
