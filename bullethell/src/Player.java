@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 
 public class Player {
-    static int x, y;
-    static int size = 10;
+    int x;
+    int y;
+    static int size = 20;
+    static int speed = 4;
     public String direction;
     public boolean idling;
     public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2;
@@ -19,30 +21,6 @@ public class Player {
         getPlayerImage();
         direction="down";
         idling=true;
-    }
-
-    public int getHitboxSize() { // Player Hitbox
-        return size;
-    }
-    // public void updatePosition(int mouseX, int mouseY) {
-    //     this.x = mouseX;  // gerakan buat sekarang itu pake mouse, mungkin lebih gampang dari pada WASD atau arrow key
-    //     this.y = mouseY; // tapi ini ya pre-alpha so stfu
-    // }
-    public boolean checkCollision(ArrayList<Enemy> enemies, ArrayList<Bullet>  enemyBullet) {
-        Rectangle playerBounds = new Rectangle(x, y, size, size);
-        for (Enemy enemy : enemies) {
-            Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
-            if (playerBounds.intersects(enemyBounds)) {
-                return true;
-            }
-        }
-        for (Bullet bullet : enemyBullet) {
-            Rectangle bulletBound = new Rectangle(bullet.x, bullet.y, bullet.size, bullet.size);
-            if (playerBounds.intersects(bulletBound)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void getPlayerImage(){
@@ -64,7 +42,7 @@ public class Player {
         }
     }
 
-    public void draw(Graphics2D g) {
+    public void draw(Graphics2D g, int px, int py, int zoom) {
         BufferedImage bimage = null;
         if (idling){
             switch (direction) {
@@ -109,47 +87,49 @@ public class Player {
         }
         
         // Draw relative to camera position
-        g.drawImage(bimage, x, y, 40, 40, null);
+        g.drawImage(bimage, px, py, size*zoom, size*zoom, null);
     }
 
-    public int getX() { return x; }
-    public int getY() { return y; }
     public void move(int dx, int dy) {
         x += dx;
         y += dy;//gae movement e player receiver wasd ne
     }
     
-    void shootBullet(int targetX, int targetY, ArrayList<Bullet> playerBullets) {
-        // Calculate position offset to shoot from center of player
-        int centerX = x + 20; // Half of player width (40)
-        int centerY = y + 20; // Half of player height (40)
-        
-        // Create bullet directly towards target position
-        Bullet b = new Bullet(centerX, centerY, targetX, targetY, 10);
-        b.setColor(Color.GREEN);
-        playerBullets.add(b);
+    public Bullet shoot(int targetX, int targetY) {
+        double angle = Math.atan2(targetY - (y + Player.getSize()/2), 
+                                targetX - (x + Player.getSize()/2));
+        int dx = (int)(Math.cos(angle) * 3);
+        int dy = (int)(Math.sin(angle) * 3);
+        return new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy);
     }
 
-    public void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int height,int width){       
+    public void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int[][] grid, int tileSize){       
         if (upPressed || downPressed || leftPressed || rightPressed){
             this.idling=false; // cek player kalau jalan berati tidak idle
-
-            if (upPressed && this.getY()>2){ //gae wasd
-                this.move(0, -5);
-                this.direction="up"; // ini set directionnya
-            } 
-            if (downPressed && this.getY()<height-60){
-                this.move(0, 5);
+            int dx = 0, dy = 0;
+            if (upPressed) {
+                dy -= speed;
+                this.direction="up";
+            }
+            if (downPressed){
+                dy += speed;
                 this.direction="down";
             } 
-            if (leftPressed && this.getX()>2){
-                this.move(-5, 0);
+            if (leftPressed){
+                dx -= speed;
                 this.direction="left";
             } 
-            if (rightPressed && this.getX()<width-42){
-                this.move(5, 0);
+            if (rightPressed){
+                dx += speed;
                 this.direction="right";
             } 
+            int newX = x + dx, newY = y + dy;
+            int gridX = (newX + size / 2) / tileSize;
+            int gridY = (newY + size / 2) / tileSize;
+            if (gridY >= 0 && gridY < grid.length && gridX >= 0 && gridX < grid[0].length && grid[gridY][gridX] == 0) {
+            x = newX;
+            y = newY;
+        }
 
             this.spritecounter++; // delay buat ganti jenis sprite
             if (this.spritecounter > 12){ // di panggil 5x tiap jalan program (60/12)
@@ -165,4 +145,8 @@ public class Player {
             this.spritenum=1; // set sprite ke 1
         }
     }
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public static int getSize() { return size; }
+    public static int getSpeed() { return speed; }
 }

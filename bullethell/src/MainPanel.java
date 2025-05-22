@@ -13,7 +13,7 @@ public class MainPanel extends JPanel {
     // Panel visibility
     private CardLayout cardLayout = new CardLayout();
     
-    public MainPanel() {
+    public MainPanel() throws Exception {
         setLayout(cardLayout);
         
         // Initialize panels
