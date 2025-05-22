@@ -22,8 +22,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private int spawnDelay = 1000;
     private static Timer spawnTimer;
     private static Timer gameLoop;
-    private static boolean gameActive = false;
+    static boolean gameActive = false;
     private static boolean isGameOver = false;
+
+    private static Game_clock gameClock = new Game_clock();
 
     static int[][] grid;
     static BufferedImage[] tilesSprite = new BufferedImage[9];
@@ -36,6 +38,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     static int vpw = VIEWPORT_WIDTH * TILE_SIZE;  // Viewport dimensions in pixels
     static int vph = VIEWPORT_HEIGHT * TILE_SIZE;
     static int cameraPixelX, cameraPixelY;
+    CursorManager cursormanager = new CursorManager();
 
     // ========================= SFX =====================================================
     private Sfx soundsfx = new Sfx();
@@ -66,7 +69,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
             tilesSprite[i] = ImageIO.read(App.class.getResource("Assets/tile/tile0" + String.format("%02d", idx) + ".png"));
         }
-
+        add(gameClock.label);
         addMouseMotionListener(this);
         addMouseListener(this);
         addKeyListener(this);
@@ -83,6 +86,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         spawnTimer.setRepeats(false);
 
         gameLoop = new Timer(16, e -> updateGame());
+
+        gameClock.setPosition(getWidth()/2, 5, 100, 50);
+        gameClock.setVisible(true);
+        gameClock.timer.start();
     }
 
     public void startGame() {
@@ -119,6 +126,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         isGameOver = true;
         music1.fadeOut(2500);
         stopGame();
+        gameClock.reset();
+        gameClock.setVisible(false);
     }
 
     // ========================= SPAWN =====================================================
@@ -140,6 +149,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private void updateGame() {
         if(!gameActive) return;
         else {
+            player.updateDash();
             player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
             updateBullets();
             checkCollisions();
@@ -205,7 +215,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             int ey = (bullet.y - cameraPixelY) * ZOOM;
             bullet.draw(g, ex, ey, Color.RED);
         }
-
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 20);
     }
     
     private void drawGame(Graphics2D g) {        
@@ -231,12 +243,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 }
             }
         }
-        // g.setColor(new Color(28, 51, 92));
-        // g.fillRect(0, 0, getWidth(), getHeight());
-
-        // Draw map first
-        
-        // Draw game objects
     }
     // ========================= FUNCTION =====================================================
     public void sfxmanager(){
@@ -264,6 +270,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if (code == KeyEvent.VK_S) downPressed = true;
         if (code == KeyEvent.VK_A) leftPressed = true;
         if (code == KeyEvent.VK_D) rightPressed = true;
+        if (code == KeyEvent.VK_SHIFT) {
+            player.dash(); // dash
+            System.out.println("Dash activated! " + player.direction);
+        }
     }
 
     @Override
@@ -302,7 +312,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         Rectangle playerBounds = new Rectangle(player.getX(), player.getY(), player.getSize(), player.getSize());
         for (Enemy enemy : enemies) {
             Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
-            if (playerBounds.intersects(enemyBounds)) {
+            if (playerBounds.intersects(enemyBounds) && !player.isInvincible()) {
                 System.out.println("Player hit!");
                 gameOver();
             }
@@ -325,7 +335,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         // Check enemy bullet-player collisions
         enemyBullets.removeIf(bullet -> {
             Rectangle bulletBounds = new Rectangle(bullet.x, bullet.y, bullet.getSize(), bullet.getSize());
-            if (bulletBounds.intersects(playerBounds)) {
+            if (bulletBounds.intersects(playerBounds) && !player.isInvincible()) {
                 System.out.println("Player hit by enemy bullet!");
                 gameOver();
                 return true;

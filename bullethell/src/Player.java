@@ -7,6 +7,17 @@ public class Player {
     int y;
     static int size = 20;
     static int speed = 4;
+    static int bulletSpeed = 3; // Bullet speed
+    private int dashspeed = 15; // dash distance
+    private boolean isDashing = false;
+    private boolean isInvincible = false; // Invincibility flag
+    private long dashDuration = 200; // Dash duration in milliseconds
+    private long invincibilityDuration = 200; // Invincibility duration (same as dash duration)
+    private long dashStartTime = 0; // When the current dash started
+    private int maxDashCharges = 2; // Maximum number of dash charges 
+    private int currentDashCharges = maxDashCharges; // Current number of dash charges ambil dari (maxDashCharges)
+    private int dashChargeCooldown = 5000; // Cooldown time for dash charges in milliseconds
+    private long lastChargeTime = 0; // Last time a dash charge was used
     public String direction;
     public boolean idling;
     public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2;
@@ -96,8 +107,8 @@ public class Player {
     public Bullet shoot(int targetX, int targetY) {
         double angle = Math.atan2(targetY - (y + Player.getSize()/2), 
                                 targetX - (x + Player.getSize()/2));
-        int dx = (int)(Math.cos(angle) * 3);
-        int dy = (int)(Math.sin(angle) * 3);
+        int dx = (int)(Math.cos(angle) * 3) * bulletSpeed;
+        int dy = (int)(Math.sin(angle) * 3) * bulletSpeed;
         return new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy);
     }
 
@@ -121,7 +132,8 @@ public class Player {
                 dx += speed;
                 this.direction="right";
             } 
-            int newX = x + dx, newY = y + dy;
+            int currentSpeed = isDashing ? dashspeed/3 : 1;
+            int newX = x + dx*currentSpeed, newY = y + dy*currentSpeed;
             int gridX = (newX + size / 2) / tileSize;
             int gridY = (newY + size / 2) / tileSize;
             if (gridY >= 0 && gridY < grid.length && gridX >= 0 && gridX < grid[0].length && grid[gridY][gridX] == 0) {
@@ -143,6 +155,48 @@ public class Player {
             this.spritenum=1; // set sprite ke 1
         }
     }
+
+    public void updateDash() {
+        long currentTime = System.currentTimeMillis();
+
+        // End dash after the duration
+        if (isDashing && currentTime - dashStartTime >= dashDuration) {
+            isDashing = false;
+        }
+
+        // End invincibility after the duration
+        if (isInvincible && currentTime - dashStartTime >= invincibilityDuration) {
+            isInvincible = false;
+        }
+
+        // Recharge dash charges
+        if (currentDashCharges < maxDashCharges && currentTime - lastChargeTime >= dashChargeCooldown) {
+            currentDashCharges++;
+            lastChargeTime = currentTime; // Reset recharge timer
+        }
+    }
+    public void dash() {
+        long currentTime = System.currentTimeMillis();
+        if (currentDashCharges > 0 && !isDashing) {
+            isDashing = true;
+            isInvincible = true; // Set invincibility when dashing
+            dashStartTime = currentTime;
+            currentDashCharges--; // Consume one dash charge
+        }
+    }
+
+    public boolean isInvincible() {
+        return isInvincible; // Return the invincibility status
+    }
+    
+    public int getCurrentDashCharges() {
+        return currentDashCharges;
+    }
+
+    public int getMaxDashCharges() {
+        return maxDashCharges;
+    }
+
     public int getX() { return x; }
     public int getY() { return y; }
     public static int getSize() { return size; }

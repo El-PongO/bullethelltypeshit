@@ -4,11 +4,11 @@ import java.util.Random;
 
 public class Enemy {
     int x, y;
-    int size = 25;
+    int size = 20;
     long lastShotTime;
     private static final int speed = 2;
     int shootDelay = 2000; // 2 second
-    int bulletSpeed = 2;
+    int bulletSpeed = 3;
     //====================//
     private Random rand = new Random();
 
