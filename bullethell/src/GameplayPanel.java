@@ -22,7 +22,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private int spawnDelay = 1000;
     private static Timer spawnTimer;
     private static Timer gameLoop;
-    private double bulletSpeedMultiplier = 1.0;
     private static boolean gameActive = false;
     private static boolean isGameOver = false;
 
@@ -47,7 +46,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     // ========================= KEY MOVEMENT =====================================================
     private boolean upPressed, downPressed, leftPressed, rightPressed;
-    private int mouseX, mouseY;//beberapa tambahan idk mousex sama mousey gae apa aku agak minta chatgpt soale:" )
     
     // ========================= MAIN =====================================================
     public GameplayPanel() throws Exception {

@@ -2,10 +2,6 @@ import java.awt.*;
 import javax.swing.*;
 
 public class MainPanel extends JPanel {
-    // Game state management
-    private enum GameState { MENU, PLAYING, GAME_OVER, SETTING }
-    private GameState gameState = GameState.MENU;
-    
     // Panels
     private MenuPanel menuPanel;
     private GameplayPanel gameplayPanel;
