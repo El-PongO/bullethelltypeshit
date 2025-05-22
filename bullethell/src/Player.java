@@ -1,13 +1,13 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 
 public class Player {
-    int x;
-    int y;
-    static int size = 20;
-    static int speed = 4;
-    static int bulletSpeed = 3; // Bullet speed
+    private int x, y;
+    private int size = 10;
+    private int speed = 5; // speed player
     private int dashspeed = 15; // dash distance
     private boolean isDashing = false;
     private boolean isInvincible = false; // Invincibility flag
@@ -32,6 +32,68 @@ public class Player {
         idling=true;
     }
 
+    public void move(int dx, int dy) {
+        int currentSpeed = isDashing ? dashspeed : speed;
+        x += dx * currentSpeed;
+        y += dy * currentSpeed;
+    }
+
+    public void dash() {
+        long currentTime = System.currentTimeMillis();
+        if (currentDashCharges > 0 && !isDashing) {
+            isDashing = true;
+            isInvincible = true; // Set invincibility when dashing
+            dashStartTime = currentTime;
+            currentDashCharges--; // Consume one dash charge
+        }
+    }
+
+    public void updateDash() {
+        long currentTime = System.currentTimeMillis();
+
+        // End dash after the duration
+        if (isDashing && currentTime - dashStartTime >= dashDuration) {
+            isDashing = false;
+        }
+
+        // End invincibility after the duration
+        if (isInvincible && currentTime - dashStartTime >= invincibilityDuration) {
+            isInvincible = false;
+        }
+
+        // Recharge dash charges
+        if (currentDashCharges < maxDashCharges && currentTime - lastChargeTime >= dashChargeCooldown) {
+            currentDashCharges++;
+            lastChargeTime = currentTime; // Reset recharge timer
+        }
+    }
+    
+    public boolean isInvincible() {
+        return isInvincible; // Return the invincibility status
+    }
+
+    public int getHitboxSize() { // ini buat hitbox player
+        return size;
+    }
+
+    public int getCurrentDashCharges() {
+        return currentDashCharges;
+    }
+
+    public int getMaxDashCharges() {
+        return maxDashCharges;
+    }
+
+    public void updatePosition(int mouseX, int mouseY) {
+        this.x = mouseX;  // gerakan buat sekarang itu pake mouse, mungkin lebih gampang dari pada WASD atau arrow key
+        this.y = mouseY; // tapi ini ya pre-alpha so stfu
+    }
+
+    public boolean checkCollision(Bullet bullet) {
+        double distance = Math.sqrt(Math.pow(x - bullet.getX(), 2) + Math.pow(y - bullet.getY(), 2)); // ini buat hitbox player
+        return distance < (size / 2 + bullet.getHitboxSize() / 2);
+    }
+
     public void getPlayerImage(){
         try {
             up1 = ImageIO.read(getClass().getResource("/Assets/Hunter/up1.png"));
@@ -51,7 +113,7 @@ public class Player {
         }
     }
 
-    public void draw(Graphics2D g, int px, int py, int zoom) {
+    public void draw(Graphics2D g) {
         BufferedImage bimage = null;
         if (idling){
             switch (direction) {
@@ -95,14 +157,11 @@ public class Player {
             }
         }
         
-        // Draw relative to camera position
-        g.drawImage(bimage, px, py, size*zoom, size*zoom, null);
+        g.drawImage(bimage, x, y, 40, 40, null);
     }
 
-    public void move(int dx, int dy) {
-        x += dx;
-        y += dy;//gae movement e player receiver wasd ne
-    }
+    public int getX() { return x; }
+    public int getY() { return y; }
     
     public Bullet shoot(int targetX, int targetY) {
         double angle = Math.atan2(targetY - (y + Player.getSize()/2), 
