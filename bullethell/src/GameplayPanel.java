@@ -93,7 +93,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     }
 
     public void startGame() {
-        music1.fadeIn(3000);
         music1.loop();
         player = new Player(getWidth()/2, getHeight()/2); // Default spawn nya Player, 500 x 400 karena ukuran layar 1000 x 800, jadi di tengah
         enemies.clear();//spawn enemy sama pelurunya

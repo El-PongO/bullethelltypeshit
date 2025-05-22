@@ -31,7 +31,7 @@ public class Button {
             @Override
             public void mouseExited(MouseEvent e) {
                 if (cursorManager != null && targetComponent != null) {
-                    if (GamePanel.gameState != GamePanel.GameState.PLAYING) { // Only reset if not playing
+                    if (!GameplayPanel.gameActive) { // Only reset if not playing
                         cursorManager.setCursor(targetComponent, "cursor"); // Reset to default custom cursor
                     }
                 }
@@ -77,4 +77,3 @@ public class Button {
         // new_button.setHorizontalAlignment(SwingConstants.LEFT);
     }
 }
-
