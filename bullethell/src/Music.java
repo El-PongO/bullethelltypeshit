@@ -34,6 +34,7 @@ public class Music {
     }
 
     public void loop() {
+        System.out.println("Playing music in loop");
         if (clip != null) {
             clip.setMicrosecondPosition(0);
             clip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -90,6 +91,26 @@ public class Music {
         }
     }
 
+    // Fade out yang lama agak broken dikit
+    // public void fadeOut(int durationMillis) {
+    //     if (clip != null && gainControl != null) {
+    //         new Thread(() -> {
+    //             try {
+    //                 float min = gainControl.getMinimum();
+    //                 float max = gainControl.getValue();
+    //                 int steps = 50;
+    //                 int sleep = durationMillis / steps;
+    //                 for (int i = 0; i <= steps; i++) {
+    //                     float value = max - (max - min) * i / steps;
+    //                     gainControl.setValue(value);
+    //                     Thread.sleep(sleep);
+    //                 }
+    //                 clip.stop();
+    //             } catch (InterruptedException ignored) {}
+    //         }).start();
+    //     }
+    // }
+
     public void fadeOut(int durationMillis) {
         if (clip != null && gainControl != null) {
             new Thread(() -> {
@@ -104,6 +125,7 @@ public class Music {
                         Thread.sleep(sleep);
                     }
                     clip.stop();
+                    clip.setMicrosecondPosition(0); // Reset the clip position after stopping
                 } catch (InterruptedException ignored) {}
             }).start();
         }

@@ -5,10 +5,12 @@ import javax.imageio.ImageIO;
 public class Player {
     int x;
     int y;
+    private int health = 100; // Player's health
+    private int maxHealth = 100; // Maximum health
     static int size = 20;
-    static int speed = 4;
+    static int speed = 3;
     static int bulletSpeed = 3; // Bullet speed
-    private int dashspeed = 15; // dash distance
+    private int dashspeed = 10; // dash distance
     private boolean isDashing = false;
     private boolean isInvincible = false; // Invincibility flag
     private long dashDuration = 200; // Dash duration in milliseconds
@@ -185,10 +187,45 @@ public class Player {
         }
     }
 
+    public void takeDamage(int damage) {
+        if (!isInvincible) { // Only take damage if not invincible
+            health -= damage;
+            if (health < 0) {
+                health = 0; // Prevent health from going negative
+            }
+        }
+    }
+
+    public void heal(int amount, Boolean isCapped) { // Nanti kalo dipake (pasti dipake sih)
+        health += amount;
+        if (health > maxHealth && isCapped) {
+            health = maxHealth; // Cap health at maxHealth
+        }
+    }
+
     public boolean isInvincible() {
         return isInvincible; // Return the invincibility status
     }
     
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
+        if (health > maxHealth) {
+            health = maxHealth; // Adjust current health if it exceeds the new maxHealth
+        }
+    }
+
+    public boolean isDead() {
+        return health <= 0;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
     public int getCurrentDashCharges() {
         return currentDashCharges;
     }

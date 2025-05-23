@@ -1,15 +1,23 @@
 import java.awt.*;
+
+import javax.swing.JCheckBox;
 public class Settingmenu {
     private Rectangle[] categoryBounds; // Array to hold the bounding rectangles for each category (used for hover/click detection)
     private int hoveredIndex = -1; // cek tab yang di hover
     private int selectedIndex = -1; // current active tab
     private String[] categories = {"Video", "Audio", "Controls", "Others"}; // list isinya
-
-    // Object list untuk menampung semua setting
-    protected FPScounter fpsCounter = new FPScounter(); // FPS counter object
+    
+    private JCheckBox fpsCheckbox; // Checkbox for FPS counter
     
     public Settingmenu() {
         categoryBounds = new Rectangle[categories.length];
+        // Initialize the FPS checkbox
+        fpsCheckbox = new JCheckBox("Show FPS Counter");
+        fpsCheckbox.setBounds(20, 150, 200, 30); // Position in the "Others" settings
+        fpsCheckbox.setForeground(Color.WHITE);
+        fpsCheckbox.setBackground(new Color(28, 51, 92)); // Match the background color
+        fpsCheckbox.setFocusPainted(false);
+        fpsCheckbox.setVisible(false); // Initially hidden
     }
 
     public void draw(Graphics g, int panelWidth, int panelHeight) {

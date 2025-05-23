@@ -19,6 +19,8 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     private Button buttonRestart = new Button("Restart");
     private Button buttonBack = new Button("Back");
     
+    // ========================= LAIN-LAIN =====================================================
+
     // ========================= CALLBACKS =====================================================
     private Runnable onStartGame;
     private Runnable onRestartGame;

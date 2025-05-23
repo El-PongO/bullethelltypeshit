@@ -24,7 +24,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static Timer gameLoop;
     static boolean gameActive = false;
     private static boolean isGameOver = false;
-
+    private FPScounter fpscounter = new FPScounter("FPS: ");
     private static Game_clock gameClock = new Game_clock();
 
     static int[][] grid;
@@ -86,10 +86,15 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         spawnTimer.setRepeats(false);
 
         gameLoop = new Timer(16, e -> updateGame());
-
-        gameClock.setPosition(getWidth()/2, 5, 100, 50);
-        gameClock.setVisible(true);
-        gameClock.timer.start();
+        setLayout(null);
+        add(fpscounter);
+        fpscounter.setBounds(getWidth() - 100, 10, 90, 20);
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                fpscounter.setBounds(getWidth() - 100, 10, 90, 20);
+            }
+        });
     }
 
     public void startGame() {
@@ -103,6 +108,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         isGameOver = false;
         gameActive = true;
 
+        gameClock.setPosition(getWidth()/2, 5, 100, 50);
+        gameClock.setVisible(true);
+        gameClock.timer.start();
+        
         spawnTimer.start();
         gameLoop.start();
         
@@ -123,7 +132,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private static void gameOver() {
         isGameOver = true;
-        music1.fadeOut(2500);
+        // music1.fadeOut(2500);
+        music1.stop();
         stopGame();
         gameClock.reset();
         gameClock.setVisible(false);
@@ -160,6 +170,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
             }
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
+            fpscounter.frameRendered();
             repaint();
         }
     }
@@ -216,7 +227,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 16));
-        g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 20);
+        g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
+        g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
     }
     
     private void drawGame(Graphics2D g) {        
@@ -313,7 +325,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
             if (playerBounds.intersects(enemyBounds) && !player.isInvincible()) {
                 System.out.println("Player hit!");
-                gameOver();
+                player.takeDamage(50);
+                if (player.isDead()) {
+                    gameOver();
+                }
             }
         }
 
@@ -336,7 +351,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             Rectangle bulletBounds = new Rectangle(bullet.x, bullet.y, bullet.getSize(), bullet.getSize());
             if (bulletBounds.intersects(playerBounds) && !player.isInvincible()) {
                 System.out.println("Player hit by enemy bullet!");
-                gameOver();
+                player.takeDamage(50);
+                if (player.isDead()) {
+                    gameOver();
+                }
                 return true;
             }
             return false;
