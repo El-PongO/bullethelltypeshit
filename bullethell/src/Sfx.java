@@ -112,6 +112,7 @@ public class Sfx {
         private float getRandomPitch() {
             return 0.9f + new Random().nextFloat() * 0.2f; // Random value between 0.9 and 1.1
         }
+
     }
 
     private static final Map<String, SoundClipPool> soundPools = new HashMap<>();

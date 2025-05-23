@@ -50,8 +50,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     // ========================= KEY MOVEMENT =====================================================
     private boolean upPressed, downPressed, leftPressed, rightPressed;
     
+    // ========================= GAME SETTING =====================================================
+    private Settingmenu settingmenu = new Settingmenu();
+
     // ========================= MAIN =====================================================
-    public GameplayPanel() throws Exception {
+    public GameplayPanel(FPScounter fpscounter) throws Exception {
         this.rand = new Random();
         grid = loadMapFromFile("bullethell/src/map.txt");
         for (int i = 0; i < 9; i++) {
@@ -87,17 +90,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
         gameLoop = new Timer(16, e -> updateGame());
         setLayout(null);
-        add(fpscounter);
-        fpscounter.setBounds(getWidth() - 100, 10, 90, 20);
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                fpscounter.setBounds(getWidth() - 100, 10, 90, 20);
-            }
-        });
+        initializeFPSconfig(fpscounter);
     }
 
     public void startGame() {
+        music1.fadeIn(1000);
         music1.loop();
         player = new Player(getWidth()/2, getHeight()/2); // Default spawn nya Player, 500 x 400 karena ukuran layar 1000 x 800, jadi di tengah
         enemies.clear();//spawn enemy sama pelurunya
@@ -132,8 +129,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private static void gameOver() {
         isGameOver = true;
-        // music1.fadeOut(2500);
-        music1.stop();
+        music1.fadeOut(2500);
+        // music1.stop();
         stopGame();
         gameClock.reset();
         gameClock.setVisible(false);
@@ -270,7 +267,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     public void mousePressed(MouseEvent e) {
         if (gameActive && e.getButton() == MouseEvent.BUTTON1){
             playerBullets.add(player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY)); //ya tau lah iki apa dari nama function
-            Sfx.play("shoot");
+            Sfx.playWithRandomPitch("shoot");
         }
     }
 
@@ -320,7 +317,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     }
 
     private static void checkCollisions() {
-        Rectangle playerBounds = new Rectangle(player.getX(), player.getY(), player.getSize(), player.getSize());
+        // hitboxnya aku kecilin dikit (90% dari sprite)
+        int fullSize = player.getSize();
+        int hitboxSize = (int)(fullSize * 0.9);
+        int offset = (fullSize - hitboxSize) / 2;
+
+        Rectangle playerBounds = new Rectangle(player.getX() + offset, player.getY() + offset, hitboxSize, hitboxSize);
         for (Enemy enemy : enemies) {
             Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
             if (playerBounds.intersects(enemyBounds) && !player.isInvincible()) {
@@ -381,5 +383,31 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }
         reader.close();
         return grid;
+    }
+
+    // GAME SETTINGS
+    private void initializeFPSconfig(FPScounter fpscounter){
+        this.fpscounter = fpscounter;
+        add(fpscounter);
+        updateFPSCounterVisibility();
+        positionFPSCounter();
+        addFPSCounterResizeListener();
+    }
+
+    private void updateFPSCounterVisibility() {
+        fpscounter.setVisible(settingmenu.getFpsCheckbox().isSelected());
+    }
+
+    private void positionFPSCounter() {
+        fpscounter.setBounds(getWidth() - 100, 10, 90, 20);
+    }
+
+    private void addFPSCounterResizeListener() {
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                positionFPSCounter();
+            }
+        });
     }
 }

@@ -5,6 +5,7 @@ public class MainPanel extends JPanel {
     // Panels
     private MenuPanel menuPanel;
     private GameplayPanel gameplayPanel;
+    private FPScounter fpsCounter;
     
     // Panel visibility
     private CardLayout cardLayout = new CardLayout();
@@ -13,8 +14,10 @@ public class MainPanel extends JPanel {
     public MainPanel() throws Exception {
         setLayout(cardLayout);
         
+        fpsCounter = new FPScounter("FPS:");
+
         // Initialize panels
-        gameplayPanel = new GameplayPanel();
+        gameplayPanel = new GameplayPanel(fpsCounter);
         menuPanel = new MenuPanel(this::startGame, this::startGame); // Same callback for both start and restart
         cursormanager();
         Button.setupGlowCursor(cursormanager, "pointer", this);
@@ -25,6 +28,14 @@ public class MainPanel extends JPanel {
         
         // Start with menu panel
         cardLayout.show(this, "MENU");
+
+        // JCheckBox for FPS counter
+        JCheckBox fpsCheckbox = menuPanel.getSettingMenu().getFpsCheckbox();
+        fpsCheckbox.addActionListener(e -> {
+            boolean visible = fpsCheckbox.isSelected();
+            fpsCounter.setVisible(visible);
+        });
+
     }
     
     private void startGame() {

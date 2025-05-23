@@ -2,6 +2,8 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import org.omg.CORBA.Current;
+
 public class MenuPanel extends JPanel implements MouseListener, MouseMotionListener {
     // ========================= UI =====================================================
     private MainMenu mainMenu = new MainMenu();
@@ -20,6 +22,10 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     private Button buttonBack = new Button("Back");
     
     // ========================= LAIN-LAIN =====================================================
+    private JCheckBox fpsCheckbox; // Checkbox for FPS counter
+    private JCheckBox devCheckBox; // Checkbox for developer mode
+    private JCheckBox holdweaponCheckbox; // Checkbox for hold weapon
+    private JCheckBox disableupgradeCheckbox; // Checkbox for disable upgrade
 
     // ========================= CALLBACKS =====================================================
     private Runnable onStartGame;
@@ -31,6 +37,8 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         
         setLayout(null);
         initButtons();
+        callsettings();
+        
         addMouseListener(this);
         addMouseMotionListener(this);
     }
@@ -63,6 +71,9 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         
         // Back Button
         buttonBack.addActionListener(e -> {
+            if (currentState == MenuState.SETTINGS) {
+                settingmenu.setvisibleoption("quit");
+            }
             currentState = MenuState.MAIN_MENU;
             setButtonVisibility(MenuState.MAIN_MENU);
             repaint();
@@ -176,6 +187,20 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         positionButtons();
     }
     
+    public void callsettings(){
+        fpsCheckbox = settingmenu.getFpsCheckbox();
+        add(settingmenu.getFpsCheckbox());
+
+        devCheckBox = settingmenu.getDevCheckbox();
+        add(settingmenu.getDevCheckbox());
+
+        holdweaponCheckbox = settingmenu.getHoldWeaponCheckbox();
+        add(settingmenu.getHoldWeaponCheckbox());
+
+        disableupgradeCheckbox = settingmenu.getDisableUpgradeCheckbox();
+        add(settingmenu.getDisableUpgradeCheckbox());
+    }
+
     // ========================= MOUSE EVENTS =====================================================
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -201,4 +226,8 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
     @Override public void mouseDragged(MouseEvent e) {}
+
+    public Settingmenu getSettingMenu() {
+        return settingmenu;
+    }
 }

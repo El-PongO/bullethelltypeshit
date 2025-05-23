@@ -24,12 +24,9 @@ public class FPScounter extends JLabel{ // untuk sementara masih belum dipake
         }).start();
     }
 
+    @Override
     public void setVisible(boolean visible) {
-        if (visible) {
-            fpsLabel.setVisible(true);
-        } else {
-            fpsLabel.setVisible(false);
-        }
+        super.setVisible(visible);
     }
 
     public void frameRendered() {

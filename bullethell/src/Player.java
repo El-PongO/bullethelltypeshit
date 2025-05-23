@@ -8,7 +8,7 @@ public class Player {
     private int health = 100; // Player's health
     private int maxHealth = 100; // Maximum health
     static int size = 20;
-    static int speed = 3;
+    static int speed = 4;
     static int bulletSpeed = 3; // Bullet speed
     private int dashspeed = 10; // dash distance
     private boolean isDashing = false;

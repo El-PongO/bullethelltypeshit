@@ -91,26 +91,6 @@ public class Music {
         }
     }
 
-    // Fade out yang lama agak broken dikit
-    // public void fadeOut(int durationMillis) {
-    //     if (clip != null && gainControl != null) {
-    //         new Thread(() -> {
-    //             try {
-    //                 float min = gainControl.getMinimum();
-    //                 float max = gainControl.getValue();
-    //                 int steps = 50;
-    //                 int sleep = durationMillis / steps;
-    //                 for (int i = 0; i <= steps; i++) {
-    //                     float value = max - (max - min) * i / steps;
-    //                     gainControl.setValue(value);
-    //                     Thread.sleep(sleep);
-    //                 }
-    //                 clip.stop();
-    //             } catch (InterruptedException ignored) {}
-    //         }).start();
-    //     }
-    // }
-
     public void fadeOut(int durationMillis) {
         if (clip != null && gainControl != null) {
             new Thread(() -> {
