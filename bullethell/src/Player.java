@@ -34,14 +34,6 @@ public class Player {
         idling=true;
     }
 
-    public int getCurrentDashCharges() {
-        return currentDashCharges;
-    }
-
-    public int getMaxDashCharges() {
-        return maxDashCharges;
-    }
-
     public void getPlayerImage(){
         try {
             up1 = ImageIO.read(getClass().getResource("/Assets/Hunter/up1.png"));
