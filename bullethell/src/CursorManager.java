@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
-public class CursorManager {
+    public class CursorManager {
     private final Map<String, Cursor> cursors = new HashMap<>();
     private final Toolkit toolkit = Toolkit.getDefaultToolkit();
 

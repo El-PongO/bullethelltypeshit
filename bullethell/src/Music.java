@@ -34,6 +34,7 @@ public class Music {
     }
 
     public void loop() {
+        System.out.println("Playing music in loop");
         if (clip != null) {
             clip.setMicrosecondPosition(0);
             clip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -104,6 +105,7 @@ public class Music {
                         Thread.sleep(sleep);
                     }
                     clip.stop();
+                    clip.setMicrosecondPosition(0); // Reset the clip position after stopping
                 } catch (InterruptedException ignored) {}
             }).start();
         }

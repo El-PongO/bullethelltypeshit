@@ -1,14 +1,16 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-
 import javax.imageio.ImageIO;
 
 public class Player {
-    private int x, y;
-    private int size = 10;
-    private int speed = 5; // speed player
-    private int dashspeed = 15; // dash distance
+    int x;
+    int y;
+    private int health = 100; // Player's health
+    private int maxHealth = 100; // Maximum health
+    static int size = 20;
+    static int speed = 4;
+    static int bulletSpeed = 3; // Bullet speed
+    private int dashspeed = 10; // dash distance
     private boolean isDashing = false;
     private boolean isInvincible = false; // Invincibility flag
     private long dashDuration = 200; // Dash duration in milliseconds
@@ -32,66 +34,12 @@ public class Player {
         idling=true;
     }
 
-    public void move(int dx, int dy) {
-        int currentSpeed = isDashing ? dashspeed : speed;
-        x += dx * currentSpeed;
-        y += dy * currentSpeed;
-    }
-
-    public void dash() {
-        long currentTime = System.currentTimeMillis();
-        if (currentDashCharges > 0 && !isDashing) {
-            isDashing = true;
-            isInvincible = true; // Set invincibility when dashing
-            dashStartTime = currentTime;
-            currentDashCharges--; // Consume one dash charge
-        }
-    }
-
-    public void updateDash() {
-        long currentTime = System.currentTimeMillis();
-
-        // End dash after the duration
-        if (isDashing && currentTime - dashStartTime >= dashDuration) {
-            isDashing = false;
-        }
-
-        // End invincibility after the duration
-        if (isInvincible && currentTime - dashStartTime >= invincibilityDuration) {
-            isInvincible = false;
-        }
-
-        // Recharge dash charges
-        if (currentDashCharges < maxDashCharges && currentTime - lastChargeTime >= dashChargeCooldown) {
-            currentDashCharges++;
-            lastChargeTime = currentTime; // Reset recharge timer
-        }
-    }
-    
-    public boolean isInvincible() {
-        return isInvincible; // Return the invincibility status
-    }
-
-    public int getHitboxSize() { // ini buat hitbox player
-        return size;
-    }
-
     public int getCurrentDashCharges() {
         return currentDashCharges;
     }
 
     public int getMaxDashCharges() {
         return maxDashCharges;
-    }
-
-    public void updatePosition(int mouseX, int mouseY) {
-        this.x = mouseX;  // gerakan buat sekarang itu pake mouse, mungkin lebih gampang dari pada WASD atau arrow key
-        this.y = mouseY; // tapi ini ya pre-alpha so stfu
-    }
-
-    public boolean checkCollision(Bullet bullet) {
-        double distance = Math.sqrt(Math.pow(x - bullet.getX(), 2) + Math.pow(y - bullet.getY(), 2)); // ini buat hitbox player
-        return distance < (size / 2 + bullet.getHitboxSize() / 2);
     }
 
     public void getPlayerImage(){
@@ -113,7 +61,7 @@ public class Player {
         }
     }
 
-    public void draw(Graphics2D g) {
+    public void draw(Graphics2D g, int px, int py, int zoom) {
         BufferedImage bimage = null;
         if (idling){
             switch (direction) {
@@ -157,15 +105,145 @@ public class Player {
             }
         }
         
-        g.drawImage(bimage, x, y, 40, 40, null);
+        // Draw relative to camera position
+        g.drawImage(bimage, px, py, size*zoom, size*zoom, null);
+    }
+
+    public void move(int dx, int dy) {
+        x += dx;
+        y += dy;//gae movement e player receiver wasd ne
+    }
+    
+    public Bullet shoot(int targetX, int targetY) {
+        double angle = Math.atan2(targetY - (y + Player.getSize()/2), 
+                                targetX - (x + Player.getSize()/2));
+        int dx = (int)(Math.cos(angle) * 3) * bulletSpeed;
+        int dy = (int)(Math.sin(angle) * 3) * bulletSpeed;
+        return new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy);
+    }
+
+    public void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int[][] grid, int tileSize){       
+        if (upPressed || downPressed || leftPressed || rightPressed){
+            this.idling=false; // cek player kalau jalan berati tidak idle
+            int dx = 0, dy = 0;
+            if (upPressed) {
+                dy -= speed;
+                this.direction="up";
+            }
+            if (downPressed){
+                dy += speed;
+                this.direction="down";
+            } 
+            if (leftPressed){
+                dx -= speed;
+                this.direction="left";
+            } 
+            if (rightPressed){
+                dx += speed;
+                this.direction="right";
+            } 
+            int currentSpeed = isDashing ? dashspeed/3 : 1;
+            int newX = x + dx*currentSpeed, newY = y + dy*currentSpeed;
+            int gridX = (newX + size / 2) / tileSize;
+            int gridY = (newY + size / 2) / tileSize;
+            if (gridY >= 0 && gridY < grid.length && gridX >= 0 && gridX < grid[0].length && grid[gridY][gridX] == 0) {
+            x = newX;
+            y = newY;
+        }
+
+            this.spritecounter++; // delay buat ganti jenis sprite
+            if (this.spritecounter > 12){ // di panggil 5x tiap jalan program (60/12)
+                if (this.spritenum==1){
+                    this.spritenum=2;
+                }else if (this.spritenum==2){
+                    this.spritenum=1;
+                }
+                this.spritecounter=0; // kalau sudah ganti varian set counter ke 0
+            }
+        }else{
+            this.idling=true;
+            this.spritenum=1; // set sprite ke 1
+        }
+    }
+
+    public void updateDash() {
+        long currentTime = System.currentTimeMillis();
+
+        // End dash after the duration
+        if (isDashing && currentTime - dashStartTime >= dashDuration) {
+            isDashing = false;
+        }
+
+        // End invincibility after the duration
+        if (isInvincible && currentTime - dashStartTime >= invincibilityDuration) {
+            isInvincible = false;
+        }
+
+        // Recharge dash charges
+        if (currentDashCharges < maxDashCharges && currentTime - lastChargeTime >= dashChargeCooldown) {
+            currentDashCharges++;
+            lastChargeTime = currentTime; // Reset recharge timer
+        }
+    }
+    public void dash() {
+        long currentTime = System.currentTimeMillis();
+        if (currentDashCharges > 0 && !isDashing) {
+            isDashing = true;
+            isInvincible = true; // Set invincibility when dashing
+            dashStartTime = currentTime;
+            currentDashCharges--; // Consume one dash charge
+        }
+    }
+
+    public void takeDamage(int damage) {
+        if (!isInvincible) { // Only take damage if not invincible
+            health -= damage;
+            if (health < 0) {
+                health = 0; // Prevent health from going negative
+            }
+        }
+    }
+
+    public void heal(int amount, Boolean isCapped) { // Nanti kalo dipake (pasti dipake sih)
+        health += amount;
+        if (health > maxHealth && isCapped) {
+            health = maxHealth; // Cap health at maxHealth
+        }
+    }
+
+    public boolean isInvincible() {
+        return isInvincible; // Return the invincibility status
+    }
+    
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
+        if (health > maxHealth) {
+            health = maxHealth; // Adjust current health if it exceeds the new maxHealth
+        }
+    }
+
+    public boolean isDead() {
+        return health <= 0;
+    }
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+    public int getCurrentDashCharges() {
+        return currentDashCharges;
+    }
+
+    public int getMaxDashCharges() {
+        return maxDashCharges;
     }
 
     public int getX() { return x; }
     public int getY() { return y; }
-    
-    void shootBullet(int targetX, int targetY, ArrayList<Bullet> playerBullets) {
-        Bullet b = new Bullet(x, y, targetX, targetY, 10);
-        b.setColor(Color.GREEN);//gae buat warna bullet seng ditembak player hijau
-        playerBullets.add(b);
-    }
+    public static int getSize() { return size; }
+    public static int getSpeed() { return speed; }
 }

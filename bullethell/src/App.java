@@ -6,8 +6,9 @@ public class App {
         window.setResizable(false); // biar ga bisa di resize, klo gk rusak game nya
         window.setTitle("Bullet Hell"); // tittylenya
         window.setSize(1024,768); // window size
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        GamePanel panel = new GamePanel();
+        
+        // Use the new MainPanel instead of GamePanel
+        MainPanel panel = new MainPanel();
         window.add(panel); //buat windownya
 
         window.setVisible(true); // biar bisa di liat windownya
