@@ -2,6 +2,9 @@ import java.awt.*;
 import javax.swing.*;
 
 public class MainPanel extends JPanel {
+    // Add this field
+    private boolean fromPauseMenu = false;
+    
     // Panels
     private MenuPanel menuPanel;
     private GameplayPanel gameplayPanel;
@@ -36,6 +39,41 @@ public class MainPanel extends JPanel {
             fpsCounter.setVisible(visible);
         });
 
+        // Add this in the constructor after initializing gameplayPanel
+        gameplayPanel.pauseMenu.setButtonListeners(
+            // Continue button
+            () -> gameplayPanel.togglePause(),
+            
+            // Settings button
+            () -> {
+                fromPauseMenu = true; // Set the flag
+                cardLayout.show(this, "MENU");
+                menuPanel.setMenuState(MenuPanel.MenuState.SETTINGS);
+                cursormanager.setCursor(this, "cursor");
+            },
+            
+            // Leave button
+            () -> {
+                fromPauseMenu = false; // Reset the flag
+                GameplayPanel.stopGame();
+                gameplayPanel.resetGame();
+                cardLayout.show(this, "MENU");
+                menuPanel.setMenuState(MenuPanel.MenuState.MAIN_MENU);
+                cursormanager.setCursor(this, "cursor");
+            }
+        );
+
+        // Add listener for the settings back button
+        menuPanel.setBackButtonListener(() -> {
+            if (fromPauseMenu) {
+                fromPauseMenu = false; // Reset flag
+                cardLayout.show(this, "GAMEPLAY");
+                cursormanager.setCursor(this, "crosshair");
+                gameplayPanel.requestFocusInWindow();
+            } else {
+                menuPanel.setMenuState(MenuPanel.MenuState.MAIN_MENU);
+            }
+        });
     }
     
     private void startGame() {
@@ -65,7 +103,7 @@ public class MainPanel extends JPanel {
     
     private void gameOver() {
         // Stop the gameplay
-        gameplayPanel.stopGame();
+        GameplayPanel.stopGame();
         cursormanager.setCursor(this, "cursor"); // ganti cursor ke default
         // Show the game over screen in the menu panel
         menuPanel.setMenuState(MenuPanel.MenuState.GAME_OVER);

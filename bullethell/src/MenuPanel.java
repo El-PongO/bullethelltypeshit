@@ -30,6 +30,7 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     // ========================= CALLBACKS =====================================================
     private Runnable onStartGame;
     private Runnable onRestartGame;
+    private Runnable backButtonListener;
     
     public MenuPanel(Runnable startGameCallback, Runnable restartGameCallback) {
         this.onStartGame = startGameCallback;
@@ -71,12 +72,11 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         
         // Back Button
         buttonBack.addActionListener(e -> {
-            if (currentState == MenuState.SETTINGS) {
+            if (backButtonListener != null) {
+                backButtonListener.run();
                 settingmenu.setvisibleoption("quit");
+                setButtonVisibility(MenuState.MAIN_MENU);
             }
-            currentState = MenuState.MAIN_MENU;
-            setButtonVisibility(MenuState.MAIN_MENU);
-            repaint();
         });
         
         add(buttonStart.new_button);
@@ -229,5 +229,10 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
 
     public Settingmenu getSettingMenu() {
         return settingmenu;
+    }
+    
+    // Add this method
+    public void setBackButtonListener(Runnable listener) {
+        this.backButtonListener = listener;
     }
 }
