@@ -1,12 +1,18 @@
 import javax.sound.sampled.*;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 public class Music {
     private Clip clip;
     private FloatControl gainControl;
     private long pausePosition = 0;
     private boolean isLooping = false;
+    protected static List<Music> allInstances = new java.util.ArrayList<>();
+
+    public Music() {
+        allInstances.add(this);
+    }
 
     public void load(String resourcePath) {
         try {
@@ -71,6 +77,17 @@ public class Music {
         if (clip != null) {
             clip.close();
         }
+        allInstances.remove(this);
+    }
+
+    public void setVolume(float volume) {
+        if (gainControl != null) {
+            // volume: 0.0 (mute) to 1.0 (max)
+            float min = gainControl.getMinimum();
+            float max = gainControl.getMaximum();
+            float gain = min + (max - min) * volume;
+            gainControl.setValue(gain);
+        }
     }
 
     public void fadeIn(int durationMillis) {
@@ -82,6 +99,12 @@ public class Music {
                     int steps = 50;
                     int sleep = durationMillis / steps;
                     for (int i = 0; i <= steps; i++) {
+                        if (isGloballyMuted()) {
+                            gainControl.setValue(min); // Set to minimum if globally muted
+                            clip.stop();
+                            clip.setMicrosecondPosition(0); // Reset the clip position
+                            return;
+                        }
                         float value = min + (max - min) * i / steps;
                         gainControl.setValue(value);
                         Thread.sleep(sleep);
@@ -108,6 +131,18 @@ public class Music {
                     clip.setMicrosecondPosition(0); // Reset the clip position after stopping
                 } catch (InterruptedException ignored) {}
             }).start();
+        }
+    }
+
+    public static boolean isGloballyMuted() {
+        return MusicManager.getGlobalVolume() <= 0.001f;
+    }
+
+    public static void updateAllInstanceVolumes(float globalVolume) {
+        for (Music music : allInstances) {
+            if (music.gainControl != null) {
+                music.setVolume(globalVolume);
+            }
         }
     }
 }
