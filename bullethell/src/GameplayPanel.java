@@ -18,6 +18,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static ArrayList<Bullet> enemyBullets = new ArrayList<>();
 
     // ========================= LOGIC =====================================================
+    private static JFrame window;
     private Random rand;
     private int spawnDelay = 1000;
     private static Timer spawnTimer;
@@ -51,7 +52,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private boolean upPressed, downPressed, leftPressed, rightPressed;
     
     // ========================= GAME SETTING =====================================================
-    private Settingmenu settingmenu = new Settingmenu();
+    private static Settingmenu settingmenu = new Settingmenu(window);
 
     // ========================= MAIN =====================================================
     public GameplayPanel(FPScounter fpscounter) throws Exception {
@@ -94,7 +95,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     }
 
     public void startGame() {
-        music1.fadeIn(1000);
+        if (controlFade()){
+            music1.fadeIn(1000);
+        }
         music1.loop();
         player = new Player(getWidth()/2, getHeight()/2); // Default spawn nya Player, 500 x 400 karena ukuran layar 1000 x 800, jadi di tengah
         enemies.clear();//spawn enemy sama pelurunya
@@ -129,7 +132,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private static void gameOver() {
         isGameOver = true;
-        music1.fadeOut(2500);
+        if (controlFade()){
+            music1.fadeOut(2500);
+        }
         // music1.stop();
         stopGame();
         gameClock.reset();
@@ -386,6 +391,14 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     }
 
     // GAME SETTINGS
+    public static boolean controlFade() {
+        if (settingmenu.getDisableFade().isSelected()){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
     private void initializeFPSconfig(FPScounter fpscounter){
         this.fpscounter = fpscounter;
         add(fpscounter);

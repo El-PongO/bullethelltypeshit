@@ -2,12 +2,11 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import org.omg.CORBA.Current;
-
 public class MenuPanel extends JPanel implements MouseListener, MouseMotionListener {
     // ========================= UI =====================================================
+    private JFrame window; // JFrame for the main window
     private MainMenu mainMenu = new MainMenu();
-    private Settingmenu settingmenu = new Settingmenu();
+    private Settingmenu settingmenu = new Settingmenu(window); 
     private Game_over gameover = new Game_over();
     
     // ========================= STATE =====================================================
@@ -22,15 +21,16 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     private Button buttonBack = new Button("Back");
     
     // ========================= LAIN-LAIN =====================================================
-    private JCheckBox fpsCheckbox; // Checkbox for FPS counter
-    private JCheckBox devCheckBox; // Checkbox for developer mode
-    private JCheckBox holdweaponCheckbox; // Checkbox for hold weapon
-    private JCheckBox disableupgradeCheckbox; // Checkbox for disable upgrade
 
     // ========================= CALLBACKS =====================================================
     private Runnable onStartGame;
     private Runnable onRestartGame;
     
+    public MenuPanel(JFrame window) {
+        this.window = window;
+        this.settingmenu = new Settingmenu(window);
+    }
+
     public MenuPanel(Runnable startGameCallback, Runnable restartGameCallback) {
         this.onStartGame = startGameCallback;
         this.onRestartGame = restartGameCallback;
@@ -54,7 +54,7 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         // Option Button
         buttonOption.addActionListener(e -> {
             currentState = MenuState.SETTINGS;
-            settingmenu.setActiveTab("video");
+            settingmenu.setActiveTab("Video");
             setButtonVisibility(MenuState.SETTINGS);
             repaint();
         });
@@ -188,17 +188,26 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     }
     
     public void callsettings(){
-        fpsCheckbox = settingmenu.getFpsCheckbox();
         add(settingmenu.getFpsCheckbox());
-
-        devCheckBox = settingmenu.getDevCheckbox();
         add(settingmenu.getDevCheckbox());
-
-        holdweaponCheckbox = settingmenu.getHoldWeaponCheckbox();
         add(settingmenu.getHoldWeaponCheckbox());
-
-        disableupgradeCheckbox = settingmenu.getDisableUpgradeCheckbox();
         add(settingmenu.getDisableUpgradeCheckbox());
+
+        add(settingmenu.getMusicLabel());
+        add(settingmenu.getMusicVolumeBar());
+        add(settingmenu.getMusicVolumeUpBtn());
+        add(settingmenu.getMusicVolumeDownBtn());
+        
+        add(settingmenu.getSfxLabel());
+        add(settingmenu.getSfxVolumeBar());
+        add(settingmenu.getSfxVolumeUpBtn());
+        add(settingmenu.getSfxVolumeDownBtn());
+        add(settingmenu.getMuteAudio());
+        add(settingmenu.getDisableFade());
+
+        add(settingmenu.getResolutionDropdown());
+        add(settingmenu.getResolutionLabel());
+        add(settingmenu.getFullscreen());
     }
 
     // ========================= MOUSE EVENTS =====================================================
