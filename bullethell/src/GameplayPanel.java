@@ -54,6 +54,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     // ========================= GAME SETTING =====================================================
     private static Settingmenu settingmenu = new Settingmenu(window);
 
+    // ========================= PAUSE MENU =====================================================
+    PauseMenu pauseMenu;
+    private boolean isPaused = false;
+
     // ========================= MAIN =====================================================
     public GameplayPanel(FPScounter fpscounter) throws Exception {
         this.rand = new Random();
@@ -92,6 +96,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameLoop = new Timer(16, e -> updateGame());
         setLayout(null);
         initializeFPSconfig(fpscounter);
+
+        // PAUSE MENU INITIALIZATION
+        pauseMenu = new PauseMenu();
+        add(pauseMenu);
+        setComponentZOrder(pauseMenu, 0); // Ensure pause menu is always on top
     }
 
     public void startGame() {
@@ -231,6 +240,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
         g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
+        
+        if (isPaused) {
+            pauseMenu.draw(g, getWidth(), getHeight());
+        }
     }
     
     private void drawGame(Graphics2D g) {        
@@ -268,6 +281,23 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         music1.load("/Audio/Music/game1.wav");
     }
 
+    public void togglePause() {
+        isPaused = !isPaused;
+        if (isPaused) {
+            gameLoop.stop();
+            spawnTimer.stop();
+            gameClock.timer.stop();
+            pauseMenu.setVisibility(true);
+            repaint();
+        } else {
+            gameLoop.start();
+            spawnTimer.start();
+            gameClock.timer.start();
+            pauseMenu.setVisibility(false);
+            requestFocusInWindow();
+        }
+    }
+
     @Override
     public void mousePressed(MouseEvent e) {
         if (gameActive && e.getButton() == MouseEvent.BUTTON1){
@@ -279,6 +309,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
+        if (code == KeyEvent.VK_ESCAPE && gameActive) {
+            togglePause();
+            return;
+        }
         if (code == KeyEvent.VK_W) upPressed = true;
         if (code == KeyEvent.VK_S) downPressed = true;
         if (code == KeyEvent.VK_A) leftPressed = true;
@@ -422,5 +456,41 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 positionFPSCounter();
             }
         });
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void resetGame() {
+        // Reset game state
+        gameActive = false;
+        isGameOver = false;
+        isPaused = false;
+        
+        // Clear all entities
+        enemies.clear();
+        playerBullets.clear();
+        enemyBullets.clear();
+        
+        // Reset timers
+        spawnTimer.stop();
+        gameLoop.stop();
+        gameClock.reset();
+        
+        // Reset spawn delay
+        spawnDelay = 1000;
+        
+        // Reset movement flags
+        upPressed = false;
+        downPressed = false;
+        leftPressed = false;
+        rightPressed = false;
+        
+        // Stop music
+        music1.fadeOut(1000);
+        
+        // Reset pause menu
+        pauseMenu.setVisibility(false);
     }
 }
