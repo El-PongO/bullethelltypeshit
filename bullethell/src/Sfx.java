@@ -140,4 +140,16 @@ public class Sfx {
             System.err.println("Sound effect not loaded: " + name);
         }
     }
+
+    public static void setGlobalVolume(float volume) {
+        for (SoundClipPool pool : soundPools.values()) {
+            for (Clip clip : pool.clipPool) {
+                FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                float min = gainControl.getMinimum();
+                float max = gainControl.getMaximum();
+                float gain = min + (max - min) * volume;
+                gainControl.setValue(gain);
+            }
+        }
+    }
 }
