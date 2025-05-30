@@ -16,7 +16,6 @@ public class MainPanel extends JPanel {
     
     public MainPanel() throws Exception {
         setLayout(cardLayout);
-        
         fpsCounter = new FPScounter("FPS:");
 
         // Initialize panels
@@ -49,6 +48,7 @@ public class MainPanel extends JPanel {
                 fromPauseMenu = true; // Set the flag
                 cardLayout.show(this, "MENU");
                 menuPanel.setMenuState(MenuPanel.MenuState.SETTINGS);
+                menuPanel.getSettingMenu().setActiveTab("Video");
                 cursormanager.setCursor(this, "cursor");
             },
             
@@ -59,7 +59,7 @@ public class MainPanel extends JPanel {
                 gameplayPanel.resetGame();
                 cardLayout.show(this, "MENU");
                 menuPanel.setMenuState(MenuPanel.MenuState.MAIN_MENU);
-                cursormanager.setCursor(this, "cursor");
+                cursormanager.setCursor(this, "crosshair");
             }
         );
 
@@ -68,7 +68,7 @@ public class MainPanel extends JPanel {
             if (fromPauseMenu) {
                 fromPauseMenu = false; // Reset flag
                 cardLayout.show(this, "GAMEPLAY");
-                cursormanager.setCursor(this, "crosshair");
+                cursormanager.setCursor(this, "cursor");
                 gameplayPanel.requestFocusInWindow();
             } else {
                 menuPanel.setMenuState(MenuPanel.MenuState.MAIN_MENU);
