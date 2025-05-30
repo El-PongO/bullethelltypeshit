@@ -290,6 +290,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     public void sfxmanager(){
         soundsfx.load("dice", "/Audio/Sfx/Dice_Roll.wav");
         soundsfx.load("shoot", "/Audio/Sfx/Atk_LeweiGun.wav");
+        soundsfx.load("explode", "/Audio/Sfx/Explode.wav");
     }
 
     public void musicmanager(){
@@ -380,6 +381,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         Rectangle playerBounds = new Rectangle(player.getX() + offset, player.getY() + offset, hitboxSize, hitboxSize);
         for (Enemy enemy : enemies) {
             Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
+            if(playerBounds.intersects(enemyBounds) && enemy instanceof BomberEnemy) {
+                Sfx.playWithRandomPitch("explode");
+            }
             if (playerBounds.intersects(enemyBounds) && !player.isInvincible()) {
                 System.out.println("Player hit!");
                 player.takeDamage(50);
