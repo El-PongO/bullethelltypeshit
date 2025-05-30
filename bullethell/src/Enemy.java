@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
+import players.Bullet;
+import players.Player;
 
 public class Enemy {
     int x, y;

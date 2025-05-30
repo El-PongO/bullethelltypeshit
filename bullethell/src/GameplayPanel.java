@@ -1,11 +1,14 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import players.Bullet;
+import players.Player;
+
 
 public class GameplayPanel extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
 
@@ -301,7 +304,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override
     public void mousePressed(MouseEvent e) {
         if (gameActive && e.getButton() == MouseEvent.BUTTON1){
-            playerBullets.add(player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY)); //ya tau lah iki apa dari nama function
+            playerBullets.add((Bullet) player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY)); //ya tau lah iki apa dari nama function
             Sfx.playWithRandomPitch("shoot");
         }
     }
