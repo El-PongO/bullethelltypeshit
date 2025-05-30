@@ -150,11 +150,32 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameClock.setVisible(false);
     }
 
-    // ========================= SPAWN =====================================================
+    // ========================= SPAWN =====================================================        
     private void spawnEnemy() {
         int spawnX = rand.nextInt(getWidth());
         int spawnY = rand.nextInt(getHeight());
-        enemies.add(new Enemy(spawnX, spawnY));
+        
+        // Randomly choose an enemy type to spawn
+        int enemyType = rand.nextInt(5); // 0 = Shooter, 1 = Normal, 2 = Tank, 3 = Lurker, 4 = Bomber
+        
+        switch(enemyType) {
+            case 0:
+                enemies.add(new ShooterEnemy(spawnX, spawnY)); // Only this enemy type shoots
+                break;
+            case 1:
+                enemies.add(new NormalEnemy(spawnX, spawnY)); // Simple follower
+                break;
+            case 2:
+                enemies.add(new TankEnemy(spawnX, spawnY)); // Slow and big
+                break;
+            case 3:
+                enemies.add(new LurkerEnemy(spawnX, spawnY)); // Sudden jumps
+                break;
+            case 4:
+                enemies.add(new BomberEnemy(spawnX, spawnY)); // Fast toward player
+                break;
+        }
+        
         spawnTimer.setInitialDelay(spawnDelay);
         spawnTimer.restart();
     }
@@ -168,17 +189,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private void updateGame() {
         if(!gameActive) return;
-        else {
-            player.updateDash();
+        else {            player.updateDash();
             player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
             updateBullets();
             checkCollisions();
             for (Enemy enemy : enemies) {//gae musuh bisa nembak
-                enemy.update(player, enemyBullets);
-                Bullet bullet = enemy.tryShoot(player.getX(), player.getY());
-                if (bullet != null) {
-                    enemyBullets.add(bullet);
-            }
+                enemy.update(player, enemyBullets); // Enemy now handles shooting internally
             }
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
             fpscounter.frameRendered();
