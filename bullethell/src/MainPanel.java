@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+import players.Player;
 
 public class MainPanel extends JPanel {
     // Add this field
@@ -9,6 +10,8 @@ public class MainPanel extends JPanel {
     private MenuPanel menuPanel;
     private GameplayPanel gameplayPanel;
     private FPScounter fpsCounter;
+    private HeroSelectPanel heroSelectPanel;
+    private Player selectedHero;
     
     // Panel visibility
     private CardLayout cardLayout = new CardLayout();
@@ -21,12 +24,30 @@ public class MainPanel extends JPanel {
 
         // Initialize panels
         gameplayPanel = new GameplayPanel(fpsCounter);
-        menuPanel = new MenuPanel(this::startGame, this::startGame); // Same callback for both start and restart
+        menuPanel = new MenuPanel(this::showHeroSelect, this::showHeroSelect); // Go to hero select on start/restart
+        heroSelectPanel = new HeroSelectPanel(heroName -> {
+            switch (heroName) {
+                case "Gunslinger":
+                    selectedHero = new players.Gunslinger(500, 400);
+                    break;
+                case "Bomber":
+                    selectedHero = new players.Bomber(500, 400);
+                    break;
+                case "Rogue":
+                    selectedHero = new players.Rogue(500, 400);
+                    break;
+                case "Vampire":
+                    selectedHero = new players.Vampire(500, 400);
+                    break;
+            }
+            startGameWithHero();
+        });
         cursormanager();
         Button.setupGlowCursor(cursormanager, "pointer", this);
         cursormanager.setCursor(this, "cursor"); // Default cursor
         // Add panels to card layout
         add(menuPanel, "MENU");
+        add(heroSelectPanel, "HEROSELECT");
         add(gameplayPanel, "GAMEPLAY");
         
         // Start with menu panel
@@ -76,8 +97,13 @@ public class MainPanel extends JPanel {
         });
     }
     
-    private void startGame() {
-        // Switch to gameplay panel
+    private void showHeroSelect() {
+        cardLayout.show(this, "HEROSELECT");
+        cursormanager.setCursor(this, "pointer");
+    }
+    
+    private void startGameWithHero() {
+        gameplayPanel.setPlayer(selectedHero);
         cardLayout.show(this, "GAMEPLAY");
         cursormanager.setCursor(this, "crosshair");
         // Start the game

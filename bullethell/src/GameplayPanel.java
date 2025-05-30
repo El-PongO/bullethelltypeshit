@@ -7,6 +7,7 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import players.Bullet;
+import players.Gunslinger;
 import players.Player;
 
 
@@ -106,12 +107,21 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         setComponentZOrder(pauseMenu, 0); // Ensure pause menu is always on top
     }
 
+    public void setPlayer(Player p) {
+        player = p;
+    }
+
     public void startGame() {
         if (controlFade()){
             music1.fadeIn(1000);
         }
         music1.loop();
-        player = new Player(getWidth()/2, getHeight()/2); // Default spawn nya Player, 500 x 400 karena ukuran layar 1000 x 800, jadi di tengah
+        if (player == null) {
+            player = new Gunslinger(getWidth()/2, getHeight()/2); // fallback default
+        } else {
+            // Always reset the selected hero's position to center
+            player.setPosition(getWidth()/2, getHeight()/2);
+        }
         enemies.clear();//spawn enemy sama pelurunya
         enemyBullets.clear();
         playerBullets.clear();

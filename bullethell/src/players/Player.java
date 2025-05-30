@@ -1,25 +1,24 @@
 package players;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
 
-public class Player {
-    int x;
-    int y;
-    private int health = 100; // Player's health
-    private int maxHealth = 100; // Maximum health
+public abstract class Player {
+    protected int x;
+    protected int y;
+    protected int health = 100; // Player's health
+    protected int maxHealth = 100; // Maximum health
     static int size = 20;
     static int speed = 4;
     static int bulletSpeed = 3; // Bullet speed
-    private int dashspeed = 10; // dash distance
+    protected int dashspeed = 10; // dash distance
     private boolean isDashing = false;
     private boolean isInvincible = false; // Invincibility flag
-    private long dashDuration = 200; // Dash duration in milliseconds
-    private long invincibilityDuration = 200; // Invincibility duration (same as dash duration)
+    protected long dashDuration = 200; // Dash duration in milliseconds
+    protected long invincibilityDuration = 200; // Invincibility duration (same as dash duration)
     private long dashStartTime = 0; // When the current dash started
-    private int maxDashCharges = 2; // Maximum number of dash charges 
-    private int currentDashCharges = maxDashCharges; // Current number of dash charges ambil dari (maxDashCharges)
-    private int dashChargeCooldown = 5000; // Cooldown time for dash charges in milliseconds
+    protected int maxDashCharges = 2; // Maximum number of dash charges 
+    protected int currentDashCharges = maxDashCharges; // Current number of dash charges ambil dari (maxDashCharges)
+    protected int dashChargeCooldown = 5000; // Cooldown time for dash charges in milliseconds
     private long lastChargeTime = 0; // Last time a dash charge was used
     public String direction;
     public boolean idling;
@@ -35,24 +34,8 @@ public class Player {
         idling=true;
     }
 
-    public void getPlayerImage(){
-        try {
-            up1 = ImageIO.read(getClass().getResource("/Assets/Hunter/up1.png"));
-            up2 = ImageIO.read(getClass().getResource("/Assets/Hunter/up2.png"));
-            down1 = ImageIO.read(getClass().getResource("/Assets/Hunter/down1.png")); // FIXED
-            down2 = ImageIO.read(getClass().getResource("/Assets/Hunter/down2.png"));
-            left1 = ImageIO.read(getClass().getResource("/Assets/Hunter/left1.png"));
-            left2 = ImageIO.read(getClass().getResource("/Assets/Hunter/left2.png"));
-            right1 = ImageIO.read(getClass().getResource("/Assets/Hunter/right1.png"));
-            right2 = ImageIO.read(getClass().getResource("/Assets/Hunter/right2.png")); // not "right.png"
-            idledown = ImageIO.read(getClass().getResource("/Assets/Hunter/idledown.png"));
-            idleleft = ImageIO.read(getClass().getResource("/Assets/Hunter/idleleft.png"));
-            idleright = ImageIO.read(getClass().getResource("/Assets/Hunter/idleright.png"));
-            idleup = ImageIO.read(getClass().getResource("/Assets/Hunter/idleup.png"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    // Make this method abstract so subclasses must implement their own image loading
+    public abstract void getPlayerImage();
 
     public void draw(Graphics2D g, int px, int py, int zoom) {
         BufferedImage bimage = null;
@@ -239,4 +222,9 @@ public class Player {
     public int getY() { return y; }
     public static int getSize() { return size; }
     public static int getSpeed() { return speed; }
+
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
 }
