@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import javax.imageio.ImageIO;
 
 public class Player {
@@ -28,12 +29,9 @@ public class Player {
     weapon_pistol_1, ammo_pistol1, weapon_pistol_2, ammo_pistol2, weapon_rif_1, ammo_rif1;
     public int spritecounter=0;
     public int spritenum=1;
-
-    
-    private final String[] weaponNames = {"Weapon 1", "Weapon 2", "Weapon 3"}; // Add more if needed
     private List<Weapon> weapons = new ArrayList<>();
     private int currentWeaponIndex = 0; // 0 = weapon 1, 1 = weapon 2, etc.
-    BufferedImage changewp;
+    BufferedImage changewp, reloadbar, reloadbar2;
 
     public Player(int x, int y) {
         this.x = x;
@@ -74,6 +72,11 @@ public class Player {
                 ImageIO.read(getClass().getResource("/Assets/player/Guns/smg1.png")),
                 ImageIO.read(getClass().getResource("/Assets/player/bullets/smg1/Bullet2.png")),
                 30, 2000, 80, true // SMG1: 30 ammo, 2s reload, 60ms fire rate, full-auto
+            ));
+            weapons.add(new Weapon("Weapon 4",
+                ImageIO.read(getClass().getResource("/Assets/player/Guns/shotgun.png")),
+                ImageIO.read(getClass().getResource("/Assets/player/bullets/smg1/Bullet2.png")),
+                8, 3000, 800, false // Shotgun: 8 ammo, 3s reload, 600ms fire rate, semi-auto
             ));
         } catch (Exception e) {
             e.printStackTrace();
@@ -153,7 +156,7 @@ public class Player {
         y += dy;//gae movement e player receiver wasd ne
     }
 
-    public Bullet shoot(int targetX, int targetY) {
+    public List<Bullet> shoot(int targetX, int targetY) {
         Weapon weapon = getCurrentWeapon();
         weapon.updateReload();
     
@@ -168,12 +171,40 @@ public class Player {
         if (!weapon.canFire()) {
             return null;
         }
-        weapon.useAmmo();
-        weapon.recordShot();
-        double angle = Math.atan2(targetY - (y + Player.getSize()/2), targetX - (x + Player.getSize()/2));
-        int dx = (int)(Math.cos(angle) * 3) * bulletSpeed;
-        int dy = (int)(Math.sin(angle) * 3) * bulletSpeed;
-        return new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy, null); // sementara null, sambil cari sprite buat bullet
+    
+        List<Bullet> bullets = new ArrayList<>();
+        int weaponIndex = getCurrentWeaponIndex();
+    
+        if (weaponIndex == 3) { // Shotgun (weapon 4, index 3)
+            int pellets = 8;
+            double spread = Math.toRadians(45); // 45 degree spread
+            double angle = Math.atan2(targetY - (y + Player.getSize()/2), targetX - (x + Player.getSize()/2));
+            Random rand = new Random();
+            if (weapon.getCurrentAmmo() > 0) {
+                for (int i = 0; i < pellets; i++) {
+                    // Divide the spread into 8 equal segments, center the spread on the aim angle
+                    double minAngle = angle - spread / 2;
+                    double maxAngle = angle + spread / 2;
+                    double segment = spread / (pellets - 1);
+                    // Add a small random offset within each segment for natural look
+                    double jitter = (rand.nextDouble() - 0.5) * (segment * 0.4); // 40% of segment width
+                    double pelletAngle = minAngle + i * segment + jitter;
+                    int dx = (int)(Math.cos(pelletAngle) * 3) * bulletSpeed;
+                    int dy = (int)(Math.sin(pelletAngle) * 3) * bulletSpeed;
+                    bullets.add(new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy, null));
+                }
+                weapon.useAmmo(); // Only use 1 ammo per shot
+                weapon.recordShot();
+            }
+        } else {
+            weapon.useAmmo();
+            weapon.recordShot();
+            double angle = Math.atan2(targetY - (y + Player.getSize()/2), targetX - (x + Player.getSize()/2));
+            int dx = (int)(Math.cos(angle) * 3) * bulletSpeed;
+            int dy = (int)(Math.sin(angle) * 3) * bulletSpeed;
+            bullets.add(new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy, null)); // sementara null, sambil cari sprite buat bullet
+        }
+        return bullets;
     }
 
     public void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int[][] grid, int tileSize){       

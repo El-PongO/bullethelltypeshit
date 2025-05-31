@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.util.List;
 
 public class GameplayPanel extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
 
@@ -41,9 +42,17 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     static int cameraPixelX, cameraPixelY;
     CursorManager cursormanager = new CursorManager();
     private boolean mouseHeld = false;
+    private boolean showOutOfAmmoMsg = false;
+    private long outOfAmmoMsgTime = 0;
+    private static final int OUT_OF_AMMO_MSG_DURATION = 1000; // ms
     // ========================= SFX =====================================================
     private Sfx soundsfx = new Sfx();
-
+    private long lastShotgunShotTime = 0;
+    private boolean shotgunLoadQueued = false;
+    private boolean shotgunLockQueued = false;
+    private long lastEmptySfxTime = 0;
+    private static final int EMPTY_SFX_DELAY = 400; // ms, adjust to match your empty SFX duration
+    private boolean emptySfxQueued = false;
     // ========================= MUSIC =====================================================
     private Music musiclobby = new Music();
     private static Music music1 = new Music();
@@ -185,12 +194,35 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
             if (mouseHeld && player.getCurrentWeapon().isFullAuto()) {
                 Point mouse = getMousePosition();
+                List<Bullet> bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
                 if (mouse != null) {
-                    Bullet bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
+                    // Bullet bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
                     if (bullet != null) {
-                        playerBullets.add(bullet);
-                        Sfx.playWithRandomPitch("shoot");
+                        playerBullets.addAll(bullet);
+                        playsfx(false);
+                    }else if (!player.getCurrentWeapon().hasAmmo()) {
+                        // Only play empty SFX if enough time has passed
+                        long now = System.currentTimeMillis();
+                        if (now - lastEmptySfxTime >= EMPTY_SFX_DELAY) {
+                            playsfx(true);
+                            lastEmptySfxTime = now;
+                        }
                     }
+                }
+            }
+            if (shotgunLoadQueued) {
+                int shotgunFireRate = 600; // ms, adjust to your shotgun's fire rate
+                if (System.currentTimeMillis() - lastShotgunShotTime >= shotgunFireRate) {
+                    soundsfx.playWithRandomPitch("shotgunload");
+                    shotgunLoadQueued = false;
+                }
+            }
+
+            if (shotgunLockQueued) {
+                int shotgunFireRate = 600; // ms, adjust as needed
+                if (System.currentTimeMillis() - lastShotgunShotTime >= shotgunFireRate) {
+                    soundsfx.playWithRandomPitch("shotgunlock");
+                    shotgunLockQueued = false;
                 }
             }
             fpscounter.frameRendered();
@@ -205,6 +237,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         drawGame((Graphics2D)g);
+
         // Center camera on player with bounds checking
         cameraPixelX = Math.max(0, Math.min(player.getX() - vpw/2, (grid[0].length * TILE_SIZE) - vpw));
         cameraPixelY = Math.max(0, Math.min(player.getY() - vph/2, (grid.length * TILE_SIZE) - vph));
@@ -308,8 +341,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 14));
         String ammoText = currentWeapon.getCurrentAmmo() + " / " + currentWeapon.getMaxAmmo();
-        g.drawString(ammoText, offsetX + 4, offsetY + iconSize - 8);
-    
+        g.drawString(ammoText, offsetX + 4, offsetY + iconSize + 16);
+
         if (player.changewp != null) {
             int changeSize = 32;
             g.drawImage(player.changewp, offsetX + iconSize - changeSize/2, offsetY + iconSize - changeSize/2, changeSize, changeSize, null);
@@ -318,7 +351,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if (currentWeapon.isReloading()) {
             g.setColor(Color.ORANGE);
             g.setFont(new Font("Arial", Font.BOLD, 14));
-            g.drawString("Reloading...", offsetX + 4, offsetY + iconSize - 24);
+            g.drawString("Reloading...", offsetX - 8, offsetY - 4);
         }
 
         g.setColor(new Color(255, 215, 0, 180));
@@ -330,6 +363,52 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     public void sfxmanager(){
         soundsfx.load("dice", "/Audio/Sfx/Dice_Roll.wav");
         soundsfx.load("shoot", "/Audio/Sfx/Atk_LeweiGun.wav");
+        soundsfx.load("empty", "/Audio/Sfx/wep_empty.wav");
+        // revolver
+        soundsfx.load("shootrevolver", "/Audio/Sfx/rev_shot.wav");
+        soundsfx.load("emptyrevolver", "/Audio/Sfx/rev_empty.wav");
+        // shotgun
+        soundsfx.load("shootshotgun", "/Audio/Sfx/shotgun_fire.wav");
+        soundsfx.load("shotgunload", "/Audio/Sfx/shotgun_load.wav");
+        soundsfx.load("shotgunreload", "/Audio/Sfx/shotgun_reload.wav");
+        soundsfx.load("shotgunlock", "/Audio/Sfx/shotgun_lock.wav");
+        soundsfx.load("shogunempty", "/Audio/Sfx/shotgun_empty.wav");
+    }
+
+    public void playsfx(boolean isEmpty){
+        if (!isEmpty) {
+            if (player.getCurrentWeaponIndex() == 0){
+                soundsfx.playWithRandomPitch("shootrevolver");
+            }else if (player.getCurrentWeaponIndex() == 3){
+                soundsfx.playWithRandomPitch("shootshotgun");
+                lastShotgunShotTime = System.currentTimeMillis();
+                Weapon Shotgun = player.getCurrentWeapon();
+                if (Shotgun.getCurrentAmmo() == 0){
+                    shotgunLockQueued = true;
+                }else{
+                    shotgunLoadQueued = true;
+                }
+                
+            }else{
+                soundsfx.playWithRandomPitch("shoot");
+            }
+        }else{
+            if (player.getCurrentWeaponIndex() == 0) {
+                soundsfx.play("emptyrevolver");
+            }else if (player.getCurrentWeaponIndex() == 3) {
+                soundsfx.play("shogunempty");
+            }else{
+                soundsfx.play("empty");
+            }
+        }
+    }
+
+    public void reloadsfx(){
+        if (player.getCurrentWeaponIndex() == 3){
+            soundsfx.play("shotgunreload");
+        }else{
+            
+        }
     }
 
     public void musicmanager(){
@@ -401,6 +480,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
         if (code == KeyEvent.VK_R) {
             player.reloadCurrentWeapon();
+            reloadsfx();
             System.out.println("Reloading " + player.getCurrentWeapon().getName() + "...");
         }
     }
@@ -431,10 +511,17 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if (weapon.isFullAuto()) {
             // For full auto, firing is handled in updateGame()
         } else {
-            Bullet bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
+            // Bullet bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
+            List<Bullet> bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
             if (bullet != null) {
-                playerBullets.add(bullet);
-                Sfx.playWithRandomPitch("shoot");
+                // playerBullets.add(bullet);
+                playerBullets.addAll(bullet);
+                playsfx(false);
+            }else if (!weapon.hasAmmo()) {
+                // Show out of ammo message
+                playsfx(true);
+                showOutOfAmmoMsg = true;
+                outOfAmmoMsgTime = System.currentTimeMillis();
             }
         }
     }
