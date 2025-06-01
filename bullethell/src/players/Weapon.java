@@ -1,3 +1,4 @@
+package players;
 import java.awt.image.BufferedImage;
 public class Weapon {
     private String name;

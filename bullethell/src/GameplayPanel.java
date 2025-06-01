@@ -9,6 +9,7 @@ import javax.swing.*;
 import players.Bullet;
 import players.Gunslinger;
 import players.Player;
+import players.Weapon;
 
 
 public class GameplayPanel extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
@@ -376,8 +377,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override
     public void mousePressed(MouseEvent e) {
         if (gameActive && e.getButton() == MouseEvent.BUTTON1){
-            playerBullets.add((Bullet) player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY)); //ya tau lah iki apa dari nama function
-            Sfx.playWithRandomPitch("shoot");
+            Bullet bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
+            if (bullet != null) {
+                playerBullets.add(bullet);
+                Sfx.playWithRandomPitch("shoot");
+            }
         }
     }
 

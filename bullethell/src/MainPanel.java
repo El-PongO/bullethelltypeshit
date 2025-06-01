@@ -1,6 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
 import players.Player;
+import players.Weapon;
 
 public class MainPanel extends JPanel {
     // Add this field
@@ -11,7 +12,9 @@ public class MainPanel extends JPanel {
     private GameplayPanel gameplayPanel;
     private FPScounter fpsCounter;
     private HeroSelectPanel heroSelectPanel;
+    private WeaponSelectPanel weaponSelectPanel;
     private Player selectedHero;
+    private String selectedWeaponName;
     
     // Panel visibility
     private CardLayout cardLayout = new CardLayout();
@@ -39,6 +42,11 @@ public class MainPanel extends JPanel {
                     selectedHero = new players.Vampire(500, 400);
                     break;
             }
+            showWeaponSelect();
+        });
+        weaponSelectPanel = new WeaponSelectPanel(weaponName -> {
+            selectedWeaponName = weaponName;
+            assignWeaponToHero();
             startGameWithHero();
         });
         cursormanager();
@@ -47,6 +55,7 @@ public class MainPanel extends JPanel {
         // Add panels to card layout
         add(menuPanel, "MENU");
         add(heroSelectPanel, "HEROSELECT");
+        add(weaponSelectPanel, "WEAPONSELECT");
         add(gameplayPanel, "GAMEPLAY");
         
         // Start with menu panel
@@ -100,6 +109,24 @@ public class MainPanel extends JPanel {
     private void showHeroSelect() {
         cardLayout.show(this, "HEROSELECT");
         cursormanager.setCursor(this, "pointer");
+    }
+    
+    private void showWeaponSelect() {
+        cardLayout.show(this, "WEAPONSELECT");
+        cursormanager.setCursor(this, "pointer");
+    }
+    
+    private void assignWeaponToHero() {
+        if (selectedHero != null && selectedWeaponName != null) {
+            selectedHero.getWeapons().clear();
+            if (selectedWeaponName.equals("Pistol")) {
+                selectedHero.getWeapons().add(new Weapon(
+                    "Pistol", null, null, 12, 1000, 200, false));
+            } else {
+                selectedHero.getWeapons().add(new Weapon(
+                    "Placeholder", null, null, 1, 1000, 1000, false));
+            }
+        }
     }
     
     private void startGameWithHero() {
