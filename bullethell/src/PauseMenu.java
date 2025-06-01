@@ -1,4 +1,7 @@
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import javax.swing.*;
 
 public class PauseMenu extends JPanel {
@@ -11,6 +14,29 @@ public class PauseMenu extends JPanel {
         initButtons();
         setOpaque(false);
         setVisibility(false);
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                boolean overButton = false;
+                for (Component c : getComponents()) {
+                    if (c.isVisible() && c.getBounds().contains(e.getPoint())) {
+                        overButton = true;
+                        break;
+                    }
+                }
+                if (!overButton) {
+                    // Find the MainPanel and set cursor to "cursor"
+                    Container parent = getParent();
+                    while (parent != null && !(parent instanceof MainPanel)) {
+                        parent = parent.getParent();
+                    }
+                    if (parent instanceof MainPanel) {
+                        ((MainPanel)parent).cursormanager.setCursor((MainPanel)parent, "cursor");
+                    }
+                }
+            }
+        });
     }
     
     private void initButtons() {
@@ -63,7 +89,7 @@ public class PauseMenu extends JPanel {
         settingsButton.addActionListener(e -> onSettings.run());
         leaveButton.addActionListener(e -> onLeave.run());
     }
-    
+
     public void setVisibility(boolean visible) {
         super.setVisible(visible);
         if(visible) {

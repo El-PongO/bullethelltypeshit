@@ -1,6 +1,9 @@
 package players;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public abstract class Player {
     protected int x;
@@ -22,9 +25,14 @@ public abstract class Player {
     private long lastChargeTime = 0; // Last time a dash charge was used
     public String direction;
     public boolean idling;
-    public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2;
+    public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2, weapon_pistol_1, ammo_pistol1, weapon_pistol_2, ammo_pistol2, weapon_rif_1, ammo_rif1;
     public int spritecounter=0;
     public int spritenum=1;
+
+    private final String[] weaponNames = {"Weapon 1", "Weapon 2", "Weapon 3"}; // Add more if needed
+    private List<Weapon> weapons = new ArrayList<>();
+    private int currentWeaponIndex = 0; // 0 = weapon 1, 1 = weapon 2, etc.
+    public BufferedImage changewp;
 
     public Player(int x, int y) {
         this.x = x;
@@ -80,6 +88,27 @@ public abstract class Player {
                 default: break;
             }
         }
+
+        int drawX = px, drawY = py, drawW = size * zoom, drawH = size * zoom;
+        
+        if (isDashing){
+            // Draw blurred "afterimages"
+        Composite oldComp = g.getComposite();
+        for (int i = 1; i <= 4; i++) {
+            float alpha = 0.15f * (5 - i); // Fainter for further afterimages
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+            int offset = i * 6;
+            int blurX = drawX, blurY = drawY;
+            switch (direction) {
+                case "up":    blurY += offset; break;
+                case "down":  blurY -= offset; break;
+                case "left":  blurX += offset; break;
+                case "right": blurX -= offset; break;
+            }
+            g.drawImage(bimage, blurX, blurY, drawW, drawH, null);
+        }
+        g.setComposite(oldComp);
+        }
         
         // Draw relative to camera position
         g.drawImage(bimage, px, py, size*zoom, size*zoom, null);
@@ -91,11 +120,29 @@ public abstract class Player {
     }
     
     public Bullet shoot(int targetX, int targetY) {
+
+        Weapon weapon = getCurrentWeapon();
+        weapon.updateReload();
+    
+        if (weapon.isReloading()) {
+            System.out.println(weapon.getName() + " is reloading!");
+            return null;
+        }
+        if (!weapon.hasAmmo()) {
+            System.out.println(weapon.getName() + " out of ammo! Press R to reload.");
+            return null;
+        }
+        if (!weapon.canFire()) {
+            return null;
+        }
+        weapon.useAmmo();
+        weapon.recordShot();
+
         double angle = Math.atan2(targetY - (y + Player.getSize()/2), 
                                 targetX - (x + Player.getSize()/2));
         int dx = (int)(Math.cos(angle) * 3) * bulletSpeed;
         int dy = (int)(Math.sin(angle) * 3) * bulletSpeed;
-        return new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy);
+        return new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy, weapon.getBulletSprite());
     }
 
     public void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int[][] grid, int tileSize){       
@@ -187,6 +234,37 @@ public abstract class Player {
         }
     }
 
+    public void reloadCurrentWeapon() {
+        Weapon weapon = getCurrentWeapon();
+        weapon.startReload();
+    }
+
+    public int getCurrentWeaponIndex() { return currentWeaponIndex; }
+    public int getWeaponMinIndex() { return 0; }
+    public int getWeaponMaxIndex() { return weapons.size() - 1; }
+    public Weapon getCurrentWeapon() { return weapons.get(currentWeaponIndex); }
+    public List<Weapon> getWeapons() { return weapons; }
+    public void setWeaponIndex(int index) {
+        if (index >= getWeaponMinIndex() && index <= getWeaponMaxIndex()) {
+            int oldIndex = currentWeaponIndex;
+            currentWeaponIndex = index;
+            System.out.println("Switched weapon from " + weapons.get(oldIndex).getName() + " to " + weapons.get(currentWeaponIndex).getName());
+        }
+    }
+
+    public void switchWeapon(int direction) {
+        int newIndex = currentWeaponIndex + direction;
+        int oldIndex = currentWeaponIndex;
+        if (newIndex >= 0 && newIndex < weapons.size()) {
+            currentWeaponIndex = newIndex;
+            System.out.println("Switched weapon from " + weapons.get(oldIndex).getName() + " to " + weapons.get(currentWeaponIndex).getName());
+        }
+    }
+
+    public String[] getWeaponNames() {
+        return weapons.stream().map(Weapon::getName).toArray(String[]::new);
+    }
+
     public boolean isInvincible() {
         return isInvincible; // Return the invincibility status
     }
@@ -226,5 +304,13 @@ public abstract class Player {
     public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public BufferedImage getChangewp() {
+        return changewp;
+    }
+
+    public void setChangewp(BufferedImage changewp) {
+        this.changewp = changewp;
     }
 }

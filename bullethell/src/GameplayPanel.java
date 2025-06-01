@@ -44,7 +44,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     static int vph = VIEWPORT_HEIGHT * TILE_SIZE;
     static int cameraPixelX, cameraPixelY;
     CursorManager cursormanager = new CursorManager();
-
+    private boolean mouseHeld = false;
     // ========================= SFX =====================================================
     private Sfx soundsfx = new Sfx();
 
@@ -154,10 +154,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private static void gameOver() {
         isGameOver = true;
-        if (controlFade()){
-            music1.fadeOut(2500);
-        }
-        // music1.stop();
+        // if (controlFade()){
+        //     music1.fadeOut(2500);
+        // }else{
+        //     music1.stop();
+        // }
+        music1.stop();
         stopGame();
         gameClock.reset();
         gameClock.setVisible(false);
@@ -194,7 +196,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
             }
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
+            if (mouseHeld && player.getCurrentWeapon().isFullAuto()) {
+                Point mouse = getMousePosition();
+                if (mouse != null) {
+                    Bullet bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
+                    if (bullet != null) {
+                        playerBullets.add(bullet);
+                        Sfx.playWithRandomPitch("shoot");
+                    }
+                }
+            }
             fpscounter.frameRendered();
+            player.getCurrentWeapon().updateReload();
             repaint();
         }
     }
@@ -253,7 +266,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
         g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
-        
+        drawWeaponHUD((Graphics2D)g);
         if (isPaused) {
             pauseMenu.draw(g, getWidth(), getHeight());
         }
@@ -283,6 +296,49 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
         }
     }
+
+    private void drawWeaponHUD(Graphics2D g) {
+        Weapon currentWeapon = player.getCurrentWeapon();
+        int iconSize = 48;
+        int margin = 20;
+        int offsetX = getWidth() - iconSize - margin;
+        int offsetY = margin;
+    
+        g.setColor(Color.WHITE);
+        g.fillRect(offsetX, offsetY, iconSize, iconSize);
+    
+        if (currentWeapon.getSprite() != null) {
+            g.drawImage(currentWeapon.getSprite(), offsetX, offsetY, iconSize, iconSize, null);
+        } else {
+            g.setColor(Color.RED);
+            g.fillRect(offsetX, offsetY, iconSize, iconSize);
+        }
+    
+        g.setColor(Color.RED);
+        g.drawRect(offsetX, offsetY, iconSize, iconSize);
+    
+        // Draw ammo count
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.BOLD, 14));
+        String ammoText = currentWeapon.getCurrentAmmo() + " / " + currentWeapon.getMaxAmmo();
+        g.drawString(ammoText, offsetX + 4, offsetY + iconSize - 8);
+    
+        if (player.changewp != null) {
+            int changeSize = 32;
+            g.drawImage(player.changewp, offsetX + iconSize - changeSize/2, offsetY + iconSize - changeSize/2, changeSize, changeSize, null);
+        }
+        
+        if (currentWeapon.isReloading()) {
+            g.setColor(Color.ORANGE);
+            g.setFont(new Font("Arial", Font.BOLD, 14));
+            g.drawString("Reloading...", offsetX + 4, offsetY + iconSize - 24);
+        }
+
+        g.setColor(new Color(255, 215, 0, 180));
+        g.setStroke(new BasicStroke(3));
+        g.drawRoundRect(offsetX-2, offsetY-2, iconSize+4, iconSize+4, 10, 10);
+    }
+
     // ========================= FUNCTION =====================================================
     public void sfxmanager(){
         soundsfx.load("dice", "/Audio/Sfx/Dice_Roll.wav");
@@ -301,6 +357,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             spawnTimer.stop();
             gameClock.timer.stop();
             pauseMenu.setVisibility(true);
+            if (getParent() instanceof MainPanel) {
+                ((MainPanel)getParent()).cursormanager.setCursor(getParent(), "cursor");
+            }
             repaint();
         } else {
             gameLoop.start();
@@ -308,6 +367,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             gameClock.timer.start();
             pauseMenu.setVisibility(false);
             requestFocusInWindow();
+            if (getParent() instanceof MainPanel) {
+                ((MainPanel)getParent()).cursormanager.setCursor(getParent(), "crosshair");
+            }
         }
     }
 
@@ -334,6 +396,26 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             player.dash(); // dash
             System.out.println("Dash activated! " + player.direction);
         }
+        if (code == KeyEvent.VK_Q){
+            if (player.getCurrentWeaponIndex() == player.getWeaponMinIndex()){
+                player.switchWeapon(player.getWeaponMaxIndex()); // switch to max 
+            }else{
+                player.switchWeapon(-1); // switch weapon left
+            }
+        }  
+
+        if (code == KeyEvent.VK_E){
+            if (player.getCurrentWeaponIndex() == player.getWeaponMaxIndex()){
+                player.setWeaponIndex(player.getWeaponMinIndex()); // wrap to min
+            }else{
+                player.switchWeapon(1); // switch weapon right
+            }
+        }
+
+        if (code == KeyEvent.VK_R) {
+            player.reloadCurrentWeapon();
+            System.out.println("Reloading " + player.getCurrentWeapon().getName() + "...");
+        }
     }
 
     @Override
@@ -349,9 +431,26 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override public void mouseClicked(MouseEvent e) {}
     @Override public void mouseMoved(MouseEvent e) {}
     @Override public void mouseDragged(MouseEvent e) {} //gerakkan mouse
-    @Override public void mouseReleased(MouseEvent e) {} // lepas mouse
+    @Override public void mouseReleased(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            mouseHeld = false;
+        }
+    } // lepas mouse
     @Override public void mouseEntered(MouseEvent e) {} // masuk mouse ke dalam window
     @Override public void mouseExited(MouseEvent e) {} // ya bisa di baca sendiri lah km ws tua berjembut
+
+    private void tryFire(MouseEvent e) {
+        Weapon weapon = player.getCurrentWeapon();
+        if (weapon.isFullAuto()) {
+            // For full auto, firing is handled in updateGame()
+        } else {
+            Bullet bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
+            if (bullet != null) {
+                playerBullets.add(bullet);
+                Sfx.playWithRandomPitch("shoot");
+            }
+        }
+    }
 
     private static void updateBullets() {
         // Update existing bullets
@@ -501,7 +600,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         rightPressed = false;
         
         // Stop music
-        music1.fadeOut(1000);
+        // music1.fadeOut(3000);
+        music1.stop();
         
         // Reset pause menu
         pauseMenu.setVisibility(false);

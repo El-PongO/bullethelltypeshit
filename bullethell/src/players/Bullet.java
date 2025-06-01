@@ -1,26 +1,33 @@
 package players;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class Bullet {
     public int x, y;
     public int dx, dy;
     private static final int size = 10;
-    
-    public Bullet(int x, int y, int dx, int dy) {
+    private BufferedImage sprite;
+
+    public Bullet(int x, int y, int dx, int dy, BufferedImage sprite) {
         this.x = x;
         this.y = y;
         this.dx = dx;
         this.dy = dy;
+        this.sprite = sprite;
     }
     
     public void update() {
         x += dx;
         y += dy;
     }
-    
-    public void draw(Graphics g,int ex,int ey, Color color) { // ini buat gambar bullet nya
-        g.setColor(color);
-        g.fillOval(ex, ey, size, size);
+
+    public void draw(Graphics g, int ex, int ey, Color color) {
+        if (sprite != null) {
+            g.drawImage(sprite, ex, ey, size, size, null);
+        } else {
+            g.setColor(color);
+            g.fillOval(ex, ey, size, size);
+        }
     }
 
     public boolean isOutOfBounds(int[][] grid, int tileSize) {

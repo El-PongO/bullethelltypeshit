@@ -60,7 +60,7 @@ public class Enemy {
             double dx = Math.cos(angle) * bulletSpeed;
             double dy = Math.sin(angle) * bulletSpeed;
             lastShotTime = currentTime;
-            return new Bullet(x + size/2, y + size/2, (int)dx, (int)dy);
+            return new Bullet(x + size/2, y + size/2, (int)dx, (int)dy, null); // sementara null, sambil cari sprite buat bullet
         }
         return null;
     }

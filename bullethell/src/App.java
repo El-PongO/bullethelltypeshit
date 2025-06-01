@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-
+import java.awt.BorderLayout;
 import javax.swing.JFrame; 
 public class App {
     public static void main(String[] args) throws Exception {
@@ -17,8 +17,6 @@ public class App {
             } catch (Exception ignored) {}
         }
         JFrame window = new JFrame(); // JFrame itu yg buat bikin window. pelajari lebih lanjut di chatgpt
-        MenuPanel menuPanel = new MenuPanel(window);
-        window.add(menuPanel); // tambahkan menu panel ke window
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // biar bisa di close 
         window.setResizable(false); // biar ga bisa di resize, klo gk rusak game nya
         window.setTitle("Bullet Hell"); // tittylenya
@@ -34,7 +32,6 @@ public class App {
         // Use the new MainPanel instead of GamePanel
         MainPanel panel = new MainPanel();
         window.add(panel); //buat windownya
-
         window.setVisible(true); // biar bisa di liat windownya
         window.setLocationRelativeTo(null); // biar di tengah
     }
