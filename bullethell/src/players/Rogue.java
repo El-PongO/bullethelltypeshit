@@ -1,5 +1,7 @@
 package players;
 
+import java.util.List;
+
 public class Rogue extends Player {
     public Rogue(int x, int y) {
         super(x, y);
@@ -38,7 +40,7 @@ public class Rogue extends Player {
     }
 
     @Override
-    public Bullet shoot(int targetX, int targetY) {
+    public List<Bullet> shoot(int targetX, int targetY) {
         return super.shoot(targetX, targetY);
     }
 }

@@ -1,4 +1,5 @@
 import java.awt.*;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import players.Player;
 import players.Weapon;
@@ -119,12 +120,25 @@ public class MainPanel extends JPanel {
     private void assignWeaponToHero() {
         if (selectedHero != null && selectedWeaponName != null) {
             selectedHero.getWeapons().clear();
-            if (selectedWeaponName.equals("Pistol")) {
-                selectedHero.getWeapons().add(new Weapon(
-                    "Pistol", null, null, 12, 1000, 200, false));
-            } else {
-                selectedHero.getWeapons().add(new Weapon(
-                    "Placeholder", null, null, 1, 1000, 1000, false));
+            try {
+                if (selectedWeaponName.equals("Pistol")) {
+                    selectedHero.getWeapons().add(new Weapon(
+                        "Pistol",
+                        ImageIO.read(getClass().getResource("/Assets/player/Guns/glock.png")), // pistol sprite as BufferedImage
+                        null, // TODO: add pistol bullet sprite as BufferedImage
+                        12, 1000, 200, false));
+                } else if (selectedWeaponName.equals("Shotgun")) {
+                    selectedHero.getWeapons().add(new Weapon(
+                        "Shotgun",
+                        ImageIO.read(getClass().getResource("/Assets/player/Guns/shotgun.png")), // TODO: add shotgun sprite as BufferedImage
+                        null, // TODO: add shotgun bullet sprite as BufferedImage
+                        8, 3000, 800, false)); // 8 ammo, 3s reload, 800ms fire rate, semi-auto
+                } else {
+                    selectedHero.getWeapons().add(new Weapon(
+                        "Placeholder", null, null, 1, 1000, 1000, false));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

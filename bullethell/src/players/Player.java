@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import javax.imageio.ImageIO;
 
 
 public abstract class Player {
@@ -178,18 +179,16 @@ public abstract class Player {
         List<Bullet> bullets = new ArrayList<>();
         int weaponIndex = getCurrentWeaponIndex();
     
-        if (weaponIndex == 3) { // Shotgun (weapon 4, index 3)
+        // Shotgun logic: check by weapon name instead of index
+        if (weapon.getName().equalsIgnoreCase("Shotgun")) {
             int pellets = 8;
             double spread = Math.toRadians(45); // 45 degree spread
             double angle = Math.atan2(targetY - (y + Player.getSize()/2), targetX - (x + Player.getSize()/2));
             Random rand = new Random();
             if (weapon.getCurrentAmmo() > 0) {
                 for (int i = 0; i < pellets; i++) {
-                    // Divide the spread into 8 equal segments, center the spread on the aim angle
                     double minAngle = angle - spread / 2;
-                    double maxAngle = angle + spread / 2;
                     double segment = spread / (pellets - 1);
-                    // Add a small random offset within each segment for natural look
                     double jitter = (rand.nextDouble() - 0.5) * (segment * 0.4); // 40% of segment width
                     double pelletAngle = minAngle + i * segment + jitter;
                     int dx = (int)(Math.cos(pelletAngle) * 3) * bulletSpeed;
@@ -205,7 +204,7 @@ public abstract class Player {
             double angle = Math.atan2(targetY - (y + Player.getSize()/2), targetX - (x + Player.getSize()/2));
             int dx = (int)(Math.cos(angle) * 3) * bulletSpeed;
             int dy = (int)(Math.sin(angle) * 3) * bulletSpeed;
-            bullets.add(new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy, null)); // sementara null, sambil cari sprite buat bullet
+            bullets.add(new Bullet(x + Player.getSize()/2, y + Player.getSize()/2, dx, dy, null));
         }
         return bullets;
     }

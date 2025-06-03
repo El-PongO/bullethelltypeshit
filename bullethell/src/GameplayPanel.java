@@ -3,10 +3,10 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.util.List;
 import players.Bullet;
 import players.Gunslinger;
 import players.Player;
@@ -456,10 +456,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override
     public void mousePressed(MouseEvent e) {
         if (gameActive && e.getButton() == MouseEvent.BUTTON1){
-            Bullet bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
-            if (bullet != null) {
-                playerBullets.add(bullet);
-                Sfx.playWithRandomPitch("shoot");
+            List<Bullet> bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
+            if (bullet != null && !bullet.isEmpty()) {
+                playerBullets.addAll(bullet);
+                soundsfx.playWithRandomPitch("shoot");
             }
         }
     }

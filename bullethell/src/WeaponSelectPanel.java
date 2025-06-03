@@ -10,7 +10,7 @@ public class WeaponSelectPanel extends JPanel {
     public WeaponSelectPanel(WeaponSelectListener listener) {
         setLayout(new GridLayout(1, 3, 20, 20));
         JButton pistolBtn = new JButton("Pistol");
-        JButton placeholder1Btn = new JButton("No weapon for now lol");
+        JButton shotgunBtn = new JButton("Shotgun");
         JButton placeholder2Btn = new JButton("gedagedigedageda oh");
 
         ActionListener buttonListener = e -> {
@@ -18,11 +18,11 @@ public class WeaponSelectPanel extends JPanel {
             listener.onWeaponSelected(src.getText());
         };
         pistolBtn.addActionListener(buttonListener);
-        placeholder1Btn.addActionListener(buttonListener);
+        shotgunBtn.addActionListener(buttonListener);
         placeholder2Btn.addActionListener(buttonListener);
 
         add(pistolBtn);
-        add(placeholder1Btn);
+        add(shotgunBtn);
         add(placeholder2Btn);
     }
 }
