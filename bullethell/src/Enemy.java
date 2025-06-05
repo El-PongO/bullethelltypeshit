@@ -4,56 +4,23 @@ import java.util.Random;
 import players.Bullet;
 import players.Player;
 
-public class Enemy {
+// Making Enemy an abstract class to support multiple enemy types
+public abstract class Enemy {
     int x, y;
     int size = 20;
     long lastShotTime;
-    private static final int speed = 2;
-    int shootDelay = 2000; // 2 second
-    int bulletSpeed = 3;
+    protected static final int speed = 2;
+    protected int shootDelay = 2000; // 2 second
+    protected int bulletSpeed = 3;
     //====================//
-    private Random rand = new Random();
-
-    public Enemy(int x, int y) {
+    protected Random rand = new Random();    public Enemy(int x, int y) {
         this.x = x;
         this.y = y;
         this.lastShotTime = System.currentTimeMillis();
     }
     
-    public void update(int playerX, int playerY) {
-        int behavior = rand.nextInt(2); // 0, 1, or 2 
-        int dx = Integer.compare(playerX - x, 0);
-        int dy = Integer.compare(playerY - y, 0);
-        x += dx * speed;
-        y += dy * speed;
-        double distance = Math.hypot(playerX - x, playerY - y);
-        if (behavior == 0) {
-            if (distance > 100) {
-                dx = (playerX > x) ? 1 : -1;
-                dy = (playerY > y) ? 1 : -1;
-            } else {
-                dx = (playerX < x) ? 1 : -1;
-                dy = (playerY < y) ? 1 : -1;
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        if (behavior == 1) {
-            int move = rand.nextInt(3); // 0 = left, 1 = right, 2 = idle
-            if (move == 0) dx = -1;
-            if (move == 1) dx = 1;
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public Bullet tryShoot(int playerX, int playerY) {
+    // Making tryShoot protected so it's only accessible from subclasses
+    protected Bullet tryShoot(int playerX, int playerY) {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastShotTime > shootDelay) {
             double angle = Math.atan2(playerY - y, playerX - x);
@@ -64,33 +31,9 @@ public class Enemy {
         }
         return null;
     }
-
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
-        int behavior = rand.nextInt(2); // 0, 1, or 2 
-        int dx = 0, dy = 0;
-
-        // Behavior 1: move toward or away from player based on distance
-        double distance = Math.hypot(player.getX() - x, player.getY() - y);
-        if (behavior == 0) {
-            if (distance > 50) {
-                dx = (player.getX() > x) ? 1 : -1;
-                dy = (player.getY() > y) ? 1 : -1;
-            } else {
-                dx = (player.getX() < x) ? 1 : -1;
-                dy = (player.getY() < y) ? 1 : -1;
-            }
-        }
-        // Behavior 2: random lateral movement or idle
-        if (behavior == 1) {
-            int move = rand.nextInt(3); // 0 = left, 1 = right, 2 = idle
-            if (move == 0) dx = -1;
-            if (move == 1) dx = 1;
-        }
-
-        x += dx * speed; // move speed
-        y += dy * speed;
-        // Behavior 3: shoot if cooldown is ready
-    }
+    
+    // Making update abstract so each enemy type must implement it
+    public abstract void update(Player player, ArrayList<Bullet> enemyBullets);
 
     public void draw(Graphics g, int ex, int ey) {
         g.setColor(new Color(102, 51, 153));//mek warna gae ungu idk
