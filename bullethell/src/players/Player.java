@@ -9,8 +9,7 @@ import javax.imageio.ImageIO;
 
 public abstract class Player {
     protected int x;
-    protected int y;
-    protected int health = 100; // Player's health
+    protected int y;    protected int health = 100; // Player's health
     protected int maxHealth = 100; // Maximum health
     static int size = 20;
     static int speed = 4;
@@ -19,7 +18,8 @@ public abstract class Player {
     private boolean isDashing = false;
     private boolean isInvincible = false; // Invincibility flag
     protected long dashDuration = 200; // Dash duration in milliseconds
-    protected long invincibilityDuration = 200; // Invincibility duration (same as dash duration)
+    protected long invincibilityDuration = 1000; // Invincibility duration (1 second)
+    private long invincibilityStartTime = 0; // When invincibility started
     private long dashStartTime = 0; // When the current dash started
     protected int maxDashCharges = 2; // Maximum number of dash charges 
     protected int currentDashCharges = maxDashCharges; // Current number of dash charges ambil dari (maxDashCharges)
@@ -128,31 +128,43 @@ public abstract class Player {
                     break;
                 default: break;
             }
-        }
-
-        int drawX = px, drawY = py, drawW = size * zoom, drawH = size * zoom;
+        }        int drawX = px, drawY = py, drawW = size * zoom, drawH = size * zoom;
         
         if (isDashing){
             // Draw blurred "afterimages"
-        Composite oldComp = g.getComposite();
-        for (int i = 1; i <= 4; i++) {
-            float alpha = 0.15f * (5 - i); // Fainter for further afterimages
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
-            int offset = i * 6;
-            int blurX = drawX, blurY = drawY;
-            switch (direction) {
-                case "up":    blurY += offset; break;
-                case "down":  blurY -= offset; break;
-                case "left":  blurX += offset; break;
-                case "right": blurX -= offset; break;
+            Composite oldComp = g.getComposite();
+            for (int i = 1; i <= 4; i++) {
+                float alpha = 0.15f * (5 - i); // Fainter for further afterimages
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+                int offset = i * 6;
+                int blurX = drawX, blurY = drawY;
+                switch (direction) {
+                    case "up":    blurY += offset; break;
+                    case "down":  blurY -= offset; break;
+                    case "left":  blurX += offset; break;
+                    case "right": blurX -= offset; break;
+                }
+                g.drawImage(bimage, blurX, blurY, drawW, drawH, null);
             }
-            g.drawImage(bimage, blurX, blurY, drawW, drawH, null);
+            g.setComposite(oldComp);
         }
-        g.setComposite(oldComp);
+          // Visual effect for invincibility (blinking)
+        Composite oldComp = g.getComposite();
+        if (isInvincible() && !isDashing) {
+            // Make player blink during invincibility (not during dash)
+            long currentTime = System.currentTimeMillis();
+            if ((currentTime / 150) % 2 == 0) { // Blink every 150ms
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            }
         }
         
         // Draw relative to camera position
         g.drawImage(bimage, px, py, size*zoom, size*zoom, null);
+        
+        // Reset composite if it was changed for invincibility effect
+        if (isInvincible() && !isDashing) {
+            g.setComposite(oldComp);
+        }
     }
 
     public void move(int dx, int dy) {
@@ -174,10 +186,7 @@ public abstract class Player {
         }
         if (!weapon.canFire()) {
             return null;
-        }
-    
-        List<Bullet> bullets = new ArrayList<>();
-        int weaponIndex = getCurrentWeaponIndex();
+        }        List<Bullet> bullets = new ArrayList<>();
     
         // Shotgun logic: check by weapon name instead of index
         if (weapon.getName().equalsIgnoreCase("Shotgun")) {
@@ -251,9 +260,7 @@ public abstract class Player {
             this.idling=true;
             this.spritenum=1; // set sprite ke 1
         }
-    }
-
-    public void updateDash() {
+    }    public void updateDash() {
         long currentTime = System.currentTimeMillis();
 
         // End dash after the duration
@@ -261,8 +268,9 @@ public abstract class Player {
             isDashing = false;
         }
 
-        // End invincibility after the duration
-        if (isInvincible && currentTime - dashStartTime >= invincibilityDuration) {
+        // End invincibility after the duration (only for dash-based invincibility)
+        // Regular invincibility from taking damage is handled in isInvincible()
+        if (isInvincible && isDashing && currentTime - dashStartTime >= invincibilityDuration) {
             isInvincible = false;
         }
 
@@ -280,15 +288,21 @@ public abstract class Player {
             dashStartTime = currentTime;
             currentDashCharges--; // Consume one dash charge
         }
-    }
-
-    public void takeDamage(int damage) {
+    }    public void takeDamage(int damage) {
         if (!isInvincible) { // Only take damage if not invincible
             health -= damage;
             if (health < 0) {
                 health = 0; // Prevent health from going negative
             }
+            // Activate invincibility frame after taking damage
+            activateInvincibility();
         }
+    }
+    
+    // Activate invincibility for the player
+    public void activateInvincibility() {
+        isInvincible = true;
+        invincibilityStartTime = System.currentTimeMillis();
     }
 
     public void heal(int amount, Boolean isCapped) { // Nanti kalo dipake (pasti dipake sih)
@@ -327,10 +341,12 @@ public abstract class Player {
 
     public String[] getWeaponNames() {
         return weapons.stream().map(Weapon::getName).toArray(String[]::new);
-    }
-
-    public boolean isInvincible() {
-        return isInvincible; // Return the invincibility status
+    }    public boolean isInvincible() {
+        // Check if invincibility has expired
+        if (isInvincible && System.currentTimeMillis() - invincibilityStartTime > invincibilityDuration) {
+            isInvincible = false;
+        }
+        return isInvincible; // Return the updated invincibility status
     }
     
     public void setMaxHealth(int maxHealth) {

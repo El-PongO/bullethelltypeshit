@@ -2,7 +2,8 @@ import java.awt.*;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-
+import players.Player;
+import players.Bullet;
 
 public class ShooterEnemy extends Enemy {
     private int movementCounter = 0;  // Counter for controlling movement duration

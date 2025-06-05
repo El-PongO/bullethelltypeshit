@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.util.ArrayList;
-
+import players.Player;
+import players.Bullet;
 import javax.imageio.ImageIO;
 
 import java.awt.image.BufferedImage;

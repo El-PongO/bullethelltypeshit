@@ -1,7 +1,8 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
+import players.Player;
+import players.Bullet;
 import javax.imageio.ImageIO;
 
 public class NormalEnemy extends Enemy {

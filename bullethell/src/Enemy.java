@@ -8,12 +8,14 @@ import players.Player;
 public abstract class Enemy {
     int x, y;
     int size = 20;
+    protected int health = 100; // Enemy health
+    protected int maxHealth = 100; // Maximum health
     long lastShotTime;
     protected static final int speed = 2;
     protected int shootDelay = 2000; // 2 second
     protected int bulletSpeed = 3;
     //====================//
-    protected Random rand = new Random();    public Enemy(int x, int y) {
+    protected Random rand = new Random();public Enemy(int x, int y) {
         this.x = x;
         this.y = y;
         this.lastShotTime = System.currentTimeMillis();
@@ -33,15 +35,40 @@ public abstract class Enemy {
     }
     
     // Making update abstract so each enemy type must implement it
-    public abstract void update(Player player, ArrayList<Bullet> enemyBullets);
-
-    public void draw(Graphics g, int ex, int ey) {
+    public abstract void update(Player player, ArrayList<Bullet> enemyBullets);    public void draw(Graphics g, int ex, int ey) {
         g.setColor(new Color(102, 51, 153));//mek warna gae ungu idk
         g.fillOval(ex, ey, size, size);
-    }
-
-    public int getX() { return x; }
+        
+        // Draw health bar if enemy has taken damage
+        if (health < maxHealth) {
+            // Health bar background
+            g.setColor(Color.RED);
+            g.fillRect(ex, ey - 10, size, 5);
+            
+            // Current health
+            g.setColor(Color.GREEN);
+            int healthBarWidth = (int)((float)health / maxHealth * size);
+            g.fillRect(ex, ey - 10, healthBarWidth, 5);
+        }
+    }public int getX() { return x; }
     public int getY() { return y; }
+    
+    // Get health methods
+    public int getHealth() { return health; }
+    public int getMaxHealth() { return maxHealth; }
+    
+    // Take damage method
+    public void takeDamage(int damage) {
+        health -= damage;
+        if (health < 0) {
+            health = 0;
+        }
+    }
+    
+    // Check if enemy is dead
+    public boolean isDead() {
+        return health <= 0;
+    }
 
     public boolean checkCollision(Bullet bullet) {
         double distance = Math.hypot(x - bullet.getX(), y - bullet.getY());

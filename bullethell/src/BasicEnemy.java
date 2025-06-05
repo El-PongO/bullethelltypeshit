@@ -1,22 +1,23 @@
 import java.awt.*;
 import java.util.ArrayList;
+import players.Player;
+import players.Bullet;
 
 public class BasicEnemy extends Enemy {
     private int movementCounter = 0;  // Counter for controlling movement duration
     private int movementDirection = 0; // 0 = none, -1 = left, 1 = right
     private int movementDuration = 0; // How long to move in a direction
     private int pauseDuration = 0;    // How long to pause after movement
-    
-    public BasicEnemy(int x, int y) {
+      public BasicEnemy(int x, int y) {
         super(x, y);
         // Specific properties for basic enemy
         this.shootDelay = 2000; // 2 second delay between shots
         this.bulletSpeed = 3;
+        this.health = 100; // Basic enemy has 100 HP
     }
-    
-    @Override
+      @Override
     public void update(Player player, ArrayList<Bullet> enemyBullets) {
-        int behavior = rand.nextInt(2); // 0, 1, or 2 
+        int behavior = rand.nextInt(2); // 0 or 1 for two behavior types
         int dx = 0, dy = 0;
 
         // Behavior 1: move toward or away from player based on distance
@@ -29,7 +30,8 @@ public class BasicEnemy extends Enemy {
                 dx = (player.getX() < x) ? 1 : -1;
                 dy = (player.getY() < y) ? 1 : -1;
             }
-        }        // Behavior 2: random lateral movement with pause or just idle
+        }
+        // Behavior 2: random lateral movement with pause or just idle
         if (behavior == 1) {
             // If we're not in a movement sequence, decide on a new one
             if (movementCounter <= 0) {

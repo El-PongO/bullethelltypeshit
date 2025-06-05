@@ -1,7 +1,8 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
+import players.Player;
+import players.Bullet;
 import javax.imageio.ImageIO;
 
 public class TankEnemy extends Enemy {
@@ -13,11 +14,12 @@ public class TankEnemy extends Enemy {
     public boolean idling;
     public int spritecounter=0;
     public int spritenum=1;
-    
-    public TankEnemy(int x, int y) {
+      public TankEnemy(int x, int y) {
         super(x, y);
         // Tank enemies have quick shooting but move slowly
         this.shootDelay = 1300; // 1.3 seconds between shots
+        this.health = 200; // More health than basic enemies
+        this.maxHealth = 200;
         this.bulletSpeed = 2; // Slower but more frequent bullets
         this.size = 30; // Larger size
         

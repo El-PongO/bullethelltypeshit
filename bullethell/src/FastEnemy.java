@@ -1,17 +1,18 @@
 import java.awt.*;
 import java.util.ArrayList;
-
+import players.Player;
+import players.Bullet;
 public class FastEnemy extends Enemy {
     private int changeDirectionCounter;
     private int directionX;
     private int directionY;
-    
-    public FastEnemy(int x, int y) {
+      public FastEnemy(int x, int y) {
         super(x, y);
         // Fast enemies have longer shooting delay but move faster
         this.shootDelay = 3500; // 3.5 seconds between shots
         this.bulletSpeed = 4; // Slightly faster bullets
         this.size = 16; // Slightly smaller size
+        this.health = 50; // Less health than basic enemies
         
         // Initialize movement variables
         changeDirectionCounter = 0;
