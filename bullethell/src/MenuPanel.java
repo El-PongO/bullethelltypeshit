@@ -244,4 +244,8 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     public void setBackButtonListener(Runnable listener) {
         this.backButtonListener = listener;
     }
+
+    public void setFinalScore(int score) {
+        gameover.setFinalScore(score);
+    }
 }

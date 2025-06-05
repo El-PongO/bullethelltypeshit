@@ -167,12 +167,13 @@ public class MainPanel extends JPanel {
         });
         gameStateChecker.start();
     }
-    
-    private void gameOver() {
+      private void gameOver() {
         // Stop the gameplay
+        int finalScore = GameplayPanel.getScore();
         GameplayPanel.stopGame();
         cursormanager.setCursor(this, "cursor"); // ganti cursor ke default
         // Show the game over screen in the menu panel
+        menuPanel.setFinalScore(finalScore);
         menuPanel.setMenuState(MenuPanel.MenuState.GAME_OVER);
         cardLayout.show(this, "MENU");
     }

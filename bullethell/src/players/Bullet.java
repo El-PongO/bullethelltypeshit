@@ -7,13 +7,19 @@ public class Bullet {
     public int dx, dy;
     private static final int size = 10;
     private BufferedImage sprite;
-
+    private int damage = 1; // Default damage
+    
     public Bullet(int x, int y, int dx, int dy, BufferedImage sprite) {
         this.x = x;
         this.y = y;
         this.dx = dx;
         this.dy = dy;
         this.sprite = sprite;
+    }
+    
+    public Bullet(int x, int y, int dx, int dy, BufferedImage sprite, int damage) {
+        this(x, y, dx, dy, sprite);
+        this.damage = damage;
     }
     
     public void update() {
@@ -35,9 +41,8 @@ public class Bullet {
         int gridY = y / tileSize;
         return gridX < 0 || gridY < 0 || gridX >= grid[0].length || gridY >= grid.length 
                || grid[gridY][gridX] == 1;
-    }
-
-    public int getX() { return x; }
+    }    public int getX() { return x; }
     public int getY() { return y; }
     public int getSize() { return size; }
+    public int getDamage() { return damage; }
 }

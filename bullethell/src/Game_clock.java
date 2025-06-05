@@ -45,10 +45,12 @@ public class Game_clock {
         minutes=0;
         seconds=0;
         label.setText(formatTime(minutes, seconds));
+    }    public void setVisible(boolean visible){
+        label.setVisible(visible);
     }
     
-    public void setVisible(boolean visible){
-        label.setVisible(visible);
+    public long getElapsedTime() {
+        return (minutes * 60 + seconds) * 1000; // Convert to milliseconds
     }
 
     public void setPosition(int x, int y, int width, int height) {

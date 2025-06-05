@@ -21,9 +21,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     // ========================= BULLET =====================================================
     private static ArrayList<Bullet> playerBullets = new ArrayList<>();
-    private static ArrayList<Bullet> enemyBullets = new ArrayList<>();
-
-    // ========================= LOGIC =====================================================
+    private static ArrayList<Bullet> enemyBullets = new ArrayList<>();    // ========================= LOGIC =====================================================
     private static JFrame window;
     private Random rand;
     private int spawnDelay = 1000;
@@ -33,6 +31,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static boolean isGameOver = false;
     private FPScounter fpscounter = new FPScounter("FPS: ");
     private static Game_clock gameClock = new Game_clock();
+    private static int score = 0; // Player score
 
     static int[][] grid;
     static BufferedImage[] tilesSprite = new BufferedImage[9];
@@ -156,10 +155,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         spawnTimer.stop();
         gameLoop.stop();
         return;
-    }
-
-    public boolean isGameOver() {
+    }    public boolean isGameOver() {
         return isGameOver;
+    }
+    
+    public static int getScore() {
+        return score;
     }
 
     private static void gameOver() {
@@ -173,37 +174,82 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         stopGame();
         gameClock.reset();
         gameClock.setVisible(false);
-    }
-
-    // ========================= SPAWN =====================================================
+    }    // ========================= SPAWN =====================================================
     private void spawnEnemy() {
         int spawnX = rand.nextInt(getWidth());
         int spawnY = rand.nextInt(getHeight());
-        enemies.add(new Enemy(spawnX, spawnY));
+        
+        // Randomly choose an enemy type based on game progress
+        int enemyType = rand.nextInt(100);
+        Enemy newEnemy;
+        
+        // The longer the game runs, the more varied and difficult enemies will spawn
+        long gameTime = gameClock.getElapsedTime() / 1000; // Time in seconds
+        
+        if (gameTime < 10) {
+            // Early game - mostly normal enemies
+            newEnemy = new NormalEnemy(spawnX, spawnY);
+        } else if (gameTime < 30) {
+            // Mid game - normal and shooter enemies
+            if (enemyType < 70) {
+                newEnemy = new NormalEnemy(spawnX, spawnY);
+            } else {
+                newEnemy = new ShooterEnemy(spawnX, spawnY);
+            }
+        } else if (gameTime < 60) {
+            // Late mid-game - add lurkers and bombers
+            if (enemyType < 40) {
+                newEnemy = new NormalEnemy(spawnX, spawnY);
+            } else if (enemyType < 70) {
+                newEnemy = new ShooterEnemy(spawnX, spawnY);
+            } else if (enemyType < 85) {
+                newEnemy = new LurkerEnemy(spawnX, spawnY);
+            } else {
+                newEnemy = new BomberEnemy(spawnX, spawnY);
+            }
+        } else {
+            // Late game - all enemy types including tanks
+            if (enemyType < 30) {
+                newEnemy = new NormalEnemy(spawnX, spawnY);
+            } else if (enemyType < 55) {
+                newEnemy = new ShooterEnemy(spawnX, spawnY);
+            } else if (enemyType < 75) {
+                newEnemy = new LurkerEnemy(spawnX, spawnY);
+            } else if (enemyType < 90) {
+                newEnemy = new BomberEnemy(spawnX, spawnY);
+            } else {
+                newEnemy = new TankEnemy(spawnX, spawnY);
+            }
+        }
+          enemies.add(newEnemy);
+        System.out.println("Spawned " + newEnemy.getClass().getSimpleName() + " at " + gameTime + " seconds");
         spawnTimer.setInitialDelay(spawnDelay);
         spawnTimer.restart();
     }
-    
-    // ========================= GAME UPDATE =====================================================
+      // ========================= GAME UPDATE =====================================================
     private void updateSpawnDelay() {
-        if (spawnDelay > 300) {
-            spawnDelay -= 50;
-        } 
-    }
-
-    private void updateGame() {
+        // Make spawn rate faster as game progresses
+        long gameTime = gameClock.getElapsedTime() / 1000; // Time in seconds
+        
+        if (gameTime < 30) {
+            // Early game - gradually decrease to 800ms
+            spawnDelay = Math.max(800, 2000 - (int)(gameTime * 40));
+        } else if (gameTime < 60) {
+            // Mid game - gradually decrease to 600ms
+            spawnDelay = Math.max(600, 800 - (int)((gameTime - 30) * 7));
+        } else {
+            // Late game - gradually decrease to 400ms (hard cap)
+            spawnDelay = Math.max(400, 600 - (int)((gameTime - 60) * 4));
+        }
+    }    private void updateGame() {
         if(!gameActive) return;
         else {
             player.updateDash();
             player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
             updateBullets();
             checkCollisions();
-            for (Enemy enemy : enemies) {//gae musuh bisa nembak
+            for (Enemy enemy : enemies) {
                 enemy.update(player, enemyBullets);
-                Bullet bullet = enemy.tryShoot(player.getX(), player.getY());
-                if (bullet != null) {
-                    enemyBullets.add(bullet);
-            }
             }
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
             if (mouseHeld && player.getCurrentWeapon().isFullAuto()) {
@@ -295,11 +341,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             int ex = (bullet.x - cameraPixelX) * ZOOM;
             int ey = (bullet.y - cameraPixelY) * ZOOM;
             bullet.draw(g, ex, ey, Color.RED);
-        }
-        g.setColor(Color.WHITE);
+        }        g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
         g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
+        g.drawString("Score: " + score, 10, 60);
         drawWeaponHUD((Graphics2D)g);
         if (isPaused) {
             pauseMenu.draw(g, getWidth(), getHeight());
@@ -574,17 +620,34 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     gameOver();
                 }
             }
-        }
-
-        // Check bullet-enemy collisions
+        }        // Check bullet-enemy collisions
         playerBullets.removeIf(bullet -> {
             Rectangle bulletBounds = new Rectangle((int)bullet.x, (int)bullet.y, bullet.getSize(), bullet.getSize());
             for (int i = enemies.size() - 1; i >= 0; i--) {
                 Enemy enemy = enemies.get(i);
                 Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
                 if (bulletBounds.intersects(enemyBounds)) {
-                    enemies.remove(i);
-                    return true;
+                    // Apply damage to enemy based on bullet damage
+                    int damage = bullet.getDamage() != 0 ? bullet.getDamage() : 1; // Default damage is 1
+                    boolean isDead = enemy.takeDamage(damage);
+                    
+                    if (isDead) {
+                        // Award points based on enemy type
+                        if (enemy instanceof NormalEnemy) {
+                            score += 10;
+                        } else if (enemy instanceof ShooterEnemy) {
+                            score += 20;
+                        } else if (enemy instanceof LurkerEnemy) {
+                            score += 30;
+                        } else if (enemy instanceof BomberEnemy) {
+                            score += 40;
+                        } else if (enemy instanceof TankEnemy) {
+                            score += 50;
+                        }
+                        System.out.println("Score: " + score);
+                        enemies.remove(i);
+                    }
+                    return true; // Remove bullet either way when it hits
                 }
             }
             return false;
@@ -663,13 +726,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     public boolean isPaused() {
         return isPaused;
-    }
-
-    public void resetGame() {
+    }    public void resetGame() {
         // Reset game state
         gameActive = false;
         isGameOver = false;
         isPaused = false;
+        score = 0; // Reset score
         
         // Clear all entities
         enemies.clear();
