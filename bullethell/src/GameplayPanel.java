@@ -215,16 +215,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private void updateGame() {
         if(!gameActive) return;
         else {
-            player.updateDash();
-            player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
+            player.updateDash();            player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
             updateBullets();
             checkCollisions();
             for (Enemy enemy : enemies) {//gae musuh bisa nembak
                 enemy.update(player, enemyBullets);
-                Bullet bullet = enemy.tryShoot(player.getX(), player.getY());
-                if (bullet != null) {
-                    enemyBullets.add(bullet);
-            }
             }
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
             if (mouseHeld && player.getCurrentWeapon().isFullAuto()) {
