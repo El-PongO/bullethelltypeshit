@@ -16,6 +16,11 @@ public class ShooterEnemy extends Enemy {
     public int spritecounter=0;
     public int spritenum=1;
     
+    private boolean isRetreating = false;
+    private int retreatTimer = 0;
+    private int retreatDx = 0;
+    private int retreatDy = 0;
+    
     public ShooterEnemy(int x, int y) {
         super(x, y);
         // Specific properties for shooter enemy
@@ -43,23 +48,49 @@ public class ShooterEnemy extends Enemy {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
+    }    @Override
     public void update(Player player, ArrayList<Bullet> enemyBullets) {
         int behavior = rand.nextInt(2); // 0, 1, or 2 
         int dx = 0, dy = 0;
 
-        // Behavior 1: move toward or away from player based on distance
+        // Handle retreat behavior first
+        if (isRetreating) {
+            // Continue retreating for the duration
+            dx = retreatDx;
+            dy = retreatDy;
+            
+            // Decrease retreat timer
+            retreatTimer--;
+            
+            // End retreat when timer expires
+            if (retreatTimer <= 0) {
+                isRetreating = false;
+            }
+            
+            // Skip normal behavior when retreating
+            behavior = -1;
+        }
+        
+        // Behavior 0: move toward or away from player based on distance
         double distance = Math.hypot(player.getX() - x, player.getY() - y);
         if (behavior == 0) {
             // Changed distance threshold to 200 (was 50)
             if (distance > 150) {
                 dx = (player.getX() > x) ? 1 : -1;
                 dy = (player.getY() > y) ? 1 : -1;
-            } else {
-                dx = (player.getX() < x) ? 1 : -1;
-                dy = (player.getY() < y) ? 1 : -1;
+            } else if (distance < 120) {
+                // Start retreat behavior for 1-2 seconds (60-120 frames)
+                isRetreating = true;
+                retreatTimer = 60 + rand.nextInt(60); // 1-2 seconds at 60fps
+                
+                // Calculate retreat direction away from player
+                double angle = Math.atan2(y - player.getY(), x - player.getX());
+                retreatDx = (int) Math.signum(Math.cos(angle));
+                retreatDy = (int) Math.signum(Math.sin(angle));
+                
+                // Apply retreat movement immediately
+                dx = retreatDx;
+                dy = retreatDy;
             }
         }
         this.idling = false; // Normal enemies are not idling
@@ -84,11 +115,25 @@ public class ShooterEnemy extends Enemy {
                 this.spritenum=1;
             }
             this.spritecounter=0; // kalau sudah ganti varian set counter ke 0
-        }
-        // Behavior 2: random lateral movement with pause or just idle
+        }        // Behavior 1: random lateral movement with pause or just idle
         if (behavior == 1) {
-            // If we're not in a movement sequence, decide on a new one
-            if (movementCounter <= 0) {
+            // Use the same safe zone thresholds as behavior 0 (120-150)
+            final double SAFE_ZONE_MIN = 120;  // Safe zone lower bound
+            final double SAFE_ZONE_MAX = 150;  // Safe zone upper bound
+            
+            // First check if we need to adjust position based on distance
+            if (distance < SAFE_ZONE_MIN) {
+                // Too close, move away
+                double angle = Math.atan2(y - player.getY(), x - player.getX());
+                dx = (int) Math.signum(Math.cos(angle));
+                dy = (int) Math.signum(Math.sin(angle));
+            } else if (distance > SAFE_ZONE_MAX) {
+                // Too far, move closer
+                double angle = Math.atan2(player.getY() - y, player.getX() - x);
+                dx = (int) Math.signum(Math.cos(angle));
+                dy = (int) Math.signum(Math.sin(angle));
+            } else if (movementCounter <= 0) {
+                // Only do lateral movement when in the safe zone
                 int move = rand.nextInt(3); // 0 = left then pause, 1 = right then pause, 2 = just idle
                 
                 if (move == 0) {
@@ -110,18 +155,20 @@ public class ShooterEnemy extends Enemy {
                 
                 movementCounter = movementDuration + pauseDuration;
             }
-            
-            // Apply movement based on current state
-            if (movementCounter > pauseDuration) {
-                // We're in the movement phase
-                dx = movementDirection;
-            } else {
-                // We're in the pause phase
-                dx = 0;
+              // Apply lateral movement based on current state
+            if (distance >= SAFE_ZONE_MIN && distance <= SAFE_ZONE_MAX) {
+                if (movementCounter > pauseDuration) {
+                    // We're in the movement phase - only do lateral movement (x-axis)
+                    dx = movementDirection;
+                    dy = 0; // No vertical movement during lateral phases
+                } else {
+                    // We're in the pause phase
+                    dx = 0;
+                    dy = 0;
+                }
+                // Decrement the counter
+                movementCounter--;
             }
-            
-            // Decrement the counter
-            movementCounter--;
         }
 
         x += dx * speed; // move speed
