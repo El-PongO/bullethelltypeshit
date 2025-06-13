@@ -10,33 +10,90 @@ public class Button {
     private static Component targetComponent;
 
     public Button(String nama){
-        this.nama=nama;
-        new_button = new JButton(nama);
-        // new_button.setContentAreaFilled(false);
-        // new_button.setBorderPainted(false);
-        new_button.setBackground(Color.DARK_GRAY);
-        new_button.setForeground(Color.WHITE); // text color
-        new_button.setFont(new Font("Arial", Font.BOLD, 20)); 
-        new_button.setFocusPainted(false); // ilangin focus border
-        new_button.setBorder(BorderFactory.createLineBorder(Color.WHITE)); // kasi border putih
-
-        new_button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (cursorManager != null && glowCursorName != null && targetComponent != null) {
-                    cursorManager.setCursor(targetComponent, glowCursorName); // Set "pointer" cursor
-                }
+        this.nama = nama;
+        new_button = new JButton(nama) {
+            private boolean hovered = false;
+    
+            {
+                addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        hovered = true;
+                        repaint();
+                        if (cursorManager != null && glowCursorName != null && targetComponent != null) {
+                            cursorManager.setCursor(targetComponent, glowCursorName);
+                        }
+                    }
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        hovered = false;
+                        repaint();
+                        if (cursorManager != null && targetComponent != null) {
+                            if (!GameplayPanel.gameActive) {
+                                cursorManager.setCursor(targetComponent, "cursor");
+                            }
+                        }
+                    }
+                });
             }
-
+    
             @Override
-            public void mouseExited(MouseEvent e) {
-                if (cursorManager != null && targetComponent != null) {
-                    if (!GameplayPanel.gameActive) { // Only reset if not playing
-                        cursorManager.setCursor(targetComponent, "cursor"); // Reset to default custom cursor
+            protected void paintComponent(Graphics g) {
+                // Paint background but skip default text
+                if (isOpaque()) {
+                    g.setColor(getBackground());
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                }
+
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                FontMetrics fm = getFontMetrics(getFont());
+                String text = getText();
+                int textWidth = fm.stringWidth(text);
+                int textHeight = fm.getAscent();
+                int textX = (getWidth() - textWidth) / 2;
+                int textY = (getHeight() + textHeight) / 2 - fm.getDescent();
+
+                if (hovered) {
+                    Color base = getForeground();
+                    Color glow = new Color(
+                        Math.min(255, base.getRed() + 60),
+                        Math.min(255, base.getGreen() + 60),
+                        Math.min(255, base.getBlue() + 60),
+                        90
+                    );
+                    int glowRadius = 8;
+                    for (int i = glowRadius; i > 0; i--) {
+                        float alpha = (float) (glow.getAlpha()) / 255f * (i / (float) glowRadius);
+                        g2.setColor(new Color(glow.getRed(), glow.getGreen(), glow.getBlue(), (int)(alpha * 255)));
+                        g2.drawString(text, textX - i/2, textY + i/2);
                     }
                 }
+
+                g2.setColor(getForeground());
+                g2.setFont(getFont());
+                g2.drawString(text, textX, textY);
+                g2.dispose();
             }
-        });
+    
+            @Override
+            public boolean contains(int x, int y) {
+                FontMetrics fm = getFontMetrics(getFont());
+                String text = getText();
+                int textWidth = fm.stringWidth(text);
+                int textHeight = fm.getAscent();
+                int textX = (getWidth() - textWidth) / 2;
+                int textY = (getHeight() + textHeight) / 2 - fm.getDescent();
+                int padding = 10;
+                return x >= textX - padding && x <= textX + textWidth + padding
+                    && y >= textY - textHeight - padding && y <= textY + padding;
+            }
+        };
+        new_button.setContentAreaFilled(false);
+        new_button.setBorderPainted(false);
+        new_button.setForeground(Color.WHITE);
+        new_button.setFont(new Font("Arial", Font.BOLD, 20)); 
+        new_button.setFocusPainted(false);
     }
 
     public static void setupGlowCursor(CursorManager cm, String cursorName, Component component) {

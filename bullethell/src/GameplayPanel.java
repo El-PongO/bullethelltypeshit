@@ -215,31 +215,34 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private void updateGame() {
         if(!gameActive) return;
         else {
-            player.updateDash();            player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
+            player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
+            player.updateDash();            
             updateBullets();
             checkCollisions();
-            for (Enemy enemy : enemies) {//gae musuh bisa nembak
+            for (Enemy enemy : enemies) {   //gae musuh bisa nembak
                 enemy.update(player, enemyBullets);
             }
+            
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
             if (mouseHeld && player.getCurrentWeapon().isFullAuto()) {
                 Point mouse = getMousePosition();
-                List<Bullet> bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
                 if (mouse != null) {
-                    // Bullet bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
-                    if (bullet != null) {
+                    List<Bullet> bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
+                    if (bullet != null && !bullet.isEmpty()) {
                         playerBullets.addAll(bullet);
                         playsfx(false);
-                    }else if (!player.getCurrentWeapon().hasAmmo()) {
-                        // Only play empty SFX if enough time has passed
+                    } else if (player.getCurrentWeapon().getCurrentAmmo() == 0) {
                         long now = System.currentTimeMillis();
                         if (now - lastEmptySfxTime >= EMPTY_SFX_DELAY) {
                             playsfx(true);
                             lastEmptySfxTime = now;
+                            showOutOfAmmoMsg = true;
+                            outOfAmmoMsgTime = now;
                         }
                     }
                 }
             }
+
             if (shotgunLoadQueued) {
                 int shotgunFireRate = 600; // ms, adjust to your shotgun's fire rate
                 if (System.currentTimeMillis() - lastShotgunShotTime >= shotgunFireRate) {
@@ -260,7 +263,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             repaint();
         }
     }
-
     
     // ========================= PAINT COMPONENT =====================================================
     @Override
@@ -424,6 +426,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 soundsfx.playWithRandomPitch("shoot");
             }
         }else{
+            System.out.println("Playing weapon empty sfx");
             if (player.getCurrentWeaponIndex() == 0) {
                 soundsfx.play("emptyrevolver");
             }else if (player.getCurrentWeaponIndex() == 3) {
@@ -473,11 +476,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override
     public void mousePressed(MouseEvent e) {
         if (gameActive && e.getButton() == MouseEvent.BUTTON1){
-            List<Bullet> bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
-            if (bullet != null && !bullet.isEmpty()) {
-                playerBullets.addAll(bullet);
-                soundsfx.playWithRandomPitch("shoot");
-            }
+            tryFire(e);
         }
     }
 
@@ -545,14 +544,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if (weapon.isFullAuto()) {
             // For full auto, firing is handled in updateGame()
         } else {
-            // Bullet bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
             List<Bullet> bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
-            if (bullet != null) {
-                // playerBullets.add(bullet);
+            if (bullet != null && !bullet.isEmpty()) {
                 playerBullets.addAll(bullet);
                 playsfx(false);
-            }else if (!weapon.hasAmmo()) {
-                // Show out of ammo message
+            } else {
                 playsfx(true);
                 showOutOfAmmoMsg = true;
                 outOfAmmoMsgTime = System.currentTimeMillis();

@@ -118,7 +118,7 @@ public class MainPanel extends JPanel {
     }
     
     private void assignWeaponToHero() {
-        if (selectedHero != null && selectedWeaponName != null) {
+        if (selectedHero != null) {
             selectedHero.getWeapons().clear();
             try {
                 if (selectedWeaponName.equals("Pistol")) {
@@ -137,6 +137,7 @@ public class MainPanel extends JPanel {
                     selectedHero.getWeapons().add(new Weapon(
                         "Placeholder", null, null, 1, 1000, 1000, false));
                 }
+                // Add all weapons to the player's inventory
             } catch (Exception e) {
                 e.printStackTrace();
             }
