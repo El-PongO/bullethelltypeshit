@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import players.Bullet;
 import players.Gunslinger;
 import players.Player;
-import players.Weapon;
+import weapons.Bullet;
+import weapons.Weapon;
 
 
 public class GameplayPanel extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
@@ -52,9 +52,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static final int OUT_OF_AMMO_MSG_DURATION = 1000; // ms
     // ========================= SFX =====================================================
     private Sfx soundsfx = new Sfx();
-    private long lastShotgunShotTime = 0;
-    private boolean shotgunLoadQueued = false;
-    private boolean shotgunLockQueued = false;
     private long lastEmptySfxTime = 0;
     private static final int EMPTY_SFX_DELAY = 400; // ms, adjust to match your empty SFX duration
     private boolean emptySfxQueued = false;
@@ -224,21 +221,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     }
                 }
             }
-            if (shotgunLoadQueued) {
-                int shotgunFireRate = 600; // ms, adjust to your shotgun's fire rate
-                if (System.currentTimeMillis() - lastShotgunShotTime >= shotgunFireRate) {
-                    soundsfx.playWithRandomPitch("shotgunload");
-                    shotgunLoadQueued = false;
-                }
-            }
-
-            if (shotgunLockQueued) {
-                int shotgunFireRate = 600; // ms, adjust as needed
-                if (System.currentTimeMillis() - lastShotgunShotTime >= shotgunFireRate) {
-                    soundsfx.playWithRandomPitch("shotgunlock");
-                    shotgunLockQueued = false;
-                }
-            }
             fpscounter.frameRendered();
             player.getCurrentWeapon().updateReload();
             repaint();
@@ -329,10 +311,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 }
             }
         }
-    }
-
-    private void drawWeaponHUD(Graphics2D g) {
+    }    private void drawWeaponHUD(Graphics2D g) {
+        if (player == null) {
+            return;
+        }
+        
         Weapon currentWeapon = player.getCurrentWeapon();
+        
+        // If there's no weapon, don't try to draw the weapon HUD
+        if (currentWeapon == null) {
+            return;
+        }
+        
         int iconSize = 48;
         int margin = 20;
         int offsetX = getWidth() - iconSize - margin;
@@ -393,24 +383,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if (!isEmpty) {
             if (player.getCurrentWeaponIndex() == 0){
                 soundsfx.playWithRandomPitch("shootrevolver");
-            }else if (player.getCurrentWeaponIndex() == 3){
-                soundsfx.playWithRandomPitch("shootshotgun");
-                lastShotgunShotTime = System.currentTimeMillis();
-                Weapon Shotgun = player.getCurrentWeapon();
-                if (Shotgun.getCurrentAmmo() == 0){
-                    shotgunLockQueued = true;
-                }else{
-                    shotgunLoadQueued = true;
-                }
-                
             }else{
                 soundsfx.playWithRandomPitch("shoot");
             }
         }else{
             if (player.getCurrentWeaponIndex() == 0) {
                 soundsfx.play("emptyrevolver");
-            }else if (player.getCurrentWeaponIndex() == 3) {
-                soundsfx.play("shogunempty");
             }else{
                 soundsfx.play("empty");
             }
@@ -456,13 +434,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override
     public void mousePressed(MouseEvent e) {
         if (gameActive && e.getButton() == MouseEvent.BUTTON1){
-            List<Bullet> bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
-            if (bullet != null && !bullet.isEmpty()) {
-                playerBullets.addAll(bullet);
-                soundsfx.playWithRandomPitch("shoot");
-            }
+            mouseHeld = true;
+            tryFire(e);
         }
     }
+    
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -514,17 +490,28 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override public void keyTyped(KeyEvent e) {} // unused
     @Override public void mouseClicked(MouseEvent e) {}
     @Override public void mouseMoved(MouseEvent e) {}
-    @Override public void mouseDragged(MouseEvent e) {} //gerakkan mouse
+    @Override public void mouseDragged(MouseEvent e) {
+        if (gameActive && mouseHeld) {
+            tryFire(e);
+        }
+    } //gerakkan mouse
     @Override public void mouseReleased(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             mouseHeld = false;
-        }
-    } // lepas mouse
+        }    } // lepas mouse
     @Override public void mouseEntered(MouseEvent e) {} // masuk mouse ke dalam window
     @Override public void mouseExited(MouseEvent e) {} // ya bisa di baca sendiri lah km ws tua berjembut
-
+    
     private void tryFire(MouseEvent e) {
+        if (player == null) {
+            return;
+        }
+        
         Weapon weapon = player.getCurrentWeapon();
+        if (weapon == null) {
+            return;
+        }
+        
         if (weapon.isFullAuto()) {
             // For full auto, firing is handled in updateGame()
         } else {
@@ -697,4 +684,5 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         // Reset pause menu
         pauseMenu.setVisibility(false);
     }
+
 }

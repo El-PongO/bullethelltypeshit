@@ -1,8 +1,6 @@
 import java.awt.*;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import players.Player;
-import players.Weapon;
 
 public class MainPanel extends JPanel {
     // Add this field
@@ -115,31 +113,48 @@ public class MainPanel extends JPanel {
     private void showWeaponSelect() {
         cardLayout.show(this, "WEAPONSELECT");
         cursormanager.setCursor(this, "pointer");
-    }
-    
-    private void assignWeaponToHero() {
+    }    private void assignWeaponToHero() {
         if (selectedHero != null && selectedWeaponName != null) {
+            System.out.println("Assigning weapon: " + selectedWeaponName + " to hero");
             selectedHero.getWeapons().clear();
+            boolean weaponAdded = false;
+            
             try {
-                if (selectedWeaponName.equals("Pistol")) {
-                    selectedHero.getWeapons().add(new Weapon(
-                        "Pistol",
-                        ImageIO.read(getClass().getResource("/Assets/player/Guns/glock.png")), // pistol sprite as BufferedImage
-                        null, // TODO: add pistol bullet sprite as BufferedImage
-                        12, 1000, 200, false));
-                } else if (selectedWeaponName.equals("Shotgun")) {
-                    selectedHero.getWeapons().add(new Weapon(
-                        "Shotgun",
-                        ImageIO.read(getClass().getResource("/Assets/player/Guns/shotgun.png")), // TODO: add shotgun sprite as BufferedImage
-                        null, // TODO: add shotgun bullet sprite as BufferedImage
-                        8, 3000, 800, false)); // 8 ammo, 3s reload, 800ms fire rate, semi-auto
-                } else {
-                    selectedHero.getWeapons().add(new Weapon(
-                        "Placeholder", null, null, 1, 1000, 1000, false));
+                switch (selectedWeaponName) {
+                    case "Revolver":
+                        // Add Revolver - uses the concrete implementation
+                        selectedHero.getWeapons().add(new weapons.Revolver());
+                        weaponAdded = true;
+                        System.out.println("Added Revolver to hero");
+                        break;
+                    case "Shotgun":
+                        // Add Shotgun - uses the concrete implementation
+                        selectedHero.getWeapons().add(new weapons.Shotgun());
+                        weaponAdded = true;
+                        System.out.println("Added Shotgun to hero");
+                        break;
+                    default:
+                        System.out.println("Warning: Unknown weapon selected: " + selectedWeaponName);
+                        break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Error assigning weapon to hero: " + e.getMessage());
+                // Don't print stack trace to keep console clean
             }
+            
+            // Make sure hero has at least one weapon
+            if (!weaponAdded || selectedHero.getWeapons().isEmpty()) {
+                try {
+                    System.out.println("Adding default Revolver as fallback");
+                    selectedHero.getWeapons().add(new weapons.Revolver());
+                } catch (Exception e) {
+                    System.out.println("Error adding fallback weapon: " + e.getMessage());
+                }
+            }
+            
+            System.out.println("Hero now has " + selectedHero.getWeapons().size() + " weapons");
+        } else {
+            System.out.println("Cannot assign weapon: selectedHero=" + (selectedHero != null) + ", selectedWeaponName=" + selectedWeaponName);
         }
     }
     

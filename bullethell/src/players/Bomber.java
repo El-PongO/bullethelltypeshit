@@ -1,7 +1,5 @@
 package players;
 
-import java.util.List;
-
 public class Bomber extends Player {
     public Bomber(int x, int y) {
         super(x, y);
@@ -33,14 +31,8 @@ public class Bomber extends Player {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
+    }    
     public void useSkill() {
         // TODO: Implement Bomber's unique skill
-    }
-
-    @Override
-    public List<Bullet> shoot(int targetX, int targetY) {
-        return super.shoot(targetX, targetY);
     }
 }
