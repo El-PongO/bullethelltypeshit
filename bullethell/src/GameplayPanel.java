@@ -397,6 +397,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         soundsfx.load("shoot", "/Audio/Sfx/Atk_LeweiGun.wav");
         soundsfx.load("explode", "/Audio/Sfx/Explode.wav");
         soundsfx.load("empty", "/Audio/Sfx/wep_empty.wav");
+        soundsfx.load("hit", "/Audio/Sfx/player_hit.wav");
+
         // revolver
         soundsfx.load("shootrevolver", "/Audio/Sfx/rev_shot.wav");
         soundsfx.load("emptyrevolver", "/Audio/Sfx/rev_empty.wav");
@@ -625,6 +627,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             Rectangle bulletBounds = new Rectangle(bullet.x, bullet.y, bullet.getSize(), bullet.getSize());
             if (bulletBounds.intersects(playerBounds) && !player.isInvincible()) {
                 System.out.println("Player hit by enemy bullet!");
+                Sfx.playWithRandomPitch("hit");
                 player.takeDamage(50);
                 if (player.isDead()) {
                     gameOver();
