@@ -188,26 +188,31 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     }
     
     public void callsettings(){
-        add(settingmenu.getFpsCheckbox());
-        add(settingmenu.getDevCheckbox());
-        add(settingmenu.getHoldWeaponCheckbox());
-        add(settingmenu.getDisableUpgradeCheckbox());
+        // Video settings
+        add(settingmenu.getResolutionDropdown());
+        add(settingmenu.getResolutionLabel());
+        add(settingmenu.getFullscreen());
 
+        // Audio settings
         add(settingmenu.getMusicLabel());
-        add(settingmenu.getMusicVolumeBar());
+        add(settingmenu.getMusicValueLabel());
+        // add(settingmenu.getMusicVolumeBar());
+        add(settingmenu.getMusicSlider());
         add(settingmenu.getMusicVolumeUpBtn());
         add(settingmenu.getMusicVolumeDownBtn());
-        
+        add(settingmenu.getSfxSlider());
         add(settingmenu.getSfxLabel());
-        add(settingmenu.getSfxVolumeBar());
+        add(settingmenu.getSfxValueLabel());
+        // add(settingmenu.getSfxVolumeBar());
         add(settingmenu.getSfxVolumeUpBtn());
         add(settingmenu.getSfxVolumeDownBtn());
         add(settingmenu.getMuteAudio());
         add(settingmenu.getDisableFade());
 
-        add(settingmenu.getResolutionDropdown());
-        add(settingmenu.getResolutionLabel());
-        add(settingmenu.getFullscreen());
+        // Others Settings
+        add(settingmenu.getFpsCheckbox());
+        add(settingmenu.getDevCheckbox());
+        add(settingmenu.getHoldWeaponCheckbox());
     }
 
     // ========================= MOUSE EVENTS =====================================================

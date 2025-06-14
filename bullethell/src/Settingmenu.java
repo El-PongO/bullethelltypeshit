@@ -6,7 +6,8 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
+import javax.swing.JSlider;
+import javax.swing.border.EmptyBorder;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 
@@ -22,18 +23,13 @@ public class Settingmenu extends JPanel{
     private JCheckBox fpsCheckbox; // Checkbox for FPS counter
     private JCheckBox devmodeCheckbox; // Checkbox for dev mode
     private JCheckBox holdweaponCheckbox; // Checkbox for hold weapon
-    private JCheckBox disableupgradeCheckbox; // Checkbox for disable upgrade
-
-    private JButton musicVolumeUpBtn, musicVolumeDownBtn;
-    private JButton sfxVolumeUpBtn, sfxVolumeDownBtn;
-    private JProgressBar musicVolumeBar;
-    private JProgressBar sfxVolumeBar;
+    private JLabel musicLabel, sfxLabel;
     private float musicVolume = 1.0f;
     private float sfxVolume = 1.0f;
-    private JLabel musicLabel;
-    private JLabel sfxLabel;
-    private JCheckBox disableFade;
-    private JCheckBox muteAudio;
+    private JSlider musicSlider, sfxSlider;
+    private JButton musicVolumeDownBtn, musicVolumeUpBtn, sfxVolumeDownBtn, sfxVolumeUpBtn;
+    private JLabel musicValueLabel, sfxValueLabel;
+    private JCheckBox muteAudio, disableFade;
     private JComboBox<VideoSettings> resolutionDropdown;
     private JLabel resolutionLabel;
     private JCheckBox fullscreen;
@@ -133,10 +129,7 @@ public class Settingmenu extends JPanel{
             devmodeCheckbox.setBounds(20, checkboxY + 30, 200, 30); 
 
             // Draw the hold weapon checkbox
-            holdweaponCheckbox.setBounds(20, checkboxY + 60, 350, 30); 
-
-            // Draw the disable upgrade checkbox
-            disableupgradeCheckbox.setBounds(20, checkboxY + 90, 200, 30); 
+            holdweaponCheckbox.setBounds(20, checkboxY + 60, 400, 30); 
         }
     }
 
@@ -160,7 +153,6 @@ public class Settingmenu extends JPanel{
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
                 holdweaponCheckbox.setVisible(false);
-                disableupgradeCheckbox.setVisible(false);
                 // Visible
                 resolutionDropdown.setVisible(true);
                 resolutionLabel.setVisible(true);
@@ -173,7 +165,6 @@ public class Settingmenu extends JPanel{
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
                 holdweaponCheckbox.setVisible(false);
-                disableupgradeCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
                 // Visible
                 setAudioControlsVisible(true);
@@ -186,7 +177,6 @@ public class Settingmenu extends JPanel{
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
                 holdweaponCheckbox.setVisible(false);
-                disableupgradeCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
                 // Visible
                 break;
@@ -200,7 +190,6 @@ public class Settingmenu extends JPanel{
                 fpsCheckbox.setVisible(true);
                 devmodeCheckbox.setVisible(true);
                 holdweaponCheckbox.setVisible(true);
-                disableupgradeCheckbox.setVisible(true);
                 break;
             case "quit":
                 resolutionDropdown.setVisible(false);
@@ -209,7 +198,6 @@ public class Settingmenu extends JPanel{
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
                 holdweaponCheckbox.setVisible(false);
-                disableupgradeCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
                 break;
         }
@@ -373,86 +361,137 @@ public class Settingmenu extends JPanel{
         });
     }
 
-    // Create the settings for the "Audio" category
-    public void Create_Setting_Audio() {
-        // Music Controls
+    private void Create_Setting_Audio() {
+        // Font & Color
+        Font labelFont = new Font("Arial", Font.PLAIN, 18);
+        Color labelColor = Color.WHITE;
+        Color sliderBg = new Color(40, 40, 40);
+        Color sliderFg = new Color(100, 255, 100);
+
+        // --- MUSIC CONTROLS ---
+
+        // Music Label
         musicLabel = new JLabel("Music Volume:");
-        musicLabel.setForeground(Color.WHITE);
-        musicLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        musicLabel.setForeground(labelColor);
+        musicLabel.setFont(labelFont);
         musicLabel.setBounds(20, 150, 200, 30);
         add(musicLabel);
 
-        musicVolumeBar = new JProgressBar(0, 100);
-        musicVolumeBar.setValue(100);
-        musicVolumeBar.setForeground(Color.GREEN);
-        musicVolumeBar.setBackground(new Color(60, 60, 60));
-        musicVolumeBar.setBounds(20, 180, 200, 20);
-        add(musicVolumeBar);
+        // Music Slider
+        musicSlider = new JSlider(0, 100, 100);
+        musicSlider.setBounds(20, 180, 200, 40);
+        musicSlider.setBackground(sliderBg);
+        musicSlider.setForeground(sliderFg);
+        musicSlider.setOpaque(true);
+        musicSlider.addChangeListener(e -> {
+            musicVolume = musicSlider.getValue() / 100f;
+            MusicManager.setGlobalVolume(musicVolume);
+            musicValueLabel.setText(musicSlider.getValue() + "%");
+        });
+        musicSlider.setBorder(new EmptyBorder(0, 10, 0, 10));
+        add(musicSlider);
 
-        musicVolumeDownBtn = new Button("-").new_button;
-        musicVolumeDownBtn.setBounds(20, 210, 50, 30);
-        musicVolumeDownBtn.addActionListener(e -> adjustMusicVolume(-0.1f));
+        // Music Value Label
+        musicValueLabel = new JLabel("100%");
+        musicValueLabel.setForeground(labelColor);
+        musicValueLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        musicValueLabel.setBounds(225, 180, 50, 30);
+        add(musicValueLabel);
+
+        // Music Buttons
+        Button musicDownBtn = new Button("-");
+        musicDownBtn.setGlowEnabled(false);
+        musicVolumeDownBtn = musicDownBtn.new_button;
+        musicVolumeDownBtn.setBounds(20, 220, 50, 30);
+        musicVolumeDownBtn.addActionListener(e -> {
+            int newValue = Math.max(0, musicSlider.getValue() - 10);
+            musicSlider.setValue(newValue); // Slider listener handles volume update
+        });
         add(musicVolumeDownBtn);
 
-        musicVolumeUpBtn = new Button("+").new_button;
-        musicVolumeUpBtn.setBounds(170, 210, 50, 30);
-        musicVolumeUpBtn.addActionListener(e -> adjustMusicVolume(0.1f));
+        Button musicUpBtn = new Button("+");
+        musicUpBtn.setGlowEnabled(false);
+        musicVolumeUpBtn = musicUpBtn.new_button;
+        musicVolumeUpBtn.setBounds(170, 220, 50, 30);
+        musicVolumeUpBtn.addActionListener(e -> {
+            int newValue = Math.min(100, musicSlider.getValue() + 10);
+            musicSlider.setValue(newValue);
+        });
         add(musicVolumeUpBtn);
+        
+        // --- SFX CONTROLS ---
 
-        // SFX Controls
+        // SFX Label
         sfxLabel = new JLabel("SFX Volume:");
-        sfxLabel.setForeground(Color.WHITE);
-        sfxLabel.setFont(new Font("Arial", Font.PLAIN, 20));
-        sfxLabel.setBounds(20, 260, 200, 30);
+        sfxLabel.setForeground(labelColor);
+        sfxLabel.setFont(labelFont);
+        sfxLabel.setBounds(20, 270, 200, 30);
         add(sfxLabel);
 
-        sfxVolumeBar = new JProgressBar(0, 100);
-        sfxVolumeBar.setValue(100);
-        sfxVolumeBar.setForeground(Color.GREEN);
-        sfxVolumeBar.setBackground(new Color(60, 60, 60));
-        sfxVolumeBar.setBounds(20, 290, 200, 20);
-        add(sfxVolumeBar);
+        // SFX Slider
+        sfxSlider = new JSlider(0, 100, 100);
+        sfxSlider.setBounds(20, 300, 200, 40);
+        sfxSlider.setBackground(sliderBg);
+        sfxSlider.setForeground(sliderFg);
+        sfxSlider.setOpaque(true);
+        sfxSlider.addChangeListener(e -> {
+            sfxVolume = sfxSlider.getValue() / 100f;
+            Sfx.setGlobalVolume(sfxVolume);
+            sfxValueLabel.setText(sfxSlider.getValue() + "%");
+        });
+        sfxSlider.setBorder(new EmptyBorder(0, 10, 0, 10));
+        add(sfxSlider);
 
-        sfxVolumeDownBtn = new Button("-").new_button;
-        sfxVolumeDownBtn.setBounds(20, 320, 50, 30);
-        sfxVolumeDownBtn.addActionListener(e -> adjustSfxVolume(-0.1f));
+        // SFX Value Label
+        sfxValueLabel = new JLabel("100%");
+        sfxValueLabel.setForeground(labelColor);
+        sfxValueLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        sfxValueLabel.setBounds(225, 300, 50, 30);
+        add(sfxValueLabel);
+
+        // SFX Buttons
+        Button sfxDownBtn = new Button("-");
+        sfxDownBtn.setGlowEnabled(false);
+        sfxVolumeDownBtn = sfxDownBtn.new_button;
+        sfxVolumeDownBtn.setBounds(20, 340, 50, 30);
+        sfxVolumeDownBtn.addActionListener(e -> {
+            int newValue = Math.max(0, sfxSlider.getValue() - 10);
+            sfxSlider.setValue(newValue);
+        });
         add(sfxVolumeDownBtn);
 
-        sfxVolumeUpBtn = new Button("+").new_button;
-        sfxVolumeUpBtn.setBounds(170, 320, 50, 30);
-        sfxVolumeUpBtn.addActionListener(e -> adjustSfxVolume(0.1f));
+        Button sfxUpBtn = new Button("+");
+        sfxUpBtn.setGlowEnabled(false);
+        sfxVolumeUpBtn = sfxUpBtn.new_button;
+        sfxVolumeUpBtn.setBounds(170, 340, 50, 30);
+        sfxVolumeUpBtn.addActionListener(e -> {
+            int newValue = Math.min(100, sfxSlider.getValue() + 10);
+            sfxSlider.setValue(newValue);
+        });
         add(sfxVolumeUpBtn);
 
-        // Initially hide all controls
+        // --- Additional UI ---
         Create_disFadeCheckbox();
         Create_muteAudioCheckbox();
+
+        // Hide by default
         setAudioControlsVisible(false);
     }
 
-    private void adjustMusicVolume(float delta) {
-        musicVolume = Math.max(0, Math.min(1, musicVolume + delta));
-        musicVolumeBar.setValue((int)(musicVolume * 100));
-        
-        // Update global music volume
-        MusicManager.setGlobalVolume(musicVolume);
-    }
-    
-    private void adjustSfxVolume(float delta) {
-        sfxVolume = Math.max(0, Math.min(1, sfxVolume + delta));
-        sfxVolumeBar.setValue((int)(sfxVolume * 100));
-        // Update the actual SFX volume
-        Sfx.setGlobalVolume(sfxVolume);
-    }
-    
     private void setAudioControlsVisible(boolean visible) {
         musicLabel.setVisible(visible);
+        musicValueLabel.setVisible(visible);
         sfxLabel.setVisible(visible);
+        sfxValueLabel.setVisible(visible);
+        
         musicVolumeUpBtn.setVisible(visible);
         musicVolumeDownBtn.setVisible(visible);
         sfxVolumeUpBtn.setVisible(visible);
         sfxVolumeDownBtn.setVisible(visible);
-        musicVolumeBar.setVisible(visible);
-        sfxVolumeBar.setVisible(visible);
+    
+        musicSlider.setVisible(visible);
+        sfxSlider.setVisible(visible);
+    
         muteAudio.setVisible(visible);
         disableFade.setVisible(visible);
     }
@@ -468,13 +507,13 @@ public class Settingmenu extends JPanel{
         muteAudio.addActionListener(e -> {
             boolean isMuted = muteAudio.isSelected();
             if (isMuted) {
-                musicVolumeBar.setValue(0);
-                sfxVolumeBar.setValue(0);
+                musicSlider.setValue(0);
+                sfxSlider.setValue(0);
                 MusicManager.setGlobalVolume(0);
                 Sfx.setGlobalVolume(0);
             } else {
-                musicVolumeBar.setValue((int)(musicVolume * 100));
-                sfxVolumeBar.setValue((int)(sfxVolume * 100));
+                musicSlider.setValue(100);
+                sfxSlider.setValue(100);
                 MusicManager.setGlobalVolume(musicVolume);
                 Sfx.setGlobalVolume(sfxVolume);
             }
@@ -500,11 +539,9 @@ public class Settingmenu extends JPanel{
         Create_fpsCheckbox();
         Create_devmodeCheckbox();
         Create_holdweaponCheckbox();
-        Create_disableupgradeCheckbox();
         add(fpsCheckbox);
         add(devmodeCheckbox);
         add(holdweaponCheckbox);
-        add(disableupgradeCheckbox);
     }
 
     public void Create_fpsCheckbox() {
@@ -528,23 +565,13 @@ public class Settingmenu extends JPanel{
     }
 
     public void Create_holdweaponCheckbox() { // Unused method
-        holdweaponCheckbox = new Customcheckbox("Enable hold (FIRE_KEY) to shoot");
+        holdweaponCheckbox = new Customcheckbox("Automatically reload weapon when empty");
         holdweaponCheckbox.setFont(new Font("Arial", Font.PLAIN, 20));
         holdweaponCheckbox.setForeground(Color.WHITE);
         holdweaponCheckbox.setBackground(new Color(28, 51, 92)); // Match the background color
         holdweaponCheckbox.setFocusPainted(false);
         holdweaponCheckbox.setVisible(false); // Initially hidden
         holdweaponCheckbox.setSelected(false); // Default state
-    }
-
-    public void Create_disableupgradeCheckbox() { // Unused method
-        disableupgradeCheckbox = new Customcheckbox("Disable upgrade");
-        disableupgradeCheckbox.setFont(new Font("Arial", Font.PLAIN, 20));
-        disableupgradeCheckbox.setForeground(Color.WHITE);
-        disableupgradeCheckbox.setBackground(new Color(28, 51, 92)); // Match the background color
-        disableupgradeCheckbox.setFocusPainted(false);
-        disableupgradeCheckbox.setVisible(false); // Initially hidden
-        disableupgradeCheckbox.setSelected(false); // Default state
     }
 
     public JCheckBox getFpsCheckbox() {
@@ -559,14 +586,15 @@ public class Settingmenu extends JPanel{
         return holdweaponCheckbox;
     }
 
-    public JCheckBox getDisableUpgradeCheckbox() {
-        return disableupgradeCheckbox;
-    }
 
     public JLabel getMusicLabel() { return musicLabel; }
     public JLabel getSfxLabel() { return sfxLabel; }
-    public JProgressBar getMusicVolumeBar() { return musicVolumeBar; }
-    public JProgressBar getSfxVolumeBar() { return sfxVolumeBar; }
+    public JLabel getMusicValueLabel() { return musicValueLabel; }
+    public JLabel getSfxValueLabel() { return sfxValueLabel; }
+    // public JProgressBar getMusicVolumeBar() { return musicVolumeBar; }
+    // public JProgressBar getSfxVolumeBar() { return sfxVolumeBar; }
+    public JSlider getMusicSlider() { return musicSlider; }
+    public JSlider getSfxSlider() { return sfxSlider; }
     public JButton getMusicVolumeUpBtn() { return musicVolumeUpBtn; }
     public JButton getMusicVolumeDownBtn() { return musicVolumeDownBtn; }
     public JButton getSfxVolumeUpBtn() { return sfxVolumeUpBtn; }

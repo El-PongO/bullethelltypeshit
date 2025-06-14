@@ -8,12 +8,12 @@ public class Button {
     private static CursorManager cursorManager;
     private static String glowCursorName;
     private static Component targetComponent;
+    private boolean glowEnabled = true;
 
     public Button(String nama){
         this.nama = nama;
         new_button = new JButton(nama) {
             private boolean hovered = false;
-    
             {
                 addMouseListener(new MouseAdapter() {
                     @Override
@@ -54,7 +54,7 @@ public class Button {
                 int textX = (getWidth() - textWidth) / 2;
                 int textY = (getHeight() + textHeight) / 2 - fm.getDescent();
 
-                if (hovered) {
+                if (hovered && glowEnabled) {
                     Color base = getForeground();
                     Color glow = new Color(
                         Math.min(255, base.getRed() + 60),
@@ -96,6 +96,10 @@ public class Button {
         new_button.setFocusPainted(false);
     }
 
+    public void setGlowEnabled(boolean enabled) {
+        this.glowEnabled = enabled;
+    }
+
     public static void setupGlowCursor(CursorManager cm, String cursorName, Component component) {
         cursorManager = cm;
         glowCursorName = cursorName;
@@ -116,10 +120,6 @@ public class Button {
     
     public void repaint(){
         repaint();
-    }
-    
-    public void remove(){
-        new_button.remove(new_button);
     }
 
     public void addActionListener(ActionListener listener){
