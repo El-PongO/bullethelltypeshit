@@ -1,9 +1,9 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import players.Player;
-import players.Bullet;
 import javax.imageio.ImageIO;
+import players.Player;
+import weapons.Bullet;
 
 public class NormalEnemy extends Enemy {
     public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2;

@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.util.ArrayList;
 import players.Player;
-import players.Bullet;
+import weapons.Bullet;
 public class FastEnemy extends Enemy {
     private int changeDirectionCounter;
     private int directionX;

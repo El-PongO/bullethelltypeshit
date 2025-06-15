@@ -1,10 +1,9 @@
 import java.awt.*;
-import java.util.ArrayList;
-import players.Player;
-import players.Bullet;
-import javax.imageio.ImageIO;
-
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import javax.imageio.ImageIO;
+import players.Player;
+import weapons.Bullet;
 
 public class BomberEnemy extends Enemy {
     private double moveSpeed = 3.5; // Faster than normal enemies

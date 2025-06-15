@@ -1,9 +1,9 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import players.Player;
-import players.Bullet;
 import javax.imageio.ImageIO;
+import players.Player;
+import weapons.Bullet;
 
 public class TankEnemy extends Enemy {
     private boolean isMoving;

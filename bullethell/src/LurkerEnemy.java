@@ -1,9 +1,9 @@
 import java.awt.*;
-import java.util.ArrayList;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import players.Player;
-import players.Bullet;
+import weapons.Bullet;
 public class LurkerEnemy extends Enemy {
     private int stateCounter; // Counter for controlling states
     private boolean isHiding; // Whether the enemy is currently "hiding"

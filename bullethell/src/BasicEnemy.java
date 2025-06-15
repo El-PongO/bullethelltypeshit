@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.util.ArrayList;
 import players.Player;
-import players.Bullet;
+import weapons.Bullet;
 
 public class BasicEnemy extends Enemy {
     private int movementCounter = 0;  // Counter for controlling movement duration
