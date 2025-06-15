@@ -407,16 +407,37 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     }
 
     public void playsfx(boolean isEmpty){
+        Weapon current = player.getCurrentWeapon();
+        if (current == null) {
+            System.out.println("No current weapon to play sound for.");
+            return;
+        }
+
         if (!isEmpty) {
-            if (player.getCurrentWeaponIndex() == 0){
+            if (current instanceof weapons.Revolver) {
                 soundsfx.playWithRandomPitch("shootrevolver");
+            }else if (current instanceof weapons.Shotgun) {
+                soundsfx.playWithRandomPitch("shootshotgun");
+                // Get the duration of the shotgun fire SFX (in ms)
+                int fireDuration = soundsfx.getClipDurationMs("shootshotgun");
+                // Schedule the load SFX after the fire SFX ends
+                new javax.swing.Timer(fireDuration, evt -> {
+                    if (current.getCurrentAmmo() <= 0){
+                        soundsfx.play("shotgunlock");
+                    }else{
+                        soundsfx.play("shotgunload");
+                    }
+                    ((javax.swing.Timer)evt.getSource()).stop();
+                }).start();
             }else{
                 soundsfx.playWithRandomPitch("shoot");
             }
         }else{
             System.out.println("Playing weapon empty sfx");
-            if (player.getCurrentWeaponIndex() == 0) {
+            if (current instanceof weapons.Revolver) {
                 soundsfx.play("emptyrevolver");
+            }else if (current instanceof weapons.Shotgun) {
+                soundsfx.play("shogunempty");
             }else{
                 soundsfx.play("empty");
             }
@@ -424,7 +445,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     }
 
     public void reloadsfx(){
-        if (player.getCurrentWeaponIndex() == 3){
+        Weapon current = player.getCurrentWeapon();
+        if (current == null) {
+            System.out.println("No current weapon to play sound for.");
+            return;
+        }
+
+        if (current instanceof weapons.Shotgun) {
             soundsfx.play("shotgunreload");
         }else{
             
@@ -548,9 +575,15 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 playerBullets.addAll(bullet);
                 playsfx(false);
             } else {
-                playsfx(true);
-                showOutOfAmmoMsg = true;
-                outOfAmmoMsgTime = System.currentTimeMillis();
+                if (!weapon.hasAmmo()) {
+                    long now = System.currentTimeMillis();
+                    if (now - lastEmptySfxTime >= EMPTY_SFX_DELAY) {
+                        playsfx(true); // Out of ammo
+                        lastEmptySfxTime = now;
+                        showOutOfAmmoMsg = true;
+                        outOfAmmoMsgTime = now;
+                    }
+                }
             }
         }
     }

@@ -11,8 +11,8 @@ public class Shotgun extends Weapon {
               loadImage("shotgun.png"),
               loadImage("shotgun_bullet.png"),
               8, // max ammo
-              2000, // reload delay in ms
-              500, // fire rate in ms
+              3000, // reload delay in ms
+              800, // fire rate in ms
               false); // semi-auto
     }    
     

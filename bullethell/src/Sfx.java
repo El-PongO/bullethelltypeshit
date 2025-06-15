@@ -152,4 +152,15 @@ public class Sfx {
             }
         }
     }
+
+    public int getClipDurationMs(String name) {
+        SoundClipPool pool = soundPools.get(name);
+        if (pool != null && !pool.clipPool.isEmpty()) {
+            Clip clip = pool.clipPool.get(0);
+            return (int)(clip.getMicrosecondLength() / 1000);
+        }
+        // Fallback: return a default duration (e.g., 600ms for shotgun)
+        if (name.equals("shootshotgun")) return 600;
+        return 500;
+    }
 }
