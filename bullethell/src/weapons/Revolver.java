@@ -10,11 +10,14 @@ public class Revolver extends Weapon {
         super("Revolver",
               loadImage("revolver.png"),
               loadImage("revolver_bullet.png"),
-              6, // max ammo
-              1200, // reload delay in ms
-              400, // fire rate in ms
-              false); // semi-auto
-    }    private static BufferedImage loadImage(String filename) {
+              7, // max ammo
+              2700, // reload delay in ms
+              433, // fire rate in ms
+              false, // semi-auto
+              150); // damage per shot
+    }    
+    
+    private static BufferedImage loadImage(String filename) {
         try {
             if (filename.equals("revolver.png")) {
                 return ImageIO.read(Revolver.class.getResourceAsStream("/Assets/player/Guns/revolver.png"));
@@ -44,7 +47,7 @@ public class Revolver extends Weapon {
         
         if (getCurrentAmmo() > 0) {
             double angle = Math.atan2(targetY - (y + playerSize/2), targetX - (x + playerSize/2));
-            int dx = (int)(Math.cos(angle) * 3) * 3; // 3 is bullet speed, adjust as needed
+            int dx = (int)(Math.cos(angle) * 3) * 3; // 3 is bullet speed
             int dy = (int)(Math.sin(angle) * 3) * 3;
             bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, dx, dy, getBulletSprite()));
             

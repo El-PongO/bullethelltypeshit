@@ -14,8 +14,9 @@ public abstract class Weapon {
     private int fireRateMs; // Minimum ms between shots
     private long lastShotTime = 0;
     private boolean fullAuto; // true = hold to fire, false = semi-auto
+    private int damage; // Damage dealt by the weapon
 
-    public Weapon(String name, BufferedImage sprite, BufferedImage bulletSprite, int maxAmmo, int reloadDelayMs, int fireRateMs, boolean fullAuto) {
+    public Weapon(String name, BufferedImage sprite, BufferedImage bulletSprite, int maxAmmo, int reloadDelayMs, int fireRateMs, boolean fullAuto, int damage) {
         this.name = name;
         this.sprite = sprite;
         this.bulletSprite = bulletSprite;
@@ -24,6 +25,7 @@ public abstract class Weapon {
         this.reloadDelayMs = reloadDelayMs;
         this.fireRateMs = fireRateMs;
         this.fullAuto = fullAuto;
+        this.damage = damage;
     }
 
     public String getName() {
@@ -50,6 +52,10 @@ public abstract class Weapon {
         return fullAuto;
     }
 
+    public int getWeaponDamage() {
+        return damage;
+    }
+    
     public int getMaxAmmo() { return maxAmmo; }
     public int getCurrentAmmo() { return currentAmmo; }
     public boolean isReloading() { return reloading; }

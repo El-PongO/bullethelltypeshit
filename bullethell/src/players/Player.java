@@ -4,11 +4,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
-import javax.swing.JLabel;
-
 import weapons.Bullet;
 import weapons.Weapon;
-
 
 public abstract class Player {
     protected int x;
@@ -23,7 +20,6 @@ public abstract class Player {
     private boolean isInvincible = false; // Invincibility flag
     protected long dashDuration = 200; // Dash duration in milliseconds
     protected long invincibilityDuration = 1000; // Invincibility duration (1 second)
-    private long invincibilityStartTime = 0; // When invincibility started
     private long dashStartTime = 0; // When the current dash started
     protected int maxDashCharges = 2; // Maximum number of dash charges 
     protected int currentDashCharges = maxDashCharges; // Current number of dash charges ambil dari (maxDashCharges)
@@ -34,11 +30,12 @@ public abstract class Player {
     public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2, weapon_pistol_1, ammo_pistol1, weapon_pistol_2, ammo_pistol2, weapon_rif_1, ammo_rif1;
     public int spritecounter=0;
     public int spritenum=1;
-
-    private final String[] weaponNames = {"Weapon 1", "Weapon 2", "Weapon 3"}; // Add more if needed
     private List<Weapon> weapons = new ArrayList<>();
     private int currentWeaponIndex = 0; // 0 = weapon 1, 1 = weapon 2, etc.
     public BufferedImage changewp, reloadbar, reloadbar2;
+    private boolean dashInvincible = false;
+    private boolean hitInvincible = false;
+    private long hitInvincibleStartTime = 0;
 
     public Player(int x, int y) {
         this.x = x;
@@ -229,35 +226,40 @@ public abstract class Player {
             this.idling=true;
             this.spritenum=1; // set sprite ke 1
         }
-    }    public void updateDash() {
-        long currentTime = System.currentTimeMillis();
+    }    
 
-        // End dash after the duration
+    public void updateDash() {
+        long currentTime = System.currentTimeMillis();
+    
+        // End dash and dash invincibility together
         if (isDashing && currentTime - dashStartTime >= dashDuration) {
             isDashing = false;
+            dashInvincible = false;
         }
-
-        // End invincibility after the duration (only for dash-based invincibility)
-        // Regular invincibility from taking damage is handled in isInvincible()
-        if (isInvincible && isDashing && currentTime - dashStartTime >= invincibilityDuration) {
-            isInvincible = false;
+    
+        // End hit invincibility after duration
+        if (hitInvincible && currentTime - hitInvincibleStartTime > invincibilityDuration) {
+            hitInvincible = false;
         }
-
-        // Recharge dash charges
+    
+        // Recharge dash charges...
         if (currentDashCharges < maxDashCharges && currentTime - lastChargeTime >= dashChargeCooldown) {
             currentDashCharges++;
-            lastChargeTime = currentTime; // Reset recharge timer
+            lastChargeTime = currentTime;
         }
     }
+
     public void dash() {
         long currentTime = System.currentTimeMillis();
         if (currentDashCharges > 0 && !isDashing) {
             isDashing = true;
-            isInvincible = true; // Set invincibility when dashing
+            dashInvincible = true;
             dashStartTime = currentTime;
-            currentDashCharges--; // Consume one dash charge
+            currentDashCharges--;
         }
-    }    public void takeDamage(int damage) {
+    }
+    
+    public void takeDamage(int damage) {
         if (!isInvincible) { // Only take damage if not invincible
             health -= damage;
             if (health < 0) {
@@ -267,11 +269,16 @@ public abstract class Player {
             activateInvincibility();
         }
     }
-    
+
     // Activate invincibility for the player
     public void activateInvincibility() {
-        isInvincible = true;
-        invincibilityStartTime = System.currentTimeMillis();
+        hitInvincible = true;
+        hitInvincibleStartTime = System.currentTimeMillis();
+    }
+    
+    // Check if the player is currently invincible (either from dash or hit)
+    public boolean isInvincible() {
+        return dashInvincible || hitInvincible;
     }
 
     public void heal(int amount, Boolean isCapped) { // Nanti kalo dipake (pasti dipake sih)
@@ -284,7 +291,8 @@ public abstract class Player {
     public void reloadCurrentWeapon() {
         Weapon weapon = getCurrentWeapon();
         weapon.startReload();
-    }    public int getCurrentWeaponIndex() { return currentWeaponIndex; }
+    }    
+    public int getCurrentWeaponIndex() { return currentWeaponIndex; }
     public int getWeaponMinIndex() { return 0; }
     public int getWeaponMaxIndex() { return weapons.size() - 1; }
     public Weapon getCurrentWeapon() { 
@@ -322,13 +330,7 @@ public abstract class Player {
 
     public String[] getWeaponNames() {
         return weapons.stream().map(Weapon::getName).toArray(String[]::new);
-    }    public boolean isInvincible() {
-        // Check if invincibility has expired
-        if (isInvincible && System.currentTimeMillis() - invincibilityStartTime > invincibilityDuration) {
-            isInvincible = false;
-        }
-        return isInvincible; // Return the updated invincibility status
-    }
+    }    
     
     public void setMaxHealth(int maxHealth) {
         this.maxHealth = maxHealth;

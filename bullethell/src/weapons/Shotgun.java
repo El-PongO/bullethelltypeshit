@@ -12,8 +12,9 @@ public class Shotgun extends Weapon {
               loadImage("shotgun_bullet.png"),
               8, // max ammo
               3000, // reload delay in ms
-              800, // fire rate in ms
-              false); // semi-auto
+              1000, // fire rate in ms
+              false, // semi-auto
+              100); // damage per pellet (100 biar ngetes nya gampang :v)
     }    
     
     private static BufferedImage loadImage(String filename) {
@@ -85,7 +86,7 @@ public class Shotgun extends Weapon {
                 double segment = spread / (pellets - 1);
                 double jitter = (rand.nextDouble() - 0.5) * (segment * 0.4); // 40% of segment width
                 double pelletAngle = minAngle + i * segment + jitter;
-                int dx = (int)(Math.cos(pelletAngle) * 3) * 3; // 3 is bullet speed, adjust as needed
+                int dx = (int)(Math.cos(pelletAngle) * 3) * 3; // 3 is bullet speed
                 int dy = (int)(Math.sin(pelletAngle) * 3) * 3;
                 bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, dx, dy, null));
             }

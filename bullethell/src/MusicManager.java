@@ -1,6 +1,5 @@
 public class MusicManager {
     private static float globalVolume = 1.0f;
-    private static boolean isMuted = false;
 
     public static void setGlobalVolume(float volume) {
         globalVolume = Math.max(0, Math.min(1, volume));

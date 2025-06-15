@@ -61,7 +61,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private Sfx soundsfx = new Sfx();
     private long lastEmptySfxTime = 0;
     private static final int EMPTY_SFX_DELAY = 400; // ms, adjust to match your empty SFX duration
-    private boolean emptySfxQueued = false;
     // ========================= MUSIC =====================================================
     private Music musiclobby = new Music();
     private static Music music1 = new Music();
@@ -394,16 +393,25 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         soundsfx.load("explode", "/Audio/Sfx/Explode.wav");
         soundsfx.load("empty", "/Audio/Sfx/wep_empty.wav");
         soundsfx.load("hit", "/Audio/Sfx/player_hit.wav");
+        soundsfx.load("reload", "/Audio/Sfx/reload.wav");
 
         // revolver
         soundsfx.load("shootrevolver", "/Audio/Sfx/rev_shot.wav");
         soundsfx.load("emptyrevolver", "/Audio/Sfx/rev_empty.wav");
+        soundsfx.load("reloadrevolver", "/Audio/Sfx/Revolver_Reload.wav");
+
         // shotgun
         soundsfx.load("shootshotgun", "/Audio/Sfx/shotgun_fire.wav");
         soundsfx.load("shotgunload", "/Audio/Sfx/shotgun_load.wav");
         soundsfx.load("shotgunreload", "/Audio/Sfx/shotgun_reload.wav");
         soundsfx.load("shotgunlock", "/Audio/Sfx/shotgun_lock.wav");
         soundsfx.load("shogunempty", "/Audio/Sfx/shotgun_empty.wav");
+
+        // smg
+        soundsfx.load("smgreload", "/Audio/Sfx/MP5_Reload.wav");
+
+        // rpg
+        soundsfx.load("rpgreload", "/Audio/Sfx/RPG_Reload.wav");
     }
 
     public void playsfx(boolean isEmpty){
@@ -423,9 +431,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 // Schedule the load SFX after the fire SFX ends
                 new javax.swing.Timer(fireDuration, evt -> {
                     if (current.getCurrentAmmo() <= 0){
-                        soundsfx.play("shotgunlock");
+                        soundsfx.playWithRandomPitch("shotgunlock");
                     }else{
-                        soundsfx.play("shotgunload");
+                        soundsfx.playWithRandomPitch("shotgunload");
                     }
                     ((javax.swing.Timer)evt.getSource()).stop();
                 }).start();
@@ -453,9 +461,14 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
         if (current instanceof weapons.Shotgun) {
             soundsfx.play("shotgunreload");
+        }else if (current instanceof weapons.Revolver) {
+            soundsfx.play("reloadrevolver");
+        }else if (current instanceof weapons.Smg) {
+            soundsfx.play("smgreload");
         }else{
-            
+            soundsfx.play("reload");
         }
+        
     }
 
     public void musicmanager(){
@@ -639,8 +652,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 Enemy enemy = enemies.get(i);
                 Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
                 if (bulletBounds.intersects(enemyBounds)) {
+                    Weapon currentWeapon = player.getCurrentWeapon();
                     // Deal damage to the enemy instead of immediately removing
-                    enemy.takeDamage(50); // Each bullet deals 50 damage
+                    enemy.takeDamage(currentWeapon.getWeaponDamage()); // Each bullet deals 50 damage
                     
                     // Check if enemy is now dead
                     if (enemy.isDead()) {

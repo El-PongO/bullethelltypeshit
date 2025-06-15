@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.awt.BorderLayout;
 import javax.swing.JFrame; 
 public class App {
     public static void main(String[] args) throws Exception {
