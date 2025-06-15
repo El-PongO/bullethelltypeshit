@@ -1,8 +1,8 @@
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
-import players.Bullet;
 import players.Player;
+import weapons.Bullet;
 
 // Making Enemy an abstract class to support multiple enemy types
 public abstract class Enemy {

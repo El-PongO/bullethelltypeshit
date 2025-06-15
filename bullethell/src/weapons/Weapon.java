@@ -1,6 +1,8 @@
-package players;
+package weapons;
 import java.awt.image.BufferedImage;
-public class Weapon {
+import java.util.List;
+
+public abstract class Weapon {
     private String name;
     private BufferedImage sprite;
     private BufferedImage bulletSprite;
@@ -73,4 +75,6 @@ public class Weapon {
             reloading = false;
         }
     }
+
+    public abstract List<Bullet> fire(int x, int y, int targetX, int targetY, int playerSize);
 }
