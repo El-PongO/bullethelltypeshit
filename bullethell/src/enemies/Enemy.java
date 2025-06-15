@@ -1,3 +1,4 @@
+package enemies;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
@@ -6,8 +7,8 @@ import weapons.Bullet;
 
 // Making Enemy an abstract class to support multiple enemy types
 public abstract class Enemy {
-    int x, y;
-    int size = 20;
+    public int x, y;
+    public int size = 20;
     protected int health = 100; // Enemy health
     protected int maxHealth = 100; // Maximum health
     long lastShotTime;

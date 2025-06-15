@@ -7,6 +7,13 @@ import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import enemies.BomberEnemy;
+import enemies.Enemy;
+import enemies.LurkerEnemy;
+import enemies.NormalEnemy;
+import enemies.ShooterEnemy;
+import enemies.TankEnemy;
 import players.Gunslinger;
 import players.Player;
 import weapons.Bullet;
