@@ -13,6 +13,8 @@ import enemies.LurkerEnemy;
 import enemies.NormalEnemy;
 import enemies.ShooterEnemy;
 import enemies.TankEnemy;
+import enemies.TankBoss;
+import enemies.ShooterBoss;
 import players.Gunslinger;
 import players.Player;
 import weapons.Bullet;
@@ -178,33 +180,48 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameClock.setVisible(false);
     }
 
-    // ========================= SPAWN =====================================================        
+    // ========================= SPAWN =====================================================
     private void spawnEnemy() {
         int spawnX = rand.nextInt(getWidth());
         int spawnY = rand.nextInt(getHeight());
         
-        // Randomly choose an enemy type to spawn
-        int enemyType = rand.nextInt(5); // 0 = Shooter, 1 = Normal, 2 = Tank, 3 = Lurker, 4 = Bomber
-        
-        switch(enemyType) {
-            case 0:
-                enemies.add(new ShooterEnemy(spawnX, spawnY)); // Only this enemy type shoots
-                break;
-            case 1:
-                enemies.add(new NormalEnemy(spawnX, spawnY)); // Simple follower
-                break;
-            case 2:
-                enemies.add(new TankEnemy(spawnX, spawnY)); // Slow and big
-                break;
-            case 3:
-                enemies.add(new LurkerEnemy(spawnX, spawnY)); // Sudden jumps
-                break;
-            case 4:
-                enemies.add(new BomberEnemy(spawnX, spawnY)); // Fast toward player
-                break;
+        // Small chance to spawn a boss (5%)
+        if (rand.nextInt(100) < 5) {
+            // 50/50 chance between the two boss types
+            if (rand.nextBoolean()) {
+                enemies.add(new TankBoss(spawnX, spawnY)); // Tank boss that can charge
+                System.out.println("Tank Boss spawned!");
+            } else {
+                enemies.add(new ShooterBoss(spawnX, spawnY)); // Shooter boss that jumps and shoots bursts
+                System.out.println("Shooter Boss spawned!");
+            }
+            // Longer delay after spawning a boss
+            spawnTimer.setInitialDelay(spawnDelay * 3);
+        } else {
+            // Regular enemy spawning
+            int enemyType = rand.nextInt(5); // 0 = Shooter, 1 = Normal, 2 = Tank, 3 = Lurker, 4 = Bomber
+            
+            switch(enemyType) {
+                case 0:
+                    enemies.add(new ShooterEnemy(spawnX, spawnY)); // Only this enemy type shoots
+                    break;
+                case 1:
+                    enemies.add(new NormalEnemy(spawnX, spawnY)); // Simple follower
+                    break;
+                case 2:
+                    enemies.add(new TankEnemy(spawnX, spawnY)); // Slow and big
+                    break;
+                case 3:
+                    enemies.add(new LurkerEnemy(spawnX, spawnY)); // Sudden jumps
+                    break;
+                case 4:
+                    enemies.add(new BomberEnemy(spawnX, spawnY)); // Fast toward player
+                    break;
+            }
+            
+            spawnTimer.setInitialDelay(spawnDelay);
         }
         
-        spawnTimer.setInitialDelay(spawnDelay);
         spawnTimer.restart();
     }
     
