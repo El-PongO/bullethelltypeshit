@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
 import enemies.BomberEnemy;
 import enemies.Enemy;
 import enemies.LurkerEnemy;
@@ -49,8 +48,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     static final int ZOOM = 2; 
     static final int MAP_WIDTH = 16;  // Add map dimensions
     static final int MAP_HEIGHT = 12;
-    static int vpw = VIEWPORT_WIDTH * TILE_SIZE;  // Viewport dimensions in pixels
-    static int vph = VIEWPORT_HEIGHT * TILE_SIZE;
+    // static int vpw = VIEWPORT_WIDTH * TILE_SIZE;  // Viewport dimensions in pixels
+    // static int vph = VIEWPORT_HEIGHT * TILE_SIZE;
     static int cameraPixelX, cameraPixelY;
     CursorManager cursormanager = new CursorManager();
     private boolean mouseHeld = false;
@@ -58,9 +57,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private long outOfAmmoMsgTime = 0;
     private static final int OUT_OF_AMMO_MSG_DURATION = 1000; // ms
     // ========================= SFX =====================================================
-    private Sfx soundsfx = new Sfx();
+    public static Sfx soundsfx = new Sfx();
     private long lastEmptySfxTime = 0;
     private static final int EMPTY_SFX_DELAY = 400; // ms, adjust to match your empty SFX duration
+    private long lastReloadSfxTime = 0;
     // ========================= MUSIC =====================================================
     private Music musiclobby = new Music();
     private static Music music1 = new Music();
@@ -167,12 +167,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private static void gameOver() {
         isGameOver = true;
-        // if (controlFade()){
-        //     music1.fadeOut(2500);
-        // }else{
-        //     music1.stop();
-        // }
-        music1.stop();
+        if (controlFade()){
+            music1.fadeOut(2500);
+        }else{
+            music1.stop();
+        }
+        soundsfx.stopAll();
         stopGame();
         gameClock.reset();
         gameClock.setVisible(false);
@@ -258,8 +258,21 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         drawGame((Graphics2D)g);
 
         // Center camera on player with bounds checking
-        cameraPixelX = Math.max(0, Math.min(player.getX() - vpw/2, (grid[0].length * TILE_SIZE) - vpw));
-        cameraPixelY = Math.max(0, Math.min(player.getY() - vph/2, (grid.length * TILE_SIZE) - vph));
+        int vpw = getWidth() / ZOOM; // Adjust viewport width for zoom
+        int vph = getHeight() / ZOOM; // Adjust viewport height for zoom
+        
+        int mapPixelWidth = grid[0].length * TILE_SIZE;
+        int mapPixelHeight = grid.length * TILE_SIZE;
+        
+        int playerCenterX = player.getX() + player.getSize() / 2;
+        int playerCenterY = player.getY() + player.getSize() / 2;
+        
+        // Calculate max camera positions, but never less than 0
+        int maxCameraX = Math.max(0, mapPixelWidth - vpw);
+        int maxCameraY = Math.max(0, mapPixelHeight - vph);
+        
+        cameraPixelX = Math.max(0, Math.min(playerCenterX - vpw/2, maxCameraX));
+        cameraPixelY = Math.max(0, Math.min(playerCenterY - vph/2, maxCameraY));
 
         // Calculate visible tile range
         int startY = cameraPixelY / TILE_SIZE;
@@ -311,10 +324,24 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }
     }
     
-    private void drawGame(Graphics2D g) {        
+    private void drawGame(Graphics2D g) {       
         // Draw background
-        cameraPixelX = Math.max(0, Math.min(player.getX() - vpw/2, (grid[0].length * TILE_SIZE) - vpw));
-        cameraPixelY = Math.max(0, Math.min(player.getY() - vph/2, (grid.length * TILE_SIZE) - vph));
+        int vpw = getWidth() / ZOOM; // Adjust viewport width for zoom
+        int vph = getHeight() / ZOOM; // Adjust viewport height for zoom
+        
+        int mapPixelWidth = grid[0].length * TILE_SIZE;
+        int mapPixelHeight = grid.length * TILE_SIZE;
+
+        int playerCenterX = player.getX() + player.getSize() / 2;
+        int playerCenterY = player.getY() + player.getSize() / 2;
+
+        // Calculate max camera positions, but never less than 0
+        int maxCameraX = Math.max(0, mapPixelWidth - vpw);
+        int maxCameraY = Math.max(0, mapPixelHeight - vph);
+
+        cameraPixelX = Math.max(0, Math.min(playerCenterX - vpw/2, maxCameraX));
+        cameraPixelY = Math.max(0, Math.min(playerCenterY - vph/2, maxCameraY));
+
         int startY = cameraPixelY / TILE_SIZE;
         int startX = cameraPixelX / TILE_SIZE;
         int endY = (cameraPixelY + vph) / TILE_SIZE + 1;
@@ -459,6 +486,19 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             return;
         }
 
+        if (current.getCurrentAmmo() == current.getMaxAmmo()) {
+            System.out.println("Weapon already full, no reload sound.");
+            return;
+        }
+
+        // Use the weapon's reload delay as the SFX cooldown
+        int reloadDelay = current.getReloadDelayMs();
+        long now = System.currentTimeMillis();
+        if (now - lastReloadSfxTime < reloadDelay) {
+            return; // Too soon, skip playing the sound
+        }
+        lastReloadSfxTime = now;
+
         if (current instanceof weapons.Shotgun) {
             soundsfx.play("shotgunreload");
         }else if (current instanceof weapons.Revolver) {
@@ -468,7 +508,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }else{
             soundsfx.play("reload");
         }
-        
     }
 
     public void musicmanager(){
@@ -482,6 +521,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             gameLoop.stop();
             spawnTimer.stop();
             gameClock.timer.stop();
+            soundsfx.pauseAll();
             pauseMenu.setVisibility(true);
             if (getParent() instanceof MainPanel) {
                 ((MainPanel)getParent()).cursormanager.setCursor(getParent(), "cursor");
@@ -491,6 +531,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             gameLoop.start();
             spawnTimer.start();
             gameClock.timer.start();
+            soundsfx.resumeAll();
             pauseMenu.setVisibility(false);
             requestFocusInWindow();
             if (getParent() instanceof MainPanel) {

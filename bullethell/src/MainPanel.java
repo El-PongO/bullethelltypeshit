@@ -86,6 +86,7 @@ public class MainPanel extends JPanel {
                 fromPauseMenu = false; // Reset the flag
                 GameplayPanel.stopGame();
                 gameplayPanel.resetGame();
+                gameplayPanel.soundsfx.stopAll();
                 cardLayout.show(this, "MENU");
                 menuPanel.setMenuState(MenuPanel.MenuState.MAIN_MENU);
                 cursormanager.setCursor(this, "crosshair");

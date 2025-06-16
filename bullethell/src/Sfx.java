@@ -163,4 +163,36 @@ public class Sfx {
         if (name.equals("shootshotgun")) return 600;
         return 500;
     }
+
+    public void pauseAll() {
+        for (SoundClipPool pool : soundPools.values()) {
+            for (Clip clip : pool.clipPool) {
+                if (clip.isRunning()) {
+                    clip.stop(); // Pause (does not reset position)
+                }
+            }
+        }
+    }
+    
+    public void resumeAll() {
+        for (SoundClipPool pool : soundPools.values()) {
+            for (Clip clip : pool.clipPool) {
+                // Resume only if not at the end and not running
+                if (!clip.isRunning() && clip.getFramePosition() > 0 && clip.getFramePosition() < clip.getFrameLength()) {
+                    clip.start();
+                }
+            }
+        }
+    }
+
+    public void stopAll() {
+        for (SoundClipPool pool : soundPools.values()) {
+            for (Clip clip : pool.clipPool) {
+                if (clip.isRunning()) {
+                    clip.stop();
+                    clip.setFramePosition(0);
+                }
+            }
+        }
+    }
 }
