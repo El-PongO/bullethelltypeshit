@@ -18,16 +18,16 @@ public class Smg extends Weapon {
     private static BufferedImage loadImage(String filename) {
         try {
             if (filename.equals("smg.png")) {
-                return ImageIO.read(Glock.class.getResourceAsStream("/Assets/player/Guns/smg1.png"));
+                return ImageIO.read(Smg.class.getResourceAsStream("/Assets/player/Guns/smg1.png"));
             } else if (filename.equals("smg_bullet.png")) {
                 BufferedImage img = null;
                 
                 // Try to load the specific bullet
-                img = ImageIO.read(Glock.class.getResourceAsStream("/Assets/player/bullets/smg1/Bullet2.png"));
+                img = ImageIO.read(Smg.class.getResourceAsStream("/Assets/player/bullets/PistolAmmoBig.png"));
                 
                 // If that failed, try with lowercase
                 if (img == null) {
-                    img = ImageIO.read(Glock.class.getResourceAsStream("/Assets/player/bullets/smg1/bullet2.png"));
+                    img = ImageIO.read(Smg.class.getResourceAsStream("/Assets/player/bullets/smg1/bullet2.png"));
                 }
                 
                 return img;

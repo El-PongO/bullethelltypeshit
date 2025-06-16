@@ -5,7 +5,6 @@ import players.Player;
 public class MainPanel extends JPanel {
     // Add this field
     private boolean fromPauseMenu = false;
-    
     // Panels
     private MenuPanel menuPanel;
     private GameplayPanel gameplayPanel;
@@ -34,8 +33,8 @@ public class MainPanel extends JPanel {
                 case "Bomber":
                     selectedHero = new players.Bomber(500, 400);
                     break;
-                case "Rogue":
-                    selectedHero = new players.Rogue(500, 400);
+                case "Brute":
+                    selectedHero = new players.Brute(500, 400);
                     break;
                 case "Vampire":
                     selectedHero = new players.Vampire(500, 400);
@@ -124,11 +123,6 @@ public class MainPanel extends JPanel {
                     case "Revolver":
                         // Add Revolver - uses the concrete implementation
                         selectedHero.getWeapons().add(new weapons.Revolver());
-
-                        // cuma buat ngetes ini
-                        // selectedHero.getWeapons().add(new weapons.Glock());
-                        // selectedHero.getWeapons().add(new weapons.Smg());
-                        // selectedHero.getWeapons().add(new weapons.Shotgun());
                         selectedHero.setWeaponIndex(0);
                         weaponAdded = true;
                         System.out.println("Added Revolver to hero");

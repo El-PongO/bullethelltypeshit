@@ -196,23 +196,28 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         // Audio settings
         add(settingmenu.getMusicLabel());
         add(settingmenu.getMusicValueLabel());
-        // add(settingmenu.getMusicVolumeBar());
         add(settingmenu.getMusicSlider());
         add(settingmenu.getMusicVolumeUpBtn());
         add(settingmenu.getMusicVolumeDownBtn());
         add(settingmenu.getSfxSlider());
         add(settingmenu.getSfxLabel());
         add(settingmenu.getSfxValueLabel());
-        // add(settingmenu.getSfxVolumeBar());
         add(settingmenu.getSfxVolumeUpBtn());
         add(settingmenu.getSfxVolumeDownBtn());
         add(settingmenu.getMuteAudio());
         add(settingmenu.getDisableFade());
 
+        // Control Settings
+        add(settingmenu.getMoveLabel());
+        add(settingmenu.getShootLabel());
+        add(settingmenu.getDashLabel());
+        add(settingmenu.getReloadLabel());
+        add(settingmenu.getWeaponLabel());
+        add(settingmenu.getPauseLabel());
+        add(settingmenu.getSkillsLabel());
         // Others Settings
         add(settingmenu.getFpsCheckbox());
         add(settingmenu.getDevCheckbox());
-        add(settingmenu.getHoldWeaponCheckbox());
     }
 
     // ========================= MOUSE EVENTS =====================================================

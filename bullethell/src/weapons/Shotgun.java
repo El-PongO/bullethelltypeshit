@@ -20,51 +20,19 @@ public class Shotgun extends Weapon {
     private static BufferedImage loadImage(String filename) {
         try {
             if (filename.equals("shotgun.png")) {
-                // Make sure we load from the correct path
-                BufferedImage img = ImageIO.read(Shotgun.class.getResourceAsStream("/Assets/player/Guns/shotgun.png"));
-                if (img == null) {
-                    System.out.println("Failed to load shotgun image, path may be incorrect");
-                }
-                return img;
+                return ImageIO.read(Shotgun.class.getResourceAsStream("/Assets/player/Guns/shotgun.png"));
             } else if (filename.equals("shotgun_bullet.png")) {
-                // Try to find a suitable bullet sprite
                 BufferedImage img = null;
                 
-                // Try revolver bullets since shotgun bullets don't seem to exist
-                try {
+                // Try to load the specific bullet
+                img = ImageIO.read(Shotgun.class.getResourceAsStream("/Assets/player/bullets/shotgun/shotgun_bullet.png"));
+                
+                // If that failed, try with lowercase
+                if (img == null) {
                     img = ImageIO.read(Shotgun.class.getResourceAsStream("/Assets/player/bullets/revolver/bullet2.png"));
-                    if (img != null) {
-                        System.out.println("Using revolver bullet for shotgun");
-                        return img;
-                    }
-                } catch (Exception e) {
-                    System.out.println("Could not load revolver bullet: " + e.getMessage());
                 }
                 
-                // Try with different case
-                try {
-                    img = ImageIO.read(Shotgun.class.getResourceAsStream("/Assets/player/bullets/revolver/Bullet2.png"));
-                    if (img != null) {
-                        System.out.println("Using revolver Bullet2 for shotgun");
-                        return img;
-                    }
-                } catch (Exception e) {
-                    System.out.println("Could not load Bullet2: " + e.getMessage());
-                }
-                
-                // Try with basic bullet
-                try {
-                    img = ImageIO.read(Shotgun.class.getResourceAsStream("/Assets/player/bullets/revolver/Bullet.png"));
-                    if (img != null) {
-                        System.out.println("Using revolver Bullet for shotgun");
-                        return img;
-                    }
-                } catch (Exception e) {
-                    System.out.println("Could not load Bullet: " + e.getMessage());
-                }
-                
-                System.out.println("WARNING: Failed to load any bullet sprite for shotgun!");
-                return null;
+                return img;
             }
             return null;
         } catch (IOException e) {
