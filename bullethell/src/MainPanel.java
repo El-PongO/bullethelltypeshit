@@ -4,12 +4,11 @@ import players.Player;
 
 public class MainPanel extends JPanel {
     // Add this field
-    private boolean fromPauseMenu = false;
-    // Panels
+    private boolean fromPauseMenu = false;    // Panels
     private MenuPanel menuPanel;
     private GameplayPanel gameplayPanel;
     private FPScounter fpsCounter;
-    private HeroSelectPanel heroSelectPanel;
+    private JPanel heroSelectPanel;  // Using JPanel as the base type for flexibility
     private WeaponSelectPanel weaponSelectPanel;
     private Player selectedHero;
     private String selectedWeaponName;
@@ -20,12 +19,12 @@ public class MainPanel extends JPanel {
     
     public MainPanel() throws Exception {
         setLayout(cardLayout);
-        fpsCounter = new FPScounter("FPS:");
-
-        // Initialize panels
+        fpsCounter = new FPScounter("FPS:");        // Initialize panels
         gameplayPanel = new GameplayPanel(fpsCounter);
         menuPanel = new MenuPanel(this::showHeroSelect, this::showHeroSelect); // Go to hero select on start/restart
-        heroSelectPanel = new HeroSelectPanel(heroName -> {
+        
+        // Create a hero selection listener
+        IHeroSelectPanel.HeroSelectListener heroSelectListener = heroName -> {
             switch (heroName) {
                 case "Gunslinger":
                     selectedHero = new players.Gunslinger(500, 400);
@@ -41,7 +40,19 @@ public class MainPanel extends JPanel {
                     break;
             }
             showWeaponSelect();
-        });
+        };
+        
+        // Try to create the advanced hero select panel, fall back to simple if it fails
+        try {
+            System.out.println("Attempting to create advanced hero select panel...");
+            heroSelectPanel = new HeroSelectPanel(heroSelectListener);
+            System.out.println("Successfully created advanced hero select panel");
+        } catch (Exception e) {
+            System.err.println("Error creating advanced hero select panel: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("Falling back to simple hero select panel");
+            heroSelectPanel = new SimpleHeroSelectPanel(heroSelectListener);
+        }
         weaponSelectPanel = new WeaponSelectPanel(weaponName -> {
             selectedWeaponName = weaponName;
             assignWeaponToHero();

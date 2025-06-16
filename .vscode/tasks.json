@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Hero Selection Test",
+			"type": "shell",
+			"command": "cd c:\\Users\\benny\\OneDrive\\Documents\\GitHub\\bullethelltypeshit\\bullethell && javac -d bin src/*.java src/*/*.java && java -cp bin HeroSelectTest",
+			"group": "test",
+			"isBackground": false,
+			"problemMatcher": [
+				"$javac"
+			]
+		}
+	]
+}
