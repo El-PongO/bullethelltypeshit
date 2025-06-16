@@ -18,10 +18,10 @@ public class ShooterBoss extends Enemy {
     
     // Shooting variables
     private boolean isShootingBurst;
-    private int burstCounter;
+    private int burstCounter;    
     private int burstInterval = 15; // Frames between shots in a burst
     private int burstTimer;
-    private int shotsPerBurst = 3;
+    private int shotsPerBurst = 5; // Increased from 3 to 5 bullets per burst
     
     // Sprite and animation variables
     public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2, jumping;
@@ -31,12 +31,11 @@ public class ShooterBoss extends Enemy {
     public int spritenum = 1;
     
     public ShooterBoss(int x, int y) {
-        super(x, y);
-        // Shooter Boss properties
+        super(x, y);        // Shooter Boss properties
         this.shootDelay = 3000; // 3 seconds between burst sequences
         this.bulletSpeed = 4;   // Faster bullets than regular enemies
-        this.health = 400;      // More health than regular enemies
-        this.maxHealth = 400;
+        this.health = 750;      // Increased health from 400 to 750
+        this.maxHealth = 750;
         this.size = 35;         // Larger than regular shooter but smaller than tank boss
         
         // Initialize state

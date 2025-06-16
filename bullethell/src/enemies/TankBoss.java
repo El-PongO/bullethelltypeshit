@@ -24,21 +24,21 @@ public class TankBoss extends Enemy {
     public int spritenum = 1;
       
     public TankBoss(int x, int y) {
-        super(x, y);
-        // Tank boss has more health and is larger
+        super(x, y);        // Tank boss has more health and is larger
         this.shootDelay = 2000; // 2 seconds between shots (if we implement shooting)
-        this.health = 600; // 3 times the health of a regular tank
-        this.maxHealth = 600;
+        this.health = 1000; // Increased health from 600 to 1000
+        this.maxHealth = 1000;
         this.bulletSpeed = 3;
         this.size = 50; // Much larger size (TankEnemy is 30)
         
-        // Initialize movement variables        isMoving = true;
+        // Initialize movement variables        
+        isMoving = true;
         isCharging = false;
         pauseCounter = 0;
         moveTimer = 0;
         chargeTimer = 0;
-        chargeCooldown = 180; // 3 seconds cooldown between charges
-        chargeSpeed = 8; // Increased speed during charge (was 5)
+        chargeCooldown = 180; // 3 seconds cooldown between charges        
+        chargeSpeed = 12; // Increased speed during charge (was 8)
         normalSpeed = 1; // Normal movement speed (slower than regular enemies)
         
         // Load sprites
@@ -107,9 +107,7 @@ public class TankBoss extends Enemy {
                 pauseCounter = 60; // 1 second pause after charge
                 chargeCooldown = 180; // 3 seconds before can charge again
             }
-            
-            // Debug output to verify charge is working
-            System.out.println("Charging: dx=" + dx + ", dy=" + dy);
+              // Charging in progress
         }
         // Normal movement when not charging
         else if (isMoving) {
@@ -157,9 +155,7 @@ public class TankBoss extends Enemy {
             // When charging, we've already calculated dx and dy with chargeSpeed applied
             x += dx;
             y += dy;
-            
-            // Add extra debug to confirm position change
-            System.out.println("TankBoss position updated to: " + x + ", " + y);
+              // Position updated during charge
         } else if (isMoving) {
             // Normal movement
             x += dx * normalSpeed;
@@ -196,9 +192,7 @@ public class TankBoss extends Enemy {
         int dx = (int) Math.round(exactDx);
         int dy = (int) Math.round(exactDy);
         updateDirection(dx, dy);
-        
-        // Debug output to confirm charge initiation
-        System.out.println("TankBoss starting charge toward player: angle=" + chargeAngle + ", timer=" + chargeTimer);
+          // TankBoss starting charge
     }
     
     private void updateDirection(int dx, int dy) {

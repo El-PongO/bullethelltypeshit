@@ -31,16 +31,17 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static ArrayList<Bullet> playerBullets = new ArrayList<>();
     private static ArrayList<Bullet> enemyBullets = new ArrayList<>();
 
-    // ========================= LOGIC =====================================================
-    private static JFrame window;
+    // ========================= LOGIC =====================================================    private static JFrame window;
     private Random rand;
     private int spawnDelay = 1000;
     private static Timer spawnTimer;
+    private static Timer bossSpawnTimer; // Timer for spawning bosses
     private static Timer gameLoop;
     static boolean gameActive = false;
     private static boolean isGameOver = false;
     private FPScounter fpscounter = new FPScounter("FPS: ");
     private static Game_clock gameClock = new Game_clock();
+    private boolean lastBossWasTank = false; // Track which boss was spawned last
 
     static int[][] grid;
     static BufferedImage[] tilesSprite = new BufferedImage[9];
@@ -69,9 +70,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     // ========================= KEY MOVEMENT =====================================================
     private boolean upPressed, downPressed, leftPressed, rightPressed;
-    
-    // ========================= GAME SETTING =====================================================
-    private static Settingmenu settingmenu = new Settingmenu(window);
+      // ========================= GAME SETTING =====================================================
+    private static Settingmenu settingmenu;
 
     // ========================= PAUSE MENU =====================================================
     PauseMenu pauseMenu;
@@ -104,14 +104,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         requestFocusInWindow();
         // innitmenubutton(); // buat button
         sfxmanager();
-        musicmanager();
-
-        spawnTimer = new Timer(spawnDelay, e -> {
+        musicmanager();        spawnTimer = new Timer(spawnDelay, e -> {
             spawnEnemy();
             updateSpawnDelay();
         });
         spawnTimer.setRepeats(false);
-
+        
+        // Create boss spawn timer - Every 60 seconds (1 minute)
+        bossSpawnTimer = new Timer(60000, e -> {
+            spawnBoss();
+        });
+        bossSpawnTimer.setRepeats(true); // Keep spawning bosses every minute
+        
         gameLoop = new Timer(16, e -> updateGame());
         setLayout(null);
         initializeFPSconfig(fpscounter);
@@ -146,19 +150,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameActive = true;
 
         gameClock.setPosition(getWidth()/2, 5, 100, 50);
-        gameClock.setVisible(true);
-        gameClock.timer.start();
+        gameClock.setVisible(true);        gameClock.timer.start();
         
         spawnTimer.start();
+        bossSpawnTimer.start(); // Start the boss spawn timer
         gameLoop.start();
         
         // set button to invisible when game start
         requestFocusInWindow();        
-    }
-
-    public static void stopGame() {
+    }    public static void stopGame() {
         gameActive = false;
         spawnTimer.stop();
+        bossSpawnTimer.stop(); // Stop the boss spawn timer
         gameLoop.stop();
         return;
     }
@@ -178,50 +181,32 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         stopGame();
         gameClock.reset();
         gameClock.setVisible(false);
-    }
-
-    // ========================= SPAWN =====================================================
+    }    // ========================= SPAWN =====================================================
     private void spawnEnemy() {
         int spawnX = rand.nextInt(getWidth());
         int spawnY = rand.nextInt(getHeight());
         
-        // Small chance to spawn a boss (5%)
-        if (rand.nextInt(100) < 5) {
-            // 50/50 chance between the two boss types
-            if (rand.nextBoolean()) {
-                enemies.add(new TankBoss(spawnX, spawnY)); // Tank boss that can charge
-                System.out.println("Tank Boss spawned!");
-            } else {
-                enemies.add(new ShooterBoss(spawnX, spawnY)); // Shooter boss that jumps and shoots bursts
-                System.out.println("Shooter Boss spawned!");
-            }
-            // Longer delay after spawning a boss
-            spawnTimer.setInitialDelay(spawnDelay * 3);
-        } else {
-            // Regular enemy spawning
-            int enemyType = rand.nextInt(5); // 0 = Shooter, 1 = Normal, 2 = Tank, 3 = Lurker, 4 = Bomber
-            
-            switch(enemyType) {
-                case 0:
-                    enemies.add(new ShooterEnemy(spawnX, spawnY)); // Only this enemy type shoots
-                    break;
-                case 1:
-                    enemies.add(new NormalEnemy(spawnX, spawnY)); // Simple follower
-                    break;
-                case 2:
-                    enemies.add(new TankEnemy(spawnX, spawnY)); // Slow and big
-                    break;
-                case 3:
-                    enemies.add(new LurkerEnemy(spawnX, spawnY)); // Sudden jumps
-                    break;
-                case 4:
-                    enemies.add(new BomberEnemy(spawnX, spawnY)); // Fast toward player
-                    break;
-            }
-            
-            spawnTimer.setInitialDelay(spawnDelay);
-        }
+        // Regular enemy spawning - bosses now spawn on timer
+        int enemyType = rand.nextInt(5); // 0 = Shooter, 1 = Normal, 2 = Tank, 3 = Lurker, 4 = Bomber
         
+        switch(enemyType) {
+            case 0:
+                enemies.add(new ShooterEnemy(spawnX, spawnY)); // Only this enemy type shoots
+                break;
+            case 1:
+                enemies.add(new NormalEnemy(spawnX, spawnY)); // Simple follower
+                break;
+            case 2:
+                enemies.add(new TankEnemy(spawnX, spawnY)); // Slow and big
+                break;
+            case 3:
+                enemies.add(new LurkerEnemy(spawnX, spawnY)); // Sudden jumps
+                break;
+            case 4:
+                enemies.add(new BomberEnemy(spawnX, spawnY)); // Fast toward player
+                break;
+        }
+          spawnTimer.setInitialDelay(spawnDelay);
         spawnTimer.restart();
     }
     
@@ -832,4 +817,48 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         pauseMenu.setVisibility(false);
     }
 
+    public static void initializeSettingMenu(JFrame frame) {
+        // Initialize the settingmenu with the provided JFrame
+        settingmenu = new Settingmenu(frame);
+    }
+
+    private void spawnBoss() {
+        // Calculate spawn position - away from the player
+        int playerX = player.getX();
+        int playerY = player.getY();
+        
+        // Determine spawn position at a safe distance from player (300-500 pixels)
+        int distance = 300 + rand.nextInt(200); // Between 300-500 pixels away
+        double angle = Math.random() * 2 * Math.PI; // Random angle
+        
+        int spawnX = (int)(playerX + distance * Math.cos(angle));
+        int spawnY = (int)(playerY + distance * Math.sin(angle));
+        
+        // Keep spawn position within map bounds
+        int mapWidth = grid[0].length * TILE_SIZE;
+        int mapHeight = grid.length * TILE_SIZE;
+        
+        spawnX = Math.max(50, Math.min(spawnX, mapWidth - 50));
+        spawnY = Math.max(50, Math.min(spawnY, mapHeight - 50));
+
+        // Alternate between boss types with 50% chance for each
+        boolean spawnTankBoss;
+        if (lastBossWasTank) {
+            // If last was Tank, 50% chance to spawn another Tank, 50% chance for Shooter
+            spawnTankBoss = rand.nextBoolean();
+        } else {
+            // If last was Shooter, 50% chance to spawn another Shooter, 50% chance for Tank
+            spawnTankBoss = rand.nextBoolean();
+        }
+        
+        if (spawnTankBoss) {
+            enemies.add(new TankBoss(spawnX, spawnY));
+            System.out.println("Tank Boss spawned at minute " + gameClock.getMinutes() + "!");
+            lastBossWasTank = true;
+        } else {
+            enemies.add(new ShooterBoss(spawnX, spawnY));
+            System.out.println("Shooter Boss spawned at minute " + gameClock.getMinutes() + "!");
+            lastBossWasTank = false;
+        }
+    }
 }
