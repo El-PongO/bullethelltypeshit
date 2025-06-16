@@ -56,7 +56,7 @@ public class Shotgun extends Weapon {
                 double pelletAngle = minAngle + i * segment + jitter;
                 double dx = (Math.cos(pelletAngle) * 3) * 3; // 3 is bullet speed
                 double dy = (Math.sin(pelletAngle) * 3) * 3;
-                bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, (int)dx, (int)dy, null));
+                bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, (int)dx, (int)dy, getBulletSprite()));
             }
             
             useAmmo(); // Only use 1 ammo per shot
