@@ -297,7 +297,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             int mapHeight = map1.length * tileH;
             
             for (Enemy enemy : enemies) {   //gae musuh bisa nembak
-                enemy.update(player, enemyBullets);
+                enemy.update(player, enemyBullets, map3, tileW);
                 // Keep enemies within map boundaries
                 enemy.keepWithinMapBoundaries(mapWidth, mapHeight);
             }

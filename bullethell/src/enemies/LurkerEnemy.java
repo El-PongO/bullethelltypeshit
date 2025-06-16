@@ -55,7 +55,7 @@ public class LurkerEnemy extends Enemy {
     }
 
     @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         // Handle the jump animation if we're currently jumping
         int dx = 0, dy = 0;
         if (isJumping) {

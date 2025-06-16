@@ -45,11 +45,12 @@ public class BomberEnemy extends Enemy {
     }
 
     @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         // Bomber always moves directly toward the player
         double angle = Math.atan2(player.getY() - y, player.getX() - x);
         double dx = Math.cos(angle) * moveSpeed;
         double dy = Math.sin(angle) * moveSpeed;
+        moveWithCollision(dx, dy, collisionMap, tileSize);
 
         if(dx > 0) {
             direction = "right";

@@ -54,9 +54,11 @@ public class ShooterEnemy extends Enemy {
             e.printStackTrace();
         }
     }    @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         int behavior = rand.nextInt(2); // 0, 1, or 2 
         int dx = 0, dy = 0;
+
+        moveWithCollision(dx, dy, collisionMap, tileSize);
 
         // Handle retreat behavior first
         if (isRetreating) {
@@ -175,7 +177,7 @@ public class ShooterEnemy extends Enemy {
                 movementCounter--;
             }
         }
-        if (!isOutOfBounds(grid, tileSize, x+dx, y+dy)) {
+        if (!isOutOfBounds(collisionMap, tileSize, x+dx, y+dy)) {
             x += dx * speed; // move speed
             y += dy * speed;
         }

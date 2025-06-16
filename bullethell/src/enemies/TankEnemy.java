@@ -53,16 +53,29 @@ public class TankEnemy extends Enemy {
     }
     
     @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         // Tank enemy moves slowly with periodic pauses
-        int dx = 0, dy = 0;
-        
-        // State machine for moving and pausing
+        double dx = 0, dy = 0;
         if (isMoving) {
-            // When moving, head toward the player slowly
             double angle = Math.atan2(player.getY() - y, player.getX() - x);
-            dx = (int) Math.signum(Math.cos(angle));
-            dy = (int) Math.signum(Math.sin(angle));
+            dx = Math.cos(angle) * (speed - 1);
+            dy = Math.sin(angle) * (speed - 1);
+            moveWithCollision(dx, dy, collisionMap, tileSize);
+            moveTimer--;
+            if (moveTimer <= 0) {
+                isMoving = false;
+                pauseCounter = 30 + rand.nextInt(30);
+            }
+        } else {
+            pauseCounter--;
+            if (pauseCounter <= 0) {
+                isMoving = true;
+                moveTimer = 20 + rand.nextInt(30);
+            }
+        }
+        
+        // Sprite animation logic
+        if (isMoving) {
             this.idling = false; // Tank enemies are not idling
             if(dx > 0) {
                 direction = "right";
@@ -85,28 +98,9 @@ public class TankEnemy extends Enemy {
                 }
                 this.spritecounter=0; // kalau sudah ganti varian set counter ke 0
             }
-            // Move timer counts down until we pause
-            moveTimer--;
-            if (moveTimer <= 0) {
-                isMoving = false;
-                pauseCounter = 30 + rand.nextInt(40); // Pause for 30-70 frames
-            }
-        } else {
+        }else{
             this.idling = true; // Tank enemies are idling when paused
-            // When paused, count down until we move again
-            pauseCounter--;
-            if (pauseCounter <= 0) {
-                isMoving = true;
-                moveTimer = 20 + rand.nextInt(30); // Move for 20-50 frames
-            }
         }
-        
-        // Move slower than normal enemies when moving
-        if (isMoving) {
-            x += dx * (speed - 1); // Move at speed - 1
-            y += dy * (speed - 1);
-        }
-          // Tank doesn't shoot, it just moves toward the player slowly
     }
     
     @Override

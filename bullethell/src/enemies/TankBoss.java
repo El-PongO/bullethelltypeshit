@@ -78,9 +78,9 @@ public class TankBoss extends Enemy {
             e.printStackTrace();
         }
     }      @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         int dx = 0, dy = 0;
-        
+        moveWithCollision(dx, dy, collisionMap, tileSize);        
         // Decrement charge cooldown if it's active
         if (chargeCooldown > 0) {
             chargeCooldown--;
