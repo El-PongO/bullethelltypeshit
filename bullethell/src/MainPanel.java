@@ -123,11 +123,6 @@ public class MainPanel extends JPanel {
                     case "Revolver":
                         // Add Revolver - uses the concrete implementation
                         selectedHero.getWeapons().add(new weapons.Revolver());
-
-                        // cuma buat ngetes ini
-                        // selectedHero.getWeapons().add(new weapons.Glock());
-                        // selectedHero.getWeapons().add(new weapons.Smg());
-                        // selectedHero.getWeapons().add(new weapons.Shotgun());
                         selectedHero.setWeaponIndex(0);
                         weaponAdded = true;
                         System.out.println("Added Revolver to hero");

@@ -6,6 +6,26 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 public class Sniper extends Weapon{
+
+    private static final int PENETRATION_COUNT = 3; // How many enemies it can go through
+
+    public static class SniperBullet extends Bullet {
+        private int penetrationsLeft;
+
+        public SniperBullet(int x, int y, int dx, int dy, BufferedImage sprite) {
+            super(x, y, dx, dy, sprite);
+            this.penetrationsLeft = PENETRATION_COUNT;
+        }
+
+        public boolean canPenetrate() {
+            return penetrationsLeft > 0;
+        }
+
+        public void penetrate() {
+            penetrationsLeft--;
+        }
+    }
+
     public Sniper(){
         super("Sniper",
               loadImage("sniper.png"),
@@ -19,17 +39,17 @@ public class Sniper extends Weapon{
 
     private static BufferedImage loadImage(String filename) {
         try {
-            if (filename.equals("smg.png")) {
-                return ImageIO.read(Glock.class.getResourceAsStream("/Assets/player/Guns/smg1.png"));
-            } else if (filename.equals("smg_bullet.png")) {
+            if (filename.equals("sniper.png")) {
+                return ImageIO.read(Sniper.class.getResourceAsStream("/Assets/player/Guns/sniper.png"));
+            } else if (filename.equals("sniper_bullet.png")) {
                 BufferedImage img = null;
                 
                 // Try to load the specific bullet
-                img = ImageIO.read(Glock.class.getResourceAsStream("/Assets/player/bullets/smg1/Bullet2.png"));
+                img = ImageIO.read(Sniper.class.getResourceAsStream("/Assets/player/bullets/smg1/Bullet2.png"));
                 
                 // If that failed, try with lowercase
                 if (img == null) {
-                    img = ImageIO.read(Glock.class.getResourceAsStream("/Assets/player/bullets/smg1/bullet2.png"));
+                    img = ImageIO.read(Sniper.class.getResourceAsStream("/Assets/player/bullets/smg1/bullet2.png"));
                 }
                 
                 return img;
@@ -47,9 +67,11 @@ public class Sniper extends Weapon{
         
         if (getCurrentAmmo() > 0) {
             double angle = Math.atan2(targetY - (y + playerSize/2), targetX - (x + playerSize/2));
-            int dx = (int)(Math.cos(angle) * 3) * 3; // 3 is bullet speed
-            int dy = (int)(Math.sin(angle) * 3) * 3;
-            bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, dx, dy, getBulletSprite()));
+            // Double the bullet speed (6 instead of 3)
+            int dx = (int)(Math.cos(angle) * 6) * 3;
+            int dy = (int)(Math.sin(angle) * 6) * 3;
+            
+            bullets.add(new SniperBullet(x + playerSize/2, y + playerSize/2, dx, dy, getBulletSprite()));
             
             useAmmo();
             recordShot();

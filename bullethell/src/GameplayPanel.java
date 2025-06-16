@@ -16,6 +16,7 @@ import enemies.TankEnemy;
 import players.Gunslinger;
 import players.Player;
 import weapons.Bullet;
+import weapons.Sniper;
 import weapons.Weapon;
 
 
@@ -687,25 +688,37 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
         }
 
-        // Check bullet-enemy collisions
         playerBullets.removeIf(bullet -> {
             Rectangle bulletBounds = new Rectangle((int)bullet.x, (int)bullet.y, bullet.getSize(), bullet.getSize());
+            boolean shouldRemove = false;
+
             for (int i = enemies.size() - 1; i >= 0; i--) {
                 Enemy enemy = enemies.get(i);
                 Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
+                
                 if (bulletBounds.intersects(enemyBounds)) {
                     Weapon currentWeapon = player.getCurrentWeapon();
-                    // Deal damage to the enemy instead of immediately removing
-                    enemy.takeDamage(currentWeapon.getWeaponDamage()); // Each bullet deals 50 damage
+                    enemy.takeDamage(currentWeapon.getWeaponDamage());
                     
-                    // Check if enemy is now dead
                     if (enemy.isDead()) {
                         enemies.remove(i);
                     }
-                    return true; // Remove the bullet regardless
+
+                    // Handle penetration for sniper bullets
+                    if (bullet instanceof Sniper.SniperBullet) {
+                        Sniper.SniperBullet sniperBullet = (Sniper.SniperBullet) bullet;
+                        if (sniperBullet.canPenetrate()) {
+                            sniperBullet.penetrate();
+                            continue; // Don't remove the bullet yet
+                        }
+                    }
+                    
+                    shouldRemove = true;
+                    break;
                 }
             }
-            return false;
+            
+            return shouldRemove || bullet.isOutOfBounds(grid, TILE_SIZE);
         });
 
         // Check enemy bullet-player collisions
@@ -764,6 +777,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 boolean hasShotgun = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Shotgun"));
                 boolean hasSmg = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Smg"));
                 boolean hasPistol = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Glock"));
+                boolean hasSniper = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Sniper"));
+                if (!hasSniper) player.getWeapons().add(new weapons.Sniper());
                 if (!hasRevolver) player.getWeapons().add(new weapons.Revolver());
                 if (!hasShotgun) player.getWeapons().add(new weapons.Shotgun());
                 if (!hasSmg) player.getWeapons().add(new weapons.Smg());
