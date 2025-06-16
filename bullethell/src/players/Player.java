@@ -19,7 +19,7 @@ public abstract class Player {
     private boolean isDashing = false;
     private boolean isInvincible = false; // Invincibility flag
     protected long dashDuration = 200; // Dash duration in milliseconds
-    protected long invincibilityDuration = 1000; // Invincibility duration (1 second)
+    protected long invincibilityDuration = 1500; // Invincibility duration (1.5 seconds)
     private long dashStartTime = 0; // When the current dash started
     protected int maxDashCharges = 2; // Maximum number of dash charges 
     protected int currentDashCharges = maxDashCharges; // Current number of dash charges ambil dari (maxDashCharges)
@@ -238,11 +238,13 @@ public abstract class Player {
         }
     
         // End hit invincibility after duration
-        if (hitInvincible && currentTime - hitInvincibleStartTime > invincibilityDuration) {
+        if (hitInvincible && (currentTime - hitInvincibleStartTime > invincibilityDuration)) {
             hitInvincible = false;
+            System.out.println(currentTime - hitInvincibleStartTime + " ms since hit invincibility ended");
+            System.out.println(invincibilityDuration + " ms invincibility duration");
         }
     
-        // Recharge dash charges...
+        // Recharge dash charges...s
         if (currentDashCharges < maxDashCharges && currentTime - lastChargeTime >= dashChargeCooldown) {
             currentDashCharges++;
             lastChargeTime = currentTime;

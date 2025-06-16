@@ -7,7 +7,6 @@ public class Gunslinger extends Player {
         maxHealth = 120;
         dashspeed = 15;
         dashDuration = 300;
-        invincibilityDuration = 300;
         maxDashCharges = 3;
         currentDashCharges = maxDashCharges;
         dashChargeCooldown = 4000;

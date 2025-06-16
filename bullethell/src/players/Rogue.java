@@ -7,7 +7,6 @@ public class Rogue extends Player {
         maxHealth = 90;
         dashspeed = 20;
         dashDuration = 180;
-        invincibilityDuration = 180;
         maxDashCharges = 4;
         currentDashCharges = maxDashCharges;
         dashChargeCooldown = 3000;

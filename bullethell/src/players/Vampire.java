@@ -7,7 +7,6 @@ public class Vampire extends Player {
         maxHealth = 110;
         dashspeed = 12;
         dashDuration = 220;
-        invincibilityDuration = 220;
         maxDashCharges = 2;
         currentDashCharges = maxDashCharges;
         dashChargeCooldown = 5000;

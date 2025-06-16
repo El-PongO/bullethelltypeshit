@@ -7,7 +7,6 @@ public class Bomber extends Player {
         maxHealth = 150;
         dashspeed = 8;
         dashDuration = 250;
-        invincibilityDuration = 250;
         maxDashCharges = 2;
         currentDashCharges = maxDashCharges;
         dashChargeCooldown = 6000;
