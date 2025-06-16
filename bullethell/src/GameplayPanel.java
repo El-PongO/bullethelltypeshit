@@ -449,6 +449,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         soundsfx.load("empty", "/Audio/Sfx/wep_empty.wav");
         soundsfx.load("hit", "/Audio/Sfx/player_hit.wav");
         soundsfx.load("reload", "/Audio/Sfx/reload.wav");
+        soundsfx.load("dash", "/Audio/Sfx/dash.wav");
+
+        // player
+        soundsfx.load("bomber_skill", "/Audio/Sfx/skill_bomber.wav");
+        soundsfx.load("gunslinger_skill", "/Audio/Sfx/skill_gunslinger.wav");
+        soundsfx.load("vampire_skill", "/Audio/Sfx/skill_vampire.wav");
+        soundsfx.load("brute_skill", "/Audio/Sfx/skill_brute.wav");
 
         // revolver
         soundsfx.load("shootrevolver", "/Audio/Sfx/rev_shot.wav");
@@ -604,6 +611,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if (code == KeyEvent.VK_D) rightPressed = true;
         if (code == KeyEvent.VK_SHIFT) {
             player.dash(); // dash
+            soundsfx.play("dash");
             System.out.println("Dash activated! " + player.direction);
         }
         if (code == KeyEvent.VK_Q){
@@ -630,6 +638,15 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
           // Use skill for any player type when pressing F
         if (code == KeyEvent.VK_F) {
             player.useSkill();
+            if (player instanceof players.Bomber) {
+                soundsfx.play("bomber_skill");
+            } else if (player instanceof players.Gunslinger) {
+                soundsfx.play("gunslinger_skill");
+            } else if (player instanceof players.Vampire) {
+                soundsfx.play("vampire_skill");
+            } else if (player instanceof players.Brute) {
+                soundsfx.play("brute_skill");
+            }
         }
     }
 
