@@ -1,3 +1,9 @@
+import enemies.BomberEnemy;
+import enemies.Enemy;
+import enemies.LurkerEnemy;
+import enemies.NormalEnemy;
+import enemies.ShooterEnemy;
+import enemies.TankEnemy;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -7,12 +13,6 @@ import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import enemies.BomberEnemy;
-import enemies.Enemy;
-import enemies.LurkerEnemy;
-import enemies.NormalEnemy;
-import enemies.ShooterEnemy;
-import enemies.TankEnemy;
 import players.Gunslinger;
 import players.Player;
 import weapons.Bullet;
@@ -75,6 +75,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     // ========================= PAUSE MENU =====================================================
     PauseMenu pauseMenu;
     private boolean isPaused = false;
+
+    // ========================= SKILL BAR =====================================================
+    // Skill bar for displaying skill status
+    private Skillbar skillbar = new Skillbar();
 
     // ========================= MAIN =====================================================
     public GameplayPanel(FPScounter fpscounter) throws Exception {
@@ -222,7 +226,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if(!gameActive) return;
         else {
             player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
-            player.updateDash();            
+            player.updateDash();
+            player.updateSkill(); // Update skill status
             updateBullets();
             checkCollisions();
             for (Enemy enemy : enemies) {   //gae musuh bisa nembak
@@ -321,6 +326,19 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
             g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
         drawWeaponHUD((Graphics2D)g);
+        
+        // Draw the skill bar for all player types
+        skillbar.draw((Graphics2D)g, player, getWidth(), getHeight());
+
+        // Draw Bomber's circle skill overlay if active (refactored)
+        if (player instanceof players.Bomber) {
+            players.Bomber bomber = (players.Bomber) player;
+            players.DamageCircle circle = bomber.getCircleSkill();
+            if (circle != null) {
+                circle.draw((Graphics2D)g, cameraPixelX, cameraPixelY, ZOOM);
+            }
+        }
+        
         if (isPaused) {
             pauseMenu.draw(g, getWidth(), getHeight());
         }
@@ -587,6 +605,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             reloadsfx();
             System.out.println("Reloading " + player.getCurrentWeapon().getName() + "...");
         }
+          // Use skill for any player type when pressing F
+        if (code == KeyEvent.VK_F) {
+            player.useSkill();
+        }
     }
 
     @Override
@@ -666,22 +688,34 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         int offset = (fullSize - hitboxSize) / 2;
 
         Rectangle playerBounds = new Rectangle(player.getX() + offset, player.getY() + offset, hitboxSize, hitboxSize);
-        for (Enemy enemy : enemies) {
+        for (int i = enemies.size() - 1; i >= 0; i--) {
+            Enemy enemy = enemies.get(i);
             Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
-            
+            // Bomber circle skill damage (refactored)
+            if (player instanceof players.Bomber) {
+                players.Bomber bomber = (players.Bomber) player;
+                players.DamageCircle circle = bomber.getCircleSkill();
+                if (circle != null && circle.collides(enemy.x, enemy.y, enemy.size)) {
+                    enemy.takeDamage(circle.getDamage());
+                    System.out.println("the bomb hit something!");
+                    
+                    if (enemy.isDead()) {
+                        enemies.remove(i);
+                        continue;
+                    }
+                }
+            }
             if (playerBounds.intersects(enemyBounds) && !player.isInvincible()) {
                 System.out.println("Player hit!");
-                
                 // Special cases for different enemy types
-                if (enemy instanceof BomberEnemy) {
+                if (enemy instanceof enemies.BomberEnemy) {
                     Sfx.playWithRandomPitch("explode");
                     player.takeDamage(100); // Bomber deals 100 damage when exploding
-                } else if (enemy instanceof TankEnemy) {
+                } else if (enemy instanceof enemies.TankEnemy) {
                     player.takeDamage(25); // Tank enemy deals less damage (25)
                 } else {
                     player.takeDamage(50); // Other enemies deal standard 50 damage
                 }
-                
                 if (player.isDead()) {
                     gameOver();
                 }
@@ -698,7 +732,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 
                 if (bulletBounds.intersects(enemyBounds)) {
                     Weapon currentWeapon = player.getCurrentWeapon();
-                    enemy.takeDamage(currentWeapon.getWeaponDamage());
+                    // Deal damage to the enemy instead of immediately removing
+                    enemy.takeDamage(currentWeapon.getWeaponDamage()); // Each bullet deals 50 damage
+                    
+                    // If player is a Vampire with active skill, steal health
+                    if (player instanceof players.Vampire) {
+                        ((players.Vampire) player).stealHealth(currentWeapon.getWeaponDamage());
+                    }
                     
                     if (enemy.isDead()) {
                         enemies.remove(i);

@@ -1,5 +1,7 @@
 package players;
 
+import java.awt.Color;
+
 public class Bomber extends Player {
     public Bomber(int x, int y) {
         super(x, y);
@@ -10,6 +12,9 @@ public class Bomber extends Player {
         maxDashCharges = 2;
         currentDashCharges = maxDashCharges;
         dashChargeCooldown = 6000;
+        
+        skillCooldown = 20000; // 20 secs
+        skillDuration = 1000; // 1 sec
     }
 
     @Override
@@ -31,7 +36,21 @@ public class Bomber extends Player {
             e.printStackTrace();
         }
     }    
+
+    DamageCircle bomberCircleSkill = null;
+
+    @Override
     public void useSkill() {
-        // TODO: Implement Bomber's unique skill
+        if (isSkillOnCooldown()) {
+            return;
+        }
+        activateSkill();
+        int centerX = getX() + getSize() / 2;
+        int centerY = getY() + getSize() / 2;
+        bomberCircleSkill = new DamageCircle(centerX, centerY, 150, 999, 1000, Color.RED);
+        System.out.println("Bomber's explosion skill activated!");
+    }
+    public DamageCircle getCircleSkill() {
+        return bomberCircleSkill != null && bomberCircleSkill.isActive() ? bomberCircleSkill : null;
     }
 }

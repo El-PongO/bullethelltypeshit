@@ -83,4 +83,8 @@ public abstract class Weapon {
     }
 
     public abstract List<Bullet> fire(int x, int y, int targetX, int targetY, int playerSize);
+
+    public void setCurrentAmmo(int currentAmmo) {
+        this.currentAmmo = currentAmmo;
+    }
 }

@@ -33,8 +33,8 @@ public class MainPanel extends JPanel {
                 case "Bomber":
                     selectedHero = new players.Bomber(500, 400);
                     break;
-                case "Rogue":
-                    selectedHero = new players.Rogue(500, 400);
+                case "Brute":
+                    selectedHero = new players.Brute(500, 400);
                     break;
                 case "Vampire":
                     selectedHero = new players.Vampire(500, 400);

@@ -15,7 +15,7 @@ public class App {
                 fullscreen = fs != null && fs.trim().equals("1");
             } catch (Exception ignored) {}
         }
-        JFrame window = new JFrame(); // JFrame itu yg buat bikin window. pelajari lebih lanjut di chatgpt
+        JFrame window = new JFrame(); // new windo
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // biar bisa di close 
         window.setResizable(false); // biar ga bisa di resize, klo gk rusak game nya
         window.setTitle("Bullet Hell"); // tittylenya
