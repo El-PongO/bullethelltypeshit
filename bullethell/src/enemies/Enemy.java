@@ -34,9 +34,17 @@ public abstract class Enemy {
         }
         return null;
     }
+      // Making update abstract so each enemy type must implement it
+    public abstract void update(Player player, ArrayList<Bullet> enemyBullets);
+      // Helper method to keep enemies within map boundaries
+    public void keepWithinMapBoundaries(int mapWidth, int mapHeight) {
+        // Apply boundary constraints with padding based on enemy size
+        int padding = size;
+        x = Math.max(padding, Math.min(x, mapWidth - padding));
+        y = Math.max(padding, Math.min(y, mapHeight - padding));
+    }
     
-    // Making update abstract so each enemy type must implement it
-    public abstract void update(Player player, ArrayList<Bullet> enemyBullets);    public void draw(Graphics g, int ex, int ey) {
+    public void draw(Graphics g, int ex, int ey) {
         g.setColor(new Color(102, 51, 153));//mek warna gae ungu idk
         g.fillOval(ex, ey, size, size);
         

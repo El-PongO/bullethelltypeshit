@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import enemies.TankBoss;
+import enemies.ShooterBoss;
 import players.Gunslinger;
 import players.Player;
 import weapons.Bullet;
@@ -30,16 +32,19 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static ArrayList<Bullet> playerBullets = new ArrayList<>();
     private static ArrayList<Bullet> enemyBullets = new ArrayList<>();
 
-    // ========================= LOGIC =====================================================
-    private static JFrame window;
+    // ========================= LOGIC =====================================================    private static JFrame window;
     private Random rand;
     private int spawnDelay = 1000;
     private static Timer spawnTimer;
+    private static Timer bossSpawnTimer; // Timer for spawning bosses
     private static Timer gameLoop;
     static boolean gameActive = false;
-    private static boolean isGameOver = false;
-    private FPScounter fpscounter = new FPScounter("FPS: ");
+    private static boolean isGameOver = false;    private FPScounter fpscounter = new FPScounter("FPS: ");
     private static Game_clock gameClock = new Game_clock();
+    
+    // Debug counters for boss spawns
+    private static int tankBossSpawnCount = 0;
+    private static int shooterBossSpawnCount = 0;
 
     static int[][] grid;
     static BufferedImage[] tilesSprite = new BufferedImage[9];
@@ -68,9 +73,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     // ========================= KEY MOVEMENT =====================================================
     private boolean upPressed, downPressed, leftPressed, rightPressed;
-    
-    // ========================= GAME SETTING =====================================================
-    private static Settingmenu settingmenu = new Settingmenu(window);
+      // ========================= GAME SETTING =====================================================
+    private static Settingmenu settingmenu;
 
     // ========================= PAUSE MENU =====================================================
     PauseMenu pauseMenu;
@@ -107,14 +111,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         requestFocusInWindow();
         // innitmenubutton(); // buat button
         sfxmanager();
-        musicmanager();
-
-        spawnTimer = new Timer(spawnDelay, e -> {
+        musicmanager();        spawnTimer = new Timer(spawnDelay, e -> {
             spawnEnemy();
             updateSpawnDelay();
         });
         spawnTimer.setRepeats(false);
-
+        
+        // Create boss spawn timer - Every 60 seconds (1 minute)
+        bossSpawnTimer = new Timer(60000, e -> {
+            spawnBoss();
+        });
+        bossSpawnTimer.setRepeats(true); // Keep spawning bosses every minute
+        
         gameLoop = new Timer(16, e -> updateGame());
         setLayout(null);
         initializeFPSconfig(fpscounter);
@@ -149,21 +157,20 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameActive = true;
 
         gameClock.setPosition(getWidth()/2, 5, 100, 50);
-        gameClock.setVisible(true);
-        gameClock.timer.start();
+        gameClock.setVisible(true);        gameClock.timer.start();
         
         spawnTimer.start();
+        bossSpawnTimer.start(); // Start the boss spawn timer
         gameLoop.start();
         
         // set button to invisible when game start
         requestFocusInWindow();
         settingmenu.setPlayer(player); // Always update the reference
         cheats();
-    }
-
-    public static void stopGame() {
+    }    public static void stopGame() {
         gameActive = false;
         spawnTimer.stop();
+        bossSpawnTimer.stop(); // Stop the boss spawn timer
         gameLoop.stop();
         return;
     }
@@ -183,14 +190,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         stopGame();
         gameClock.reset();
         gameClock.setVisible(false);
-    }
-
-    // ========================= SPAWN =====================================================        
+    }    // ========================= SPAWN =====================================================
     private void spawnEnemy() {
         int spawnX = rand.nextInt(getWidth());
         int spawnY = rand.nextInt(getHeight());
         
-        // Randomly choose an enemy type to spawn
+        // Regular enemy spawning - bosses now spawn on timer
         int enemyType = rand.nextInt(5); // 0 = Shooter, 1 = Normal, 2 = Tank, 3 = Lurker, 4 = Bomber
         
         switch(enemyType) {
@@ -210,8 +215,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 enemies.add(new BomberEnemy(spawnX, spawnY)); // Fast toward player
                 break;
         }
-        
-        spawnTimer.setInitialDelay(spawnDelay);
+          spawnTimer.setInitialDelay(spawnDelay);
         spawnTimer.restart();
     }
     
@@ -229,9 +233,14 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             player.updateDash();
             player.updateSkill(); // Update skill status
             updateBullets();
-            checkCollisions();
+            checkCollisions();            // Calculate map dimensions once for all enemies
+            int mapWidth = grid[0].length * TILE_SIZE;
+            int mapHeight = grid.length * TILE_SIZE;
+            
             for (Enemy enemy : enemies) {   //gae musuh bisa nembak
                 enemy.update(player, enemyBullets);
+                // Keep enemies within map boundaries
+                enemy.keepWithinMapBoundaries(mapWidth, mapHeight);
             }
             
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
@@ -692,9 +701,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             bullet.update();
             return bullet.isOutOfBounds(grid, TILE_SIZE);
         });
-    }
-
-    private static void checkCollisions() {
+    }    private static void checkCollisions() {
         // hitboxnya aku kecilin dikit (90% dari sprite)
         int fullSize = player.getSize();
         int hitboxSize = (int)(fullSize * 0.9);
@@ -724,6 +731,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 if (enemy instanceof enemies.BomberEnemy) {
                     Sfx.playWithRandomPitch("explode");
                     player.takeDamage(100); // Bomber deals 100 damage when exploding
+                    enemy.takeDamage(1000); // Kill the bomber after it explodes
+                    System.out.println("Bomber exploded and died!");
+                    // Remove the bomber from the list immediately
+                    enemies.remove(i);
+                    // Skip the rest of the loop since we've removed this enemy
+                    continue;
                 } else if (enemy instanceof enemies.TankEnemy) {
                     player.takeDamage(25); // Tank enemy deals less damage (25)
                 } else {
@@ -809,14 +822,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             row++;
         }
         reader.close();
-        return grid;
-    }
+        return grid;    }
 
     // GAME SETTINGS
     public static boolean controlFade() {
-        if (settingmenu.getDisableFade().isSelected()){
+        if (settingmenu != null && settingmenu.getDisableFade() != null && settingmenu.getDisableFade().isSelected()){
             return false;
-        }else{
+        } else {
             return true;
         }
     }
@@ -851,9 +863,15 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         positionFPSCounter();
         addFPSCounterResizeListener();
     }
-
+    
     private void updateFPSCounterVisibility() {
-        fpscounter.setVisible(settingmenu.getFpsCheckbox().isSelected());
+        // Check if settingmenu is initialized
+        if (settingmenu != null && settingmenu.getFpsCheckbox() != null) {
+            fpscounter.setVisible(settingmenu.getFpsCheckbox().isSelected());
+        } else {
+            // Default to visible if settings are not available
+            fpscounter.setVisible(true);
+        }
     }
 
     private void positionFPSCounter() {
@@ -904,6 +922,63 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         
         // Reset pause menu
         pauseMenu.setVisibility(false);
+    }    public static void initializeSettingMenu(JFrame frame) {
+        // Initialize the settingmenu with the provided JFrame
+        settingmenu = new Settingmenu(frame);
+    }
+      public static Settingmenu getSettingMenu() {
+        return settingmenu;
+    }
+    
+    // Accessor methods for map dimensions
+    public static int[][] getGrid() {
+        return grid;
+    }
+    
+    public static int getTileSize() {
+        return TILE_SIZE;
     }
 
+    private void spawnBoss() {
+        // Calculate spawn position - away from the player
+        int playerX = player.getX();
+        int playerY = player.getY();
+        
+        // Determine spawn position at a safe distance from player (300-500 pixels)
+        int distance = 300 + rand.nextInt(200); // Between 300-500 pixels away
+        double angle = Math.random() * 2 * Math.PI; // Random angle
+        
+        int spawnX = (int)(playerX + distance * Math.cos(angle));
+        int spawnY = (int)(playerY + distance * Math.sin(angle));
+        
+        // Keep spawn position within map bounds
+        int mapWidth = grid[0].length * TILE_SIZE;
+        int mapHeight = grid.length * TILE_SIZE;
+          spawnX = Math.max(50, Math.min(spawnX, mapWidth - 50));
+        spawnY = Math.max(50, Math.min(spawnY, mapHeight - 50));
+          // Ensure more balanced distribution over time
+        boolean spawnTankBoss;
+        
+        // If we've spawned significantly more of one type, bias toward the other
+        int difference = Math.abs(tankBossSpawnCount - shooterBossSpawnCount);
+        if (difference >= 2) {
+            // Bias toward the less frequently spawned boss type
+            spawnTankBoss = tankBossSpawnCount < shooterBossSpawnCount;
+            System.out.println("Balancing boss distribution due to difference of " + difference);
+        } else {
+            // Normal 50/50 chance
+            spawnTankBoss = rand.nextBoolean();
+        }
+        
+        // Record the roll for debugging
+        int roll = rand.nextInt(100); // Just for logging purposes
+        
+        if (spawnTankBoss) {enemies.add(new TankBoss(spawnX, spawnY));
+            tankBossSpawnCount++;            System.out.println("Tank Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
+            System.out.println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
+        } else {            enemies.add(new ShooterBoss(spawnX, spawnY));
+            shooterBossSpawnCount++;            System.out.println("Shooter Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
+            System.out.println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
+        }
+    }
 }

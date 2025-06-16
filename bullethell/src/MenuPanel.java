@@ -2,11 +2,11 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-public class MenuPanel extends JPanel implements MouseListener, MouseMotionListener {
-    // ========================= UI =====================================================
+public class MenuPanel extends JPanel implements MouseListener, MouseMotionListener {    // ========================= UI =====================================================
     private JFrame window; // JFrame for the main window
     private MainMenu mainMenu = new MainMenu();
-    private Settingmenu settingmenu = new Settingmenu(window); 
+    // Use the same settingmenu instance as GameplayPanel
+    private Settingmenu settingmenu = null;
     private Game_over gameover = new Game_over();
     
     // ========================= STATE =====================================================
@@ -26,19 +26,23 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     private Runnable onStartGame;
     private Runnable onRestartGame;
     private Runnable backButtonListener;
-    
-    public MenuPanel(JFrame window) {
+      public MenuPanel(JFrame window) {
         this.window = window;
-        this.settingmenu = new Settingmenu(window);
-    }
-
-    public MenuPanel(Runnable startGameCallback, Runnable restartGameCallback) {
+        // Get the static settingmenu from GameplayPanel
+        this.settingmenu = GameplayPanel.getSettingMenu();
+    }    public MenuPanel(Runnable startGameCallback, Runnable restartGameCallback) {
         this.onStartGame = startGameCallback;
         this.onRestartGame = restartGameCallback;
         
         setLayout(null);
         initButtons();
-        callsettings();
+        
+        // Get the static settingmenu from GameplayPanel
+        this.settingmenu = GameplayPanel.getSettingMenu();
+        // Only call settings if settingmenu is initialized
+        if (this.settingmenu != null) {
+            callsettings();
+        }
         
         addMouseListener(this);
         addMouseMotionListener(this);
@@ -169,9 +173,21 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
             case MAIN_MENU:
                 mainMenu.draw(g, getWidth(), getHeight());
                 break;
-                
-            case SETTINGS:
-                settingmenu.draw(g, getWidth(), getHeight());
+                  case SETTINGS:
+                if (settingmenu != null) {
+                    settingmenu.draw(g, getWidth(), getHeight());
+                } else {
+                    // If settingmenu is not available, try to get it
+                    settingmenu = GameplayPanel.getSettingMenu();
+                    if (settingmenu != null) {
+                        settingmenu.draw(g, getWidth(), getHeight());
+                    } else {
+                        // Draw fallback message
+                        g.setColor(Color.WHITE);
+                        g.setFont(new Font("Arial", Font.BOLD, 18));
+                        g.drawString("Settings not available", getWidth()/2 - 100, getHeight()/2);
+                    }
+                }
                 break;
                 
             case GAME_OVER:
@@ -186,8 +202,16 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         super.setBounds(x, y, width, height);
         positionButtons();
     }
-    
-    public void callsettings(){
+      public void callsettings(){
+        if (settingmenu == null) {
+            // If settingmenu is not initialized, get it from GameplayPanel
+            settingmenu = GameplayPanel.getSettingMenu();
+            if (settingmenu == null) {
+                // Still null, can't proceed
+                return;
+            }
+        }
+        
         // Video settings
         add(settingmenu.getResolutionDropdown());
         add(settingmenu.getResolutionLabel());
