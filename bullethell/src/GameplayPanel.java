@@ -489,6 +489,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     }
                     ((javax.swing.Timer)evt.getSource()).stop();
                 }).start();
+            }else if (current instanceof weapons.Sniper){
+                soundsfx.playWithRandomPitch("sniperfire");
+            }else if (current instanceof weapons.Rocket) {
+                soundsfx.playWithRandomPitch("rpgfire");
             }else{
                 soundsfx.playWithRandomPitch("shoot");
             }
@@ -530,6 +534,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             soundsfx.play("reloadrevolver");
         }else if (current instanceof weapons.Smg) {
             soundsfx.play("smgreload");
+        }else if (current instanceof weapons.Rocket) {
+            soundsfx.play("rpgreload");
+        }else if (current instanceof weapons.Sniper) {
+            soundsfx.play("snipereload");
         }else{
             soundsfx.play("reload");
         }

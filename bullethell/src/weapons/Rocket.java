@@ -10,7 +10,7 @@ public class Rocket extends Weapon {
               loadImage("rocket_launcher.png"),
               loadImage("rocket_bullet.png"),
               1, // max ammo
-              6000, // reload delay in ms
+              3200, // reload delay in ms
               0, // fire rate in ms
               false, // semi-auto
               500); // damage per shot

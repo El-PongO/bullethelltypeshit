@@ -31,8 +31,8 @@ public class Sniper extends Weapon{
               loadImage("sniper.png"),
               loadImage("sniper_bullet.png"),
               5, // max ammo
-              4500, // reload delay in ms
-              2000, // fire rate in ms
+              3000, // reload delay in ms
+              1600, // fire rate in ms
               false, // semi-auto
               300); // damage per shot
     }
