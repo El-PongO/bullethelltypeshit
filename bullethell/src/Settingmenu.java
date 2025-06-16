@@ -1,7 +1,10 @@
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -10,7 +13,6 @@ import javax.swing.JSlider;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 
@@ -22,7 +24,6 @@ public class Settingmenu extends JPanel{
     
     private JCheckBox fpsCheckbox; // Checkbox for FPS counter
     private JCheckBox devmodeCheckbox; // Checkbox for dev mode
-    private JCheckBox holdweaponCheckbox; // Checkbox for hold weapon
     private JLabel musicLabel, sfxLabel;
     private float musicVolume = 1.0f;
     private float sfxVolume = 1.0f;
@@ -35,6 +36,8 @@ public class Settingmenu extends JPanel{
     private JCheckBox fullscreen;
     private JFrame mainWindow;
     boolean isFullscreen = false;
+    private players.Player player;
+    protected JLabel moveLabel, shootLabel, dashLabel, reloadLabel, weaponLabel, pause;
 
     public Settingmenu(JFrame mainWindow) {
         this.mainWindow = mainWindow; 
@@ -43,6 +46,7 @@ public class Settingmenu extends JPanel{
         Create_Setting_Video(); // Create video controls 
         Create_Setting_Audio();    // Create audio controls 
         Create_Settings_Others();   
+        Create_Setting_Controls();
     }
 
     public void draw(Graphics g, int panelWidth, int panelHeight) {
@@ -120,6 +124,12 @@ public class Settingmenu extends JPanel{
             disableFade.setBounds(20, ((checkboxY * 2) + y) + 30, 200, 30);
         }else if (selectedIndex == 2){
             setvisibleoption("Controls");
+            moveLabel.setBounds(20, checkboxY, 300, 30);
+            shootLabel.setBounds(20, checkboxY + 40, 300, 30);
+            dashLabel.setBounds(20, checkboxY + 80, 300, 30);
+            reloadLabel.setBounds(20, checkboxY + 120, 300, 30);
+            weaponLabel.setBounds(20, checkboxY + 160, 300, 30);
+            pause.setBounds(20, checkboxY + 200, 300, 30);
         }else if (selectedIndex == 3){
             setvisibleoption("Others");
             // Draw the FPS checkbox
@@ -127,9 +137,6 @@ public class Settingmenu extends JPanel{
 
             // Draw the dev mode checkbox
             devmodeCheckbox.setBounds(20, checkboxY + 30, 200, 30); 
-
-            // Draw the hold weapon checkbox
-            holdweaponCheckbox.setBounds(20, checkboxY + 60, 400, 30); 
         }
     }
 
@@ -152,7 +159,7 @@ public class Settingmenu extends JPanel{
                 setAudioControlsVisible(false);
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
-                holdweaponCheckbox.setVisible(false);
+                setControlLabelsVisible(false);
                 // Visible
                 resolutionDropdown.setVisible(true);
                 resolutionLabel.setVisible(true);
@@ -164,8 +171,8 @@ public class Settingmenu extends JPanel{
                 resolutionLabel.setVisible(false);
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
-                holdweaponCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
+                setControlLabelsVisible(false);
                 // Visible
                 setAudioControlsVisible(true);
                 break;
@@ -176,9 +183,9 @@ public class Settingmenu extends JPanel{
                 setAudioControlsVisible(false);
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
-                holdweaponCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
                 // Visible
+                setControlLabelsVisible(true);
                 break;
             case "Others":
                 // Invisible
@@ -186,10 +193,10 @@ public class Settingmenu extends JPanel{
                 resolutionLabel.setVisible(false);
                 setAudioControlsVisible(false);
                 fullscreen.setVisible(false);
+                setControlLabelsVisible(false);
                 // Visible
                 fpsCheckbox.setVisible(true);
                 devmodeCheckbox.setVisible(true);
-                holdweaponCheckbox.setVisible(true);
                 break;
             case "quit":
                 resolutionDropdown.setVisible(false);
@@ -197,8 +204,8 @@ public class Settingmenu extends JPanel{
                 setAudioControlsVisible(false);
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
-                holdweaponCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
+                setControlLabelsVisible(false);
                 break;
         }
         revalidate();
@@ -531,16 +538,47 @@ public class Settingmenu extends JPanel{
 
     // Create the settings for the "Controls" category
     public void Create_Setting_Controls(){
-
+        moveLabel = createControlLabel("Movement: WASD");
+        shootLabel = createControlLabel("Shoot: M1");
+        dashLabel = createControlLabel("Dash: Shift");
+        reloadLabel = createControlLabel("Reload: R");
+        weaponLabel = createControlLabel("Switch Weapon: QE");
+        pause = createControlLabel("Pause Game: Esc");
     }
+
+    private JLabel createControlLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Arial", Font.BOLD, 20));
+        label.setForeground(Color.WHITE);
+        label.setOpaque(true);
+        label.setBackground(new Color(40, 40, 40));
+        label.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+        label.setPreferredSize(new Dimension(300, 100));
+        return label;
+    }
+
+    public void setControlLabelsVisible(boolean visible) {
+        moveLabel.setVisible(visible);
+        shootLabel.setVisible(visible);
+        dashLabel.setVisible(visible);
+        reloadLabel.setVisible(visible);
+        weaponLabel.setVisible(visible);
+        pause.setVisible(visible);
+    }
+
+    public JLabel getMoveLabel() { return moveLabel; }
+    public JLabel getShootLabel() { return shootLabel; }
+    public JLabel getDashLabel() { return dashLabel; }
+    public JLabel getReloadLabel() { return reloadLabel; }
+    public JLabel getWeaponLabel() { return weaponLabel; }
+    public JLabel getPauseLabel() { return pause; }
+
     // Create the settings for the "Others" category
     public void Create_Settings_Others(){
         Create_fpsCheckbox();
         Create_devmodeCheckbox();
-        Create_holdweaponCheckbox();
         add(fpsCheckbox);
         add(devmodeCheckbox);
-        add(holdweaponCheckbox);
     }
 
     public void Create_fpsCheckbox() {
@@ -553,24 +591,80 @@ public class Settingmenu extends JPanel{
         fpsCheckbox.setSelected(false); // Default state
     }
 
-    public void Create_devmodeCheckbox() { // Unused method
+    public void Create_devmodeCheckbox() {
         devmodeCheckbox = new Customcheckbox("Cheats :)");
         devmodeCheckbox.setFont(new Font("Arial", Font.PLAIN, 20));
         devmodeCheckbox.setForeground(Color.WHITE);
-        devmodeCheckbox.setBackground(new Color(28, 51, 92)); // Match the background color
+        devmodeCheckbox.setBackground(new Color(28, 51, 92));
         devmodeCheckbox.setFocusPainted(false);
-        devmodeCheckbox.setVisible(false); // Initially hidden
-        devmodeCheckbox.setSelected(false); // Default state
-    }
+        devmodeCheckbox.setVisible(false);
+        devmodeCheckbox.setSelected(false);
+        
+        try {
+            File configFile = new File("config.cfg");
+            if (configFile.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(configFile));
+                reader.readLine(); // width
+                reader.readLine(); // height
+                reader.readLine(); // fullscreen
+                String devState = reader.readLine(); // devmode state
+                devmodeCheckbox.setSelected(devState != null && devState.equals("1"));
+                reader.close();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
-    public void Create_holdweaponCheckbox() { // Unused method
-        holdweaponCheckbox = new Customcheckbox("Automatically reload weapon when empty");
-        holdweaponCheckbox.setFont(new Font("Arial", Font.PLAIN, 20));
-        holdweaponCheckbox.setForeground(Color.WHITE);
-        holdweaponCheckbox.setBackground(new Color(28, 51, 92)); // Match the background color
-        holdweaponCheckbox.setFocusPainted(false);
-        holdweaponCheckbox.setVisible(false); // Initially hidden
-        holdweaponCheckbox.setSelected(false); // Default state
+        devmodeCheckbox.addActionListener(e -> {
+            boolean isEnabled = devmodeCheckbox.isSelected();
+            // Save all states to config file
+            try {
+                // First read existing values
+                int width = 1024, height = 768;
+                boolean fullscreenEnabled = false;
+                File configFile = new File("config.cfg");
+                if (configFile.exists()) {
+                    BufferedReader reader = new BufferedReader(new FileReader(configFile));
+                    width = Integer.parseInt(reader.readLine().trim());
+                    height = Integer.parseInt(reader.readLine().trim());
+                    fullscreenEnabled = reader.readLine().trim().equals("1");
+                    reader.close();
+                }
+        
+                // Write all values back including devmode
+                PrintWriter writer = new PrintWriter("config.cfg");
+                writer.println(width);
+                writer.println(height);
+                writer.println(fullscreenEnabled ? "1" : "0");
+                writer.println(isEnabled ? "1" : "0");
+                writer.close();
+        
+                System.out.println("Dev mode " + (isEnabled ? "enabled" : "disabled"));
+                if (isEnabled && player != null) {
+                    System.out.println("Applying cheats to player...");
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } 
+        });     
+    }
+    
+    public boolean isDevModeEnabled() {
+        try {
+            File configFile = new File("config.cfg");
+            if (configFile.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(configFile));
+                reader.readLine(); // width
+                reader.readLine(); // height
+                reader.readLine(); // fullscreen
+                String state = reader.readLine(); // devmode state
+                reader.close();
+                return state != null && state.equals("1");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return false;
     }
 
     public JCheckBox getFpsCheckbox() {
@@ -581,10 +675,9 @@ public class Settingmenu extends JPanel{
         return devmodeCheckbox;
     }
 
-    public JCheckBox getHoldWeaponCheckbox() {
-        return holdweaponCheckbox;
+    public void setPlayer(players.Player player) {
+        this.player = player;
     }
-
 
     public JLabel getMusicLabel() { return musicLabel; }
     public JLabel getSfxLabel() { return sfxLabel; }

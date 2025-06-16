@@ -151,7 +151,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameLoop.start();
         
         // set button to invisible when game start
-        requestFocusInWindow();        
+        requestFocusInWindow();
+        settingmenu.setPlayer(player); // Always update the reference
+        cheats();
     }
 
     public static void stopGame() {
@@ -750,6 +752,25 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             return false;
         }else{
             return true;
+        }
+    }
+
+    public void cheats(){
+        if (settingmenu.isDevModeEnabled() && player != null) {
+            player.setMaxHealth(1000);
+            player.heal(1000, true);
+            try {
+                boolean hasRevolver = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Revolver"));
+                boolean hasShotgun = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Shotgun"));
+                boolean hasSmg = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Smg"));
+                boolean hasPistol = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Glock"));
+                if (!hasRevolver) player.getWeapons().add(new weapons.Revolver());
+                if (!hasShotgun) player.getWeapons().add(new weapons.Shotgun());
+                if (!hasSmg) player.getWeapons().add(new weapons.Smg());
+                if (!hasPistol) player.getWeapons().add(new weapons.Glock());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

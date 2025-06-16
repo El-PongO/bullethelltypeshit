@@ -5,7 +5,6 @@ import players.Player;
 public class MainPanel extends JPanel {
     // Add this field
     private boolean fromPauseMenu = false;
-    
     // Panels
     private MenuPanel menuPanel;
     private GameplayPanel gameplayPanel;
