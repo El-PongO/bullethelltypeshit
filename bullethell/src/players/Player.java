@@ -69,17 +69,17 @@ public abstract class Player {
     public void draw(Graphics2D g, int px, int py, int zoom) {
         BufferedImage bimage = null;
         //////////////////////////////////////
-        int barlength = size * zoom;
-        g.setColor(Color.BLUE);
-        g.fillRect(px, py-8, barlength, 4);
-        g.setColor(Color.RED);
-        double hp = barlength*((double)health/(double)maxHealth); // HP scaling
-        g.fillRect(px, py-8, (int)hp, 4);
-        g.setColor(Color.GRAY);
-        g.fillOval(px, py-4, barlength, 4);
-        g.setColor(Color.WHITE);
-        double dashcount = barlength * ((double)currentDashCharges / (double)maxDashCharges);
-        g.fillOval(px, py-4, (int)dashcount, 4);
+            int barlength = size * zoom;
+            g.setColor(Color.BLUE);
+            g.fillRect(px, py-8, barlength, 4);
+            g.setColor(Color.RED);
+            double hp = barlength*((double)health/(double)maxHealth); // HP scaling
+            g.fillRect(px, py-8, (int)hp, 4);
+            g.setColor(Color.GRAY);
+            g.fillOval(px, py-4, barlength, 4);
+            g.setColor(Color.WHITE);
+            double dashcount = barlength * ((double)currentDashCharges / (double)maxDashCharges);
+            g.fillOval(px, py-4, (int)dashcount, 4);
         ///////////////////////////////////////
         if (idling){
             switch (direction) {

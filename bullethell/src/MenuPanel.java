@@ -196,14 +196,12 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         // Audio settings
         add(settingmenu.getMusicLabel());
         add(settingmenu.getMusicValueLabel());
-        // add(settingmenu.getMusicVolumeBar());
         add(settingmenu.getMusicSlider());
         add(settingmenu.getMusicVolumeUpBtn());
         add(settingmenu.getMusicVolumeDownBtn());
         add(settingmenu.getSfxSlider());
         add(settingmenu.getSfxLabel());
         add(settingmenu.getSfxValueLabel());
-        // add(settingmenu.getSfxVolumeBar());
         add(settingmenu.getSfxVolumeUpBtn());
         add(settingmenu.getSfxVolumeDownBtn());
         add(settingmenu.getMuteAudio());

@@ -287,7 +287,6 @@ public class Settingmenu extends JPanel{
         }
 
         resolutionDropdown.addActionListener(e -> {
-            System.out.println("Dropdown action performed");
             VideoSettings selectedResolution = (VideoSettings) resolutionDropdown.getSelectedItem();
             if (selectedResolution != null) {
                 // Set the game and restart resolution to the selected value
@@ -591,8 +590,6 @@ public class Settingmenu extends JPanel{
     public JLabel getSfxLabel() { return sfxLabel; }
     public JLabel getMusicValueLabel() { return musicValueLabel; }
     public JLabel getSfxValueLabel() { return sfxValueLabel; }
-    // public JProgressBar getMusicVolumeBar() { return musicVolumeBar; }
-    // public JProgressBar getSfxVolumeBar() { return sfxVolumeBar; }
     public JSlider getMusicSlider() { return musicSlider; }
     public JSlider getSfxSlider() { return sfxSlider; }
     public JButton getMusicVolumeUpBtn() { return musicVolumeUpBtn; }

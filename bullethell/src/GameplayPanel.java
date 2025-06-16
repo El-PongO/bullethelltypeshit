@@ -256,7 +256,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         drawGame((Graphics2D)g);
-
         // Center camera on player with bounds checking
         int vpw = getWidth() / ZOOM; // Adjust viewport width for zoom
         int vph = getHeight() / ZOOM; // Adjust viewport height for zoom
@@ -316,8 +315,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 16));
-        g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
-        g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
+            g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
+            g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
         drawWeaponHUD((Graphics2D)g);
         if (isPaused) {
             pauseMenu.draw(g, getWidth(), getHeight());
