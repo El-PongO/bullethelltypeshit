@@ -407,7 +407,7 @@ public abstract class Player {
     public abstract void useSkill();
 
     // Helper method to check if skill is on cooldown
-    protected boolean isSkillOnCooldown() {
+    public boolean isSkillOnCooldown() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSkillUseTime < skillCooldown) {
             long remainingCooldown = (lastSkillUseTime + skillCooldown - currentTime) / 1000;
@@ -418,7 +418,7 @@ public abstract class Player {
     }
     
     // Helper method to activate skill (set common flags)
-    protected void activateSkill() {
+    public void activateSkill() {
         skillActive = true;
         skillStartTime = System.currentTimeMillis();
         lastSkillUseTime = System.currentTimeMillis();

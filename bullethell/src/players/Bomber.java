@@ -1,7 +1,6 @@
 package players;
 
 import java.awt.Color;
-
 public class Bomber extends Player {
     public Bomber(int x, int y) {
         super(x, y);

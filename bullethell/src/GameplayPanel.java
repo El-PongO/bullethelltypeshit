@@ -11,13 +11,16 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import enemies.TankBoss;
 import enemies.ShooterBoss;
+import players.DamageCircle;
 import players.Gunslinger;
 import players.Player;
 import weapons.Bullet;
+import weapons.Rocket;
 import weapons.Sniper;
 import weapons.Weapon;
 
@@ -54,14 +57,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     static final int ZOOM = 2; 
     static final int MAP_WIDTH = 16;  // Add map dimensions
     static final int MAP_HEIGHT = 12;
-    // static int vpw = VIEWPORT_WIDTH * TILE_SIZE;  // Viewport dimensions in pixels
-    // static int vph = VIEWPORT_HEIGHT * TILE_SIZE;
     static int cameraPixelX, cameraPixelY;
     CursorManager cursormanager = new CursorManager();
     private boolean mouseHeld = false;
     private boolean showOutOfAmmoMsg = false;
     private long outOfAmmoMsgTime = 0;
     private static final int OUT_OF_AMMO_MSG_DURATION = 1000; // ms
+    private static List<DamageCircle> activeExplosions = new ArrayList<>();
     // ========================= SFX =====================================================
     public static Sfx soundsfx = new Sfx();
     private long lastEmptySfxTime = 0;
@@ -348,6 +350,16 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
         }
         
+        Iterator<DamageCircle> it = activeExplosions.iterator();
+        while (it.hasNext()) {
+            DamageCircle explosion = it.next();
+            if (explosion.isActive()) {
+                explosion.draw((Graphics2D)g, cameraPixelX, cameraPixelY, ZOOM);
+            } else {
+                it.remove();  // Remove inactive explosions
+            }
+        }
+
         if (isPaused) {
             pauseMenu.draw(g, getWidth(), getHeight());
         }
@@ -390,7 +402,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 }
             }
         }
-    }    private void drawWeaponHUD(Graphics2D g) {
+    }    
+    
+    private void drawWeaponHUD(Graphics2D g) {
         if (player == null) {
             return;
         }
@@ -637,15 +651,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }
           // Use skill for any player type when pressing F
         if (code == KeyEvent.VK_F) {
+            boolean wasActive = player.isSkillOnCooldown();
             player.useSkill();
-            if (player instanceof players.Bomber) {
-                soundsfx.play("bomber_skill");
-            } else if (player instanceof players.Gunslinger) {
-                soundsfx.play("gunslinger_skill");
-            } else if (player instanceof players.Vampire) {
-                soundsfx.play("vampire_skill");
-            } else if (player instanceof players.Brute) {
-                soundsfx.play("brute_skill");
+            if (!wasActive) {
+                if (player instanceof players.Bomber) {
+                    soundsfx.play("bomber_skill");
+                } else if (player instanceof players.Gunslinger) {
+                    soundsfx.play("gunslinger_skill");
+                } else if (player instanceof players.Vampire) {
+                    soundsfx.play("vampire_skill"); 
+                } else if (player instanceof players.Brute) {
+                    soundsfx.play("brute_skill");
+                }
             }
         }
     }
@@ -718,7 +735,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             bullet.update();
             return bullet.isOutOfBounds(grid, TILE_SIZE);
         });
-    }    private static void checkCollisions() {
+    }    
+    
+    private static void checkCollisions() {
         // hitboxnya aku kecilin dikit (90% dari sprite)
         int fullSize = player.getSize();
         int hitboxSize = (int)(fullSize * 0.9);
@@ -742,6 +761,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     }
                 }
             }
+
             if (playerBounds.intersects(enemyBounds) && !player.isInvincible()) {
                 System.out.println("Player hit!");
                 // Special cases for different enemy types
@@ -775,8 +795,48 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 
                 if (bulletBounds.intersects(enemyBounds)) {
                     Weapon currentWeapon = player.getCurrentWeapon();
-                    // Deal damage to the enemy instead of immediately removing
-                    enemy.takeDamage(currentWeapon.getWeaponDamage()); // Each bullet deals 50 damage
+
+                    // Check if the bullet is a RocketBullet
+                    if (bullet instanceof Rocket.RocketBullet){
+                        // Create explosion effect
+                        DamageCircle explosion = new DamageCircle(
+                        (int)bullet.x, 
+                        (int)bullet.y, 
+                        100, // explosion radius
+                        currentWeapon.getWeaponDamage(), 
+                        500, // duration in ms
+                        Color.ORANGE
+                        );
+                        activeExplosions.add(explosion);
+                        int totalDamageDealt = 0;
+
+                        // Damage all enemies in blast radius
+                        for (int j = enemies.size() - 1; j >= 0; j--) {
+                            Enemy targetEnemy = enemies.get(j);
+                            if (explosion.collides(targetEnemy.x, targetEnemy.y, targetEnemy.size)) {
+                                int damageDealt = Math.min(targetEnemy.getHealth(), currentWeapon.getWeaponDamage());
+                                targetEnemy.takeDamage(currentWeapon.getWeaponDamage());
+                                totalDamageDealt += damageDealt;
+                                
+                                if (targetEnemy.isDead()) {
+                                    enemies.remove(j);
+                                }
+                            }
+                        }
+                        
+                        // Apply vampire healing based on total damage
+                        if (player instanceof players.Vampire && totalDamageDealt > 0) {
+                            ((players.Vampire) player).stealHealth(totalDamageDealt);
+                        }
+
+                        // Play explosion sound
+                        soundsfx.play("rpgexplode");
+                        shouldRemove = true;
+                        break;
+                    }else{
+                        // Deal damage to the enemy instead of immediately removing
+                        enemy.takeDamage(currentWeapon.getWeaponDamage());
+                    }
                     
                     // If player is a Vampire with active skill, steal health
                     if (player instanceof players.Vampire) {
@@ -839,7 +899,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             row++;
         }
         reader.close();
-        return grid;    }
+        return grid;    
+    }
 
     // GAME SETTINGS
     public static boolean controlFade() {
