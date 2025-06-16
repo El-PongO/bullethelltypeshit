@@ -21,8 +21,10 @@ public class ShooterEnemy extends Enemy {
     private int retreatTimer = 0;
     private int retreatDx = 0;
     private int retreatDy = 0;
-    
-    public ShooterEnemy(int x, int y) {
+    private int[][] grid ;
+    private int tileSize;
+
+    public ShooterEnemy(int x, int y, int[][] grid, int tileSize) {
         super(x, y);
         // Specific properties for shooter enemy
         this.shootDelay = 2000; // 2 second delay between shots
@@ -30,6 +32,8 @@ public class ShooterEnemy extends Enemy {
         getEnemyImage();
         direction="down";
         idling=true;
+        this.grid = grid;
+        this.tileSize = tileSize;
     }
     
     public void getEnemyImage(){
@@ -171,10 +175,11 @@ public class ShooterEnemy extends Enemy {
                 movementCounter--;
             }
         }
+        if (!isOutOfBounds(grid, tileSize, x+dx, y+dy)) {
+            x += dx * speed; // move speed
+            y += dy * speed;
+        }
 
-        x += dx * speed; // move speed
-        y += dy * speed;
-        
         // Handle shooting internally
         Bullet bullet = tryShoot(player.getX(), player.getY());
         if (bullet != null) {

@@ -77,19 +77,20 @@ public class Shotgun extends Weapon {
     public List<Bullet> fire(int x, int y, int targetX, int targetY, int playerSize) {
         List<Bullet> bullets = new ArrayList<>();
         int pellets = 8;
-        double spread = Math.toRadians(45); // 45 degree spread
+        double spread = Math.toRadians(40); // 40 degree spread
         double angle = Math.atan2(targetY - (y + playerSize/2), targetX - (x + playerSize/2));
-        Random rand = new Random();
         if (getCurrentAmmo() > 0) {
             for (int i = 0; i < pellets; i++) {
+                Random rand = new Random();
                 double minAngle = angle - spread / 2;
                 double segment = spread / (pellets - 1);
                 double jitter = (rand.nextDouble() - 0.5) * (segment * 0.4); // 40% of segment width
                 double pelletAngle = minAngle + i * segment + jitter;
-                int dx = (int)(Math.cos(pelletAngle) * 3) * 3; // 3 is bullet speed
-                int dy = (int)(Math.sin(pelletAngle) * 3) * 3;
-                bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, dx, dy, null));
+                double dx = (Math.cos(pelletAngle) * 3) * 3; // 3 is bullet speed
+                double dy = (Math.sin(pelletAngle) * 3) * 3;
+                bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, (int)dx, (int)dy, null));
             }
+            
             useAmmo(); // Only use 1 ammo per shot
             recordShot();
         }

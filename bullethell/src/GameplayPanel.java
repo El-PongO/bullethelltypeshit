@@ -188,7 +188,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         
         switch(enemyType) {
             case 0:
-                enemies.add(new ShooterEnemy(spawnX, spawnY)); // Only this enemy type shoots
+                enemies.add(new ShooterEnemy(spawnX, spawnY, grid, TILE_SIZE)); // Only this enemy type shoots
                 break;
             case 1:
                 enemies.add(new NormalEnemy(spawnX, spawnY)); // Simple follower

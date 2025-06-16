@@ -51,7 +51,8 @@ public abstract class Enemy {
             int healthBarWidth = (int)((float)health / maxHealth * size);
             g.fillRect(ex, ey - 10, healthBarWidth, 5);
         }
-    }public int getX() { return x; }
+    }
+    public int getX() { return x; }
     public int getY() { return y; }
     
     // Get health methods
@@ -84,5 +85,12 @@ public abstract class Enemy {
             }
         }
         return null;
+    }
+
+    public boolean isOutOfBounds(int[][] grid, int tileSize, int newX, int newY) {
+        int gridX = newX / tileSize;
+        int gridY = newY / tileSize;
+        return gridX < 0 || gridY < 0 || gridX >= grid[0].length || gridY >= grid.length 
+               || grid[gridY][gridX] != 0;
     }
 }
