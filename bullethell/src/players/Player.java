@@ -25,6 +25,14 @@ public abstract class Player {
     protected int currentDashCharges = maxDashCharges; // Current number of dash charges ambil dari (maxDashCharges)
     protected int dashChargeCooldown = 5000; // Cooldown time for dash charges in milliseconds
     private long lastChargeTime = 0; // Last time a dash charge was used
+    
+    // Skill system variables
+    protected boolean skillActive = false;
+    protected long skillStartTime = 0;
+    protected long skillDuration;
+    protected long skillCooldown;
+    protected long lastSkillUseTime = 0;
+    
     public String direction;
     public boolean idling;
     public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2, weapon_pistol_1, ammo_pistol1, weapon_pistol_2, ammo_pistol2, weapon_rif_1, ammo_rif1;
@@ -375,5 +383,42 @@ public abstract class Player {
 
     public void setChangewp(BufferedImage changewp) {
         this.changewp = changewp;
+    }
+
+    public boolean isSkillActive() { return skillActive; }
+    public long getSkillStartTime() { return skillStartTime; }
+    public long getSkillDuration() { return skillDuration; }
+    public long getSkillCooldown() { return skillCooldown; }
+    public long getLastSkillUseTime() { return lastSkillUseTime; }
+
+    // Method to update the skill status
+    public void updateSkill() {
+        long currentTime = System.currentTimeMillis();
+        
+        // Check if skill is active and duration has expired
+        if (skillActive && currentTime - skillStartTime >= skillDuration) {
+            skillActive = false;
+            System.out.println("Skill duration ended.");
+        }
+    }    
+    // Abstract method for player skills - each player class must implement this
+    public abstract void useSkill();
+
+    // Helper method to check if skill is on cooldown
+    protected boolean isSkillOnCooldown() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastSkillUseTime < skillCooldown) {
+            long remainingCooldown = (lastSkillUseTime + skillCooldown - currentTime) / 1000;
+            System.out.println("Skill on cooldown! " + remainingCooldown + " seconds remaining.");
+            return true;
+        }
+        return false;
+    }
+    
+    // Helper method to activate skill (set common flags)
+    protected void activateSkill() {
+        skillActive = true;
+        skillStartTime = System.currentTimeMillis();
+        lastSkillUseTime = System.currentTimeMillis();
     }
 }
