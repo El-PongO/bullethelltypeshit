@@ -15,6 +15,10 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import players.Gunslinger;
 import players.Player;
+import powerup.HealPower;
+import powerup.MaxAmmoPower;
+import powerup.PowerUp;
+import powerup.SpeedPower;
 import weapons.Bullet;
 import weapons.Sniper;
 import weapons.Weapon;
@@ -25,6 +29,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     // ========================= ENTITY =====================================================
     private static Player player;
     private static ArrayList<Enemy> enemies = new ArrayList<>();
+    private static ArrayList<PowerUp> power = new ArrayList<>();
+
 
     // ========================= BULLET =====================================================
     private static ArrayList<Bullet> playerBullets = new ArrayList<>();
@@ -34,6 +40,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static JFrame window;
     private Random rand;
     private int spawnDelay = 1000;
+    private int spawnPower = 5000;
     private static Timer spawnTimer;
     private static Timer gameLoop;
     static boolean gameActive = false;
@@ -110,6 +117,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         musicmanager();
 
         spawnTimer = new Timer(spawnDelay, e -> {
+            spawnPower();
             spawnEnemy();
             updateSpawnDelay();
         });
@@ -186,6 +194,26 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     }
 
     // ========================= SPAWN =====================================================        
+    private void spawnPower() {
+        int spawnX = rand.nextInt(getWidth()-TILE_SIZE) + TILE_SIZE;
+        int spawnY = rand.nextInt(getHeight()-TILE_SIZE) + TILE_SIZE;
+        int powerType = rand.nextInt(3); // 0 = Heal, 1 = Max Ammo, 2 = Speed
+        if(power.size() < 10) {
+            switch(powerType) {
+                case 0:
+                    power.add(new HealPower(spawnX, spawnY, player)); // Heal Power
+                    break;
+                case 1:
+                    power.add(new MaxAmmoPower(spawnX, spawnY, player)); // Max Ammo Power
+                    break;
+                case 2:
+                    power.add(new SpeedPower(spawnX, spawnY, player)); // Speed Power
+                    break;
+            }
+        }
+        
+    }
+    
     private void spawnEnemy() {
         int spawnX = rand.nextInt(getWidth());
         int spawnY = rand.nextInt(getHeight());
@@ -321,6 +349,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             int ey = (bullet.y - cameraPixelY) * ZOOM;
             bullet.draw(g, ex, ey, Color.RED);
         }
+        for (PowerUp powerUp : power) {
+            int ex = (powerUp.x - cameraPixelX) * ZOOM;
+            int ey = (powerUp.y - cameraPixelY) * ZOOM;
+            powerUp.draw(g, ex, ey);
+        }
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 16));
             g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
@@ -440,6 +473,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         soundsfx.load("empty", "/Audio/Sfx/wep_empty.wav");
         soundsfx.load("hit", "/Audio/Sfx/player_hit.wav");
         soundsfx.load("reload", "/Audio/Sfx/reload.wav");
+        soundsfx.load("powerup", "/Audio/Sfx/Power Up.wav");
 
         // revolver
         soundsfx.load("shootrevolver", "/Audio/Sfx/rev_shot.wav");
@@ -773,7 +807,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             
             return shouldRemove || bullet.isOutOfBounds(grid, TILE_SIZE);
         });
-
+        
         // Check enemy bullet-player collisions
         enemyBullets.removeIf(bullet -> {
             Rectangle bulletBounds = new Rectangle(bullet.x, bullet.y, bullet.getSize(), bullet.getSize());
@@ -788,6 +822,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
             return false;
         });
+
+        // Check power-up collisions
+        for (PowerUp powerUp : power) {
+            Rectangle powerUpBounds = new Rectangle(powerUp.x, powerUp.y, powerUp.size, powerUp.size);
+            if (playerBounds.intersects(powerUpBounds)) {
+                System.out.println("Player collected a power-up!");
+                soundsfx.play("powerup");
+                powerUp.activate();
+                power.remove(powerUp);
+                break;
+            }
+        }
     }
 
     public static int[][] loadMapFromFile(String filePath) throws IOException {
