@@ -214,6 +214,7 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         add(settingmenu.getReloadLabel());
         add(settingmenu.getWeaponLabel());
         add(settingmenu.getPauseLabel());
+        add(settingmenu.getSkillsLabel());
         // Others Settings
         add(settingmenu.getFpsCheckbox());
         add(settingmenu.getDevCheckbox());

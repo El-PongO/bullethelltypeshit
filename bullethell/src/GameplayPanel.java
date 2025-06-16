@@ -435,7 +435,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     // ========================= FUNCTION =====================================================
     public void sfxmanager(){
-        soundsfx.load("dice", "/Audio/Sfx/Dice_Roll.wav");
         soundsfx.load("shoot", "/Audio/Sfx/Atk_LeweiGun.wav");
         soundsfx.load("explode", "/Audio/Sfx/Explode.wav");
         soundsfx.load("empty", "/Audio/Sfx/wep_empty.wav");
@@ -459,6 +458,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
         // rpg
         soundsfx.load("rpgreload", "/Audio/Sfx/RPG_Reload.wav");
+        soundsfx.load("rpgfire", "/Audio/Sfx/RPG_firing.wav");
+        soundsfx.load("rpgexplode", "/Audio/Sfx/RPG_Explode.wav");
+
+        // sniper
+        soundsfx.load("sniperfire", "/Audio/Sfx/sniper_fire.wav");
+        soundsfx.load("snipereload", "/Audio/Sfx/SniperReload.wav");
     }
 
     public void playsfx(boolean isEmpty){
@@ -818,6 +823,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 boolean hasSmg = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Smg"));
                 boolean hasPistol = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Glock"));
                 boolean hasSniper = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Sniper"));
+                boolean hasRpg = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Rocket Launcher"));
+                if (!hasRpg) player.getWeapons().add(new weapons.Rocket());
                 if (!hasSniper) player.getWeapons().add(new weapons.Sniper());
                 if (!hasRevolver) player.getWeapons().add(new weapons.Revolver());
                 if (!hasShotgun) player.getWeapons().add(new weapons.Shotgun());

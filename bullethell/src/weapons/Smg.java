@@ -23,7 +23,7 @@ public class Smg extends Weapon {
                 BufferedImage img = null;
                 
                 // Try to load the specific bullet
-                img = ImageIO.read(Smg.class.getResourceAsStream("/Assets/player/bullets/smg1/Bullet2.png"));
+                img = ImageIO.read(Smg.class.getResourceAsStream("/Assets/player/bullets/PistolAmmoBig.png"));
                 
                 // If that failed, try with lowercase
                 if (img == null) {

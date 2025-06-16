@@ -25,7 +25,7 @@ public class Glock extends Weapon{
                 BufferedImage img = null;
                 
                 // Try to load the specific bullet
-                img = ImageIO.read(Glock.class.getResourceAsStream("/Assets/player/bullets/glock/Bullet2.png"));
+                img = ImageIO.read(Glock.class.getResourceAsStream("/Assets/player/bullets/PistolAmmoBig.png"));
                 
                 // If that failed, try with lowercase
                 if (img == null) {

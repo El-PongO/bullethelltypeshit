@@ -37,7 +37,7 @@ public class Settingmenu extends JPanel{
     private JFrame mainWindow;
     boolean isFullscreen = false;
     private players.Player player;
-    protected JLabel moveLabel, shootLabel, dashLabel, reloadLabel, weaponLabel, pause;
+    protected JLabel moveLabel, shootLabel, dashLabel, reloadLabel, weaponLabel, pause, skills;
 
     public Settingmenu(JFrame mainWindow) {
         this.mainWindow = mainWindow; 
@@ -129,7 +129,8 @@ public class Settingmenu extends JPanel{
             dashLabel.setBounds(20, checkboxY + 80, 300, 30);
             reloadLabel.setBounds(20, checkboxY + 120, 300, 30);
             weaponLabel.setBounds(20, checkboxY + 160, 300, 30);
-            pause.setBounds(20, checkboxY + 200, 300, 30);
+            skills.setBounds(20, checkboxY + 200, 300, 30);
+            pause.setBounds(20, checkboxY + 240, 300, 30);
         }else if (selectedIndex == 3){
             setvisibleoption("Others");
             // Draw the FPS checkbox
@@ -544,6 +545,7 @@ public class Settingmenu extends JPanel{
         reloadLabel = createControlLabel("Reload: R");
         weaponLabel = createControlLabel("Switch Weapon: QE");
         pause = createControlLabel("Pause Game: Esc");
+        skills = createControlLabel("Skills: F");
     }
 
     private JLabel createControlLabel(String text) {
@@ -564,6 +566,7 @@ public class Settingmenu extends JPanel{
         reloadLabel.setVisible(visible);
         weaponLabel.setVisible(visible);
         pause.setVisible(visible);
+        skills.setVisible(visible);
     }
 
     public JLabel getMoveLabel() { return moveLabel; }
@@ -572,7 +575,8 @@ public class Settingmenu extends JPanel{
     public JLabel getReloadLabel() { return reloadLabel; }
     public JLabel getWeaponLabel() { return weaponLabel; }
     public JLabel getPauseLabel() { return pause; }
-
+    public JLabel getSkillsLabel() { return skills; }
+    
     // Create the settings for the "Others" category
     public void Create_Settings_Others(){
         Create_fpsCheckbox();

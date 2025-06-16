@@ -45,7 +45,7 @@ public class Sniper extends Weapon{
                 BufferedImage img = null;
                 
                 // Try to load the specific bullet
-                img = ImageIO.read(Sniper.class.getResourceAsStream("/Assets/player/bullets/smg1/Bullet2.png"));
+                img = ImageIO.read(Sniper.class.getResourceAsStream("/Assets/player/bullets/sniper/sniper_bullet.png"));
                 
                 // If that failed, try with lowercase
                 if (img == null) {

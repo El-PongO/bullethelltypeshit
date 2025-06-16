@@ -25,7 +25,7 @@ public class Revolver extends Weapon {
                 BufferedImage img = null;
                 
                 // Try to load the specific bullet
-                img = ImageIO.read(Revolver.class.getResourceAsStream("/Assets/player/bullets/revolver/Bullet2.png"));
+                img = ImageIO.read(Revolver.class.getResourceAsStream("/Assets/player/bullets/revolver/revolver_bullet.png"));
                 
                 // If that failed, try with lowercase
                 if (img == null) {
