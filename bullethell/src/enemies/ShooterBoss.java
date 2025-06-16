@@ -24,14 +24,18 @@ public class ShooterBoss extends Enemy {
     private int shotsPerBurst = 5; // Increased from 3 to 5 bullets per burst
     
     // Sprite and animation variables
-    public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2, jumping;
+    public BufferedImage[] walkSprites = new BufferedImage[12]; // 12 walk sprites
+    public BufferedImage[] idleSprites = new BufferedImage[6]; // 6 idle sprites
+    public BufferedImage[] jumpSprites = new BufferedImage[8]; // 8 jump sprites
     public String direction;
     public boolean idling;
     public int spritecounter = 0;
-    public int spritenum = 1;
+    public int spritenum = 0;
+    public int jumpFrame = 0;
     
     public ShooterBoss(int x, int y) {
-        super(x, y);        // Shooter Boss properties
+        super(x, y);        
+        // Shooter Boss properties
         this.shootDelay = 3000; // 3 seconds between burst sequences
         this.bulletSpeed = 4;   // Faster bullets than regular enemies
         this.health = 750;      // Increased health from 400 to 750
@@ -50,30 +54,31 @@ public class ShooterBoss extends Enemy {
         getEnemyImage();
         direction = "down";
         idling = true;
-    }
-
-    public void getEnemyImage() {
+    }    public void getEnemyImage() {
         try {
-            // Using ShooterEnemy sprites - would be better to have dedicated boss sprites
-            up1 = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/up1.png"));
-            up2 = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/up2.png"));
-            down1 = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/down1.png"));
-            down2 = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/down2.png"));
-            left1 = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/left1.png"));
-            left2 = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/left2.png"));
-            right1 = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/right1.png"));
-            right2 = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/right2.png"));
-            idledown = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/idledown.png"));
-            idleleft = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/idleleft.png"));
-            idleright = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/idleright.png"));
-            idleup = ImageIO.read(getClass().getResource("/Assets/ShooterEnemy/idleup.png"));
+            // Load walk sprites (12 frames)
+            for (int i = 0; i < 12; i++) {
+                String filename = String.format("/Assets/BambooBossShooter/BambooBossWalk%03d.png", i);
+                walkSprites[i] = ImageIO.read(getClass().getResource(filename));
+            }
             
-            // Try to use lurker's jumping image for jump animation
+            // Load idle sprites (6 frames)
+            for (int i = 0; i < 6; i++) {
+                String filename = String.format("/Assets/BambooBossShooter/BambooBossIdle%03d.png", i);
+                idleSprites[i] = ImageIO.read(getClass().getResource(filename));
+            }
+            
+            // Load jump sprites (8 frames)
             try {
-                jumping = ImageIO.read(getClass().getResource("/Assets/LurkerEnemy/jumping.png"));
+                for (int i = 0; i < 8; i++) {
+                    String filename = String.format("/Assets/BambooBossShooter/ChargeJump%03d.png", i);
+                    jumpSprites[i] = ImageIO.read(getClass().getResource(filename));
+                }
             } catch (Exception e) {
-                // If not available, we'll use an idle sprite instead
-                jumping = idleup;
+                // If not available, use idle sprite instead
+                for (int i = 0; i < 8; i++) {
+                    jumpSprites[i] = idleSprites[0];
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -87,8 +92,7 @@ public class ShooterBoss extends Enemy {
             jumpCooldown--;
         }
         
-        // Handle jump animation if we're currently jumping
-        if (isJumping) {
+        // Handle jump animation if we're currently jumping        if (isJumping) {
             // Increase jump progress
             jumpProgress += 1.0 / jumpDuration;
             
@@ -105,6 +109,19 @@ public class ShooterBoss extends Enemy {
             
             // Update direction based on movement
             updateDirection(targetX - startX, targetY - startY);
+            
+            // Progress jump animation based on jump phase
+            if (jumpProgress < 0.3 && jumpFrame < 3) {
+                // Beginning of jump - prep frames
+                if (spritecounter % 8 == 0) {
+                    jumpFrame++;
+                }
+            } else if (jumpProgress > 0.7 && jumpFrame < 7) {
+                // End of jump - landing frames
+                if (spritecounter % 5 == 0) {
+                    jumpFrame++;
+                }
+            }
 
             // Check if jump is complete
             if (jumpProgress >= 1.0) {
@@ -174,10 +191,10 @@ public class ShooterBoss extends Enemy {
         // Update sprite counter for animations
         updateSpriteCounter();
     }
-    
-    private void startJump(Player player, boolean jumpAway) {
+      private void startJump(Player player, boolean jumpAway) {
         isJumping = true;
         jumpProgress = 0.0;
+        jumpFrame = 0; // Reset jump animation frame
         
         // Store starting position
         startX = x;
@@ -232,67 +249,39 @@ public class ShooterBoss extends Enemy {
             direction = "up";
         }
     }
-    
-    private void updateSpriteCounter() {
+      private void updateSpriteCounter() {
         this.spritecounter++;
-        if (this.spritecounter > 12) {
-            if (this.spritenum == 1) {
-                this.spritenum = 2;
-            } else if (this.spritenum == 2) {
-                this.spritenum = 1;
+        
+        int animSpeed = isJumping ? 5 : 12; // Faster animation when jumping
+        
+        if (this.spritecounter > animSpeed) {
+            if (isJumping) {
+                // Advance jump frame animation
+                jumpFrame = (jumpFrame + 1) % jumpSprites.length;
+            } else {
+                // Advance walk or idle animation
+                this.spritenum = (this.spritenum + 1) % (idling ? idleSprites.length : walkSprites.length);
             }
             this.spritecounter = 0;
         }
     }
-    
-    @Override
+      @Override
     public void draw(Graphics g, int ex, int ey) {
         BufferedImage bimage = null;
         
-        // Choose appropriate sprite based on state and direction
+        // Choose appropriate sprite based on state
         if (isJumping) {
-            // Use jumping sprite when jumping
-            bimage = jumping;
+            // Use jumping animation when jumping
+            int frame = Math.min(jumpFrame, jumpSprites.length - 1);
+            bimage = jumpSprites[frame];
         } else if (idling) {
-            switch (direction) {
-                case "up": bimage = idleup; break;
-                case "down": bimage = idledown; break;
-                case "left": bimage = idleleft; break;
-                case "right": bimage = idleright; break;
-                default: break;
-            }
+            // Use idle animation
+            int frame = spritenum % idleSprites.length;
+            bimage = idleSprites[frame];
         } else {
-            switch (direction) {
-                case "up":
-                    if (spritenum == 1) {
-                        bimage = up1;
-                    } else if (spritenum == 2) {
-                        bimage = up2;
-                    }
-                    break;
-                case "down":
-                    if (spritenum == 1) {
-                        bimage = down1;
-                    } else if (spritenum == 2) {
-                        bimage = down2;
-                    }
-                    break;
-                case "left":
-                    if (spritenum == 1) {
-                        bimage = left1;
-                    } else if (spritenum == 2) {
-                        bimage = left2;
-                    }
-                    break;
-                case "right":
-                    if (spritenum == 1) {
-                        bimage = right1;
-                    } else if (spritenum == 2) {
-                        bimage = right2;
-                    }
-                    break;
-                default: break;
-            }
+            // Use walking animation
+            int frame = spritenum % walkSprites.length;
+            bimage = walkSprites[frame];
         }
         
         // Draw with appropriate size

@@ -16,12 +16,17 @@ public class TankBoss extends Enemy {
     private double chargeAngle;
     private int chargeSpeed;
     private int normalSpeed;
-    
-    public BufferedImage idledown, idleleft, idleright, idleup, up1, up2, down1, down2, left1, left2, right1, right2;
+      // Sprite variables
+    public BufferedImage[] walkSprites = new BufferedImage[6]; // 6 walk sprites
+    public BufferedImage[] idleSprites = new BufferedImage[6]; // 6 idle sprites
+    public BufferedImage[] chargeAttackRightSprites = new BufferedImage[7]; // 7 charge attack right sprites
+    public BufferedImage[] chargeAttackLeftSprites = new BufferedImage[7]; // 7 charge attack left sprites
     public String direction;
     public boolean idling;
+    public boolean isAttacking;
     public int spritecounter = 0;
-    public int spritenum = 1;
+    public int spritenum = 0;
+    public int attackFrame = 0;
       
     public TankBoss(int x, int y) {
         super(x, y);        // Tank boss has more health and is larger
@@ -45,29 +50,36 @@ public class TankBoss extends Enemy {
         getEnemyImage();
         direction = "down";
         idling = true;
-    }
-
-    public void getEnemyImage() {
+    }    public void getEnemyImage() {
         try {
-            // Currently using TankEnemy sprites - would be better to have dedicated boss sprites
-            up1 = ImageIO.read(getClass().getResource("/Assets/TankEnemy/up1.png"));
-            up2 = ImageIO.read(getClass().getResource("/Assets/TankEnemy/up2.png"));
-            down1 = ImageIO.read(getClass().getResource("/Assets/TankEnemy/down1.png"));
-            down2 = ImageIO.read(getClass().getResource("/Assets/TankEnemy/down2.png"));
-            left1 = ImageIO.read(getClass().getResource("/Assets/TankEnemy/left1.png"));
-            left2 = ImageIO.read(getClass().getResource("/Assets/TankEnemy/left2.png"));
-            right1 = ImageIO.read(getClass().getResource("/Assets/TankEnemy/right1.png"));
-            right2 = ImageIO.read(getClass().getResource("/Assets/TankEnemy/right2.png"));
-            idledown = ImageIO.read(getClass().getResource("/Assets/TankEnemy/idledown.png"));
-            idleleft = ImageIO.read(getClass().getResource("/Assets/TankEnemy/idleleft.png"));
-            idleright = ImageIO.read(getClass().getResource("/Assets/TankEnemy/idleright.png"));
-            idleup = ImageIO.read(getClass().getResource("/Assets/TankEnemy/idleup.png"));
+            // Load walk sprites (6 frames)
+            for (int i = 0; i < 6; i++) {
+                String filename = String.format("/Assets/SamuraiTankBoss/SamuraiTankBossWalk%03d.png", i);
+                walkSprites[i] = ImageIO.read(getClass().getResource(filename));
+            }
+            
+            // Load idle sprites (6 frames)
+            for (int i = 0; i < 6; i++) {
+                String filename = String.format("/Assets/SamuraiTankBoss/SamuraiIdle%03d.png", i);
+                idleSprites[i] = ImageIO.read(getClass().getResource(filename));
+            }
+            
+            // Load charge attack right sprites (7 frames)
+            for (int i = 0; i < 7; i++) {
+                String filename = String.format("/Assets/SamuraiTankBoss/SamuraiChargeAttack%03d.png", i);
+                chargeAttackRightSprites[i] = ImageIO.read(getClass().getResource(filename));
+            }
+            
+            // Load charge attack left sprites (7 frames)
+            for (int i = 0; i < 7; i++) {
+                String filename = String.format("/Assets/SamuraiTankBoss/SamuraiChargeAttackLeft%03d.png", i);
+                chargeAttackLeftSprites[i] = ImageIO.read(getClass().getResource(filename));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    @Override
+      @Override
     public void update(Player player, ArrayList<Bullet> enemyBullets) {
         int dx = 0, dy = 0;
         
@@ -96,6 +108,21 @@ public class TankBoss extends Enemy {
             
             // Animation during charge
             this.idling = false;
+            
+            // Manage attack frame progression
+            if (attackFrame < 2) {
+                // First phase - preparing to charge (frames 0-2)
+                if (spritecounter % 10 == 0) {
+                    attackFrame++;
+                }
+            }
+            else if (chargeTimer < 30) {
+                // Final phase - attacking (frames 3-6)
+                if (spritecounter % 8 == 0 && attackFrame < 6) {
+                    attackFrame++;
+                }
+            }
+            
             updateSpriteCounter();
             
             // Decrease charge timer
@@ -173,17 +200,18 @@ public class TankBoss extends Enemy {
       private void startCharge(Player player) {
         isCharging = true;
         isMoving = false;
+        attackFrame = 0; // Reset the attack animation frame
         
         // Calculate angle to player for charging
         chargeAngle = Math.atan2(player.getY() - y, player.getX() - x);
         
         // Set charge duration based on distance (farther charges last longer)
         double distance = Math.hypot(player.getX() - x, player.getY() - y);
-        chargeTimer = 30 + (int)(distance / 15); // Between 0.5-2 seconds based on distance
+        chargeTimer = 60 + (int)(distance / 15); // Between 1-3 seconds based on distance
         
         // Increase minimum charge time to ensure visible movement
-        if (chargeTimer < 30) {
-            chargeTimer = 30; // At least 0.5 seconds of charging
+        if (chargeTimer < 60) {
+            chargeTimer = 60; // At least 1 second of charging (to allow animation to play)
         }
         
         // Update direction for charge animation using the floating point angle for better precision
@@ -192,7 +220,8 @@ public class TankBoss extends Enemy {
         int dx = (int) Math.round(exactDx);
         int dy = (int) Math.round(exactDy);
         updateDirection(dx, dy);
-          // TankBoss starting charge
+          
+        // TankBoss starting charge
     }
     
     private void updateDirection(int dx, int dy) {
@@ -208,64 +237,42 @@ public class TankBoss extends Enemy {
             direction = "up";
         }
     }
-    
-    private void updateSpriteCounter() {
+      private void updateSpriteCounter() {
         this.spritecounter++; // delay for sprite animation
-        if (this.spritecounter > (isCharging ? 6 : 12)) { // Faster animation when charging
-            if (this.spritenum == 1) {
-                this.spritenum = 2;
-            } else if (this.spritenum == 2) {
-                this.spritenum = 1;
-            }
+        
+        // Different animation speed based on state
+        int animSpeed = isCharging ? 6 : 12;
+        
+        if (this.spritecounter > animSpeed) {
+            // Cycle through animation frames
+            this.spritenum = (this.spritenum + 1) % 6; // 6 frames for walk/idle animations
             this.spritecounter = 0;
         }
     }
-    
-    @Override
+      @Override
     public void draw(Graphics g, int ex, int ey) {
         BufferedImage bimage = null;
         
-        // Choose sprite based on state and direction
-        if (idling){
-            switch (direction) {
-                case "up": bimage = idleup; break;
-                case "down": bimage = idledown; break;
-                case "left": bimage = idleleft; break;
-                case "right": bimage = idleright; break;
-                default: break;
+        // Choose sprite based on state
+        if (isCharging) {
+            // When charging, use charge attack animation based on direction
+            if (chargeAngle > -Math.PI/2 && chargeAngle < Math.PI/2) {
+                // Moving right
+                int frame = Math.min(attackFrame, chargeAttackRightSprites.length - 1);
+                bimage = chargeAttackRightSprites[frame];
+            } else {
+                // Moving left
+                int frame = Math.min(attackFrame, chargeAttackLeftSprites.length - 1);
+                bimage = chargeAttackLeftSprites[frame];
             }
+        } else if (idling) {
+            // Use idle animation
+            int frame = spritenum % idleSprites.length;
+            bimage = idleSprites[frame];
         } else {
-            switch (direction) {
-                case "up":
-                    if (spritenum == 1){
-                        bimage = up1;
-                    } else if (spritenum == 2){
-                        bimage = up2;
-                    }
-                    break;
-                case "down":
-                    if (spritenum == 1){
-                        bimage = down1;
-                    } else if (spritenum == 2){
-                        bimage = down2;
-                    }
-                    break;
-                case "left":
-                    if (spritenum == 1){
-                        bimage = left1;
-                    } else if (spritenum == 2){
-                        bimage = left2;
-                    }
-                    break;
-                case "right":
-                    if (spritenum == 1){
-                        bimage = right1;
-                    } else if (spritenum == 2){
-                        bimage = right2;
-                    }
-                    break;
-                default: break;
-            }
+            // Use walking animation
+            int frame = spritenum % walkSprites.length;
+            bimage = walkSprites[frame];
         }
         
         // Draw with larger size appropriate for boss
