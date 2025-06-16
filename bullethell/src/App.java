@@ -26,7 +26,13 @@ public class App {
         }else{
             window.setSize(width, height); // window size
         }
+            // Initialize the SettingMenu before creating MainPanel
+        GameplayPanel.initializeSettingMenu(window);
         
+        // Make sure the SettingMenu is properly initialized
+        if (GameplayPanel.getSettingMenu() == null) {
+            System.out.println("Warning: SettingMenu was not properly initialized.");
+        }
         
         // Use the new MainPanel instead of GamePanel
         MainPanel panel = new MainPanel();

@@ -32,9 +32,8 @@ public class TankBoss extends Enemy {
         super(x, y);        // Tank boss has more health and is larger
         this.shootDelay = 2000; // 2 seconds between shots (if we implement shooting)
         this.health = 1000; // Increased health from 600 to 1000
-        this.maxHealth = 1000;
-        this.bulletSpeed = 3;
-        this.size = 50; // Much larger size (TankEnemy is 30)
+        this.maxHealth = 1000;        this.bulletSpeed = 3;
+        this.size = 150; // Much larger size (3x the original size of 50)
         
         // Initialize movement variables        
         isMoving = true;
@@ -64,13 +63,13 @@ public class TankBoss extends Enemy {
                 idleSprites[i] = ImageIO.read(getClass().getResource(filename));
             }
             
-            // Load charge attack right sprites (7 frames)
+            // Load charge attack right sprites (7 frames, 0-6)
             for (int i = 0; i < 7; i++) {
                 String filename = String.format("/Assets/SamuraiTankBoss/SamuraiChargeAttack%03d.png", i);
                 chargeAttackRightSprites[i] = ImageIO.read(getClass().getResource(filename));
             }
             
-            // Load charge attack left sprites (7 frames)
+            // Load charge attack left sprites (7 frames, 0-6)
             for (int i = 0; i < 7; i++) {
                 String filename = String.format("/Assets/SamuraiTankBoss/SamuraiChargeAttackLeft%03d.png", i);
                 chargeAttackLeftSprites[i] = ImageIO.read(getClass().getResource(filename));
@@ -78,8 +77,7 @@ public class TankBoss extends Enemy {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-      @Override
+    }      @Override
     public void update(Player player, ArrayList<Bullet> enemyBullets) {
         int dx = 0, dy = 0;
         
@@ -189,7 +187,7 @@ public class TankBoss extends Enemy {
             y += dy * normalSpeed;
         }
         
-        // Optionally, the boss could also shoot
+        // Optionally, the boss could also shoot        // Optionally, the boss could also shoot
         /* Uncomment if you want the boss to shoot as well
         Bullet bullet = tryShoot(player.getX(), player.getY());
         if (bullet != null) {
@@ -248,14 +246,15 @@ public class TankBoss extends Enemy {
             this.spritenum = (this.spritenum + 1) % 6; // 6 frames for walk/idle animations
             this.spritecounter = 0;
         }
-    }
-      @Override
+    }      @Override
     public void draw(Graphics g, int ex, int ey) {
         BufferedImage bimage = null;
         
         // Choose sprite based on state
         if (isCharging) {
             // When charging, use charge attack animation based on direction
+            // If player is on the right, use right charge attack sprites
+            // If player is on the left, use left charge attack sprites
             if (chargeAngle > -Math.PI/2 && chargeAngle < Math.PI/2) {
                 // Moving right
                 int frame = Math.min(attackFrame, chargeAttackRightSprites.length - 1);
@@ -270,13 +269,29 @@ public class TankBoss extends Enemy {
             int frame = spritenum % idleSprites.length;
             bimage = idleSprites[frame];
         } else {
-            // Use walking animation
+            // Use walking animation (6 frames)
             int frame = spritenum % walkSprites.length;
             bimage = walkSprites[frame];
         }
-        
-        // Draw with larger size appropriate for boss
-        g.drawImage(bimage, ex, ey, size*2, size*2, null);
+          // Draw with larger size appropriate for boss while maintaining aspect ratio
+        if (bimage != null) {
+            int spriteWidth = bimage.getWidth();
+            int spriteHeight = bimage.getHeight();
+            
+            // Calculate scale factor to maintain aspect ratio
+            double scale = Math.min((double)(size*2) / spriteWidth, (double)(size*2) / spriteHeight);
+            
+            // Calculate new dimensions
+            int width = (int) (spriteWidth * scale);
+            int height = (int) (spriteHeight * scale);
+            
+            // Center the sprite
+            int xOffset = (size*2 - width) / 2;
+            int yOffset = (size*2 - height) / 2;
+            
+            // Draw the sprite with proper scaling
+            g.drawImage(bimage, ex + xOffset, ey + yOffset, width, height, null);
+        }
         
         // Visual indicator when charging (red glow)
         if (isCharging) {

@@ -35,11 +35,12 @@ public class ShooterBoss extends Enemy {
     
     public ShooterBoss(int x, int y) {
         super(x, y);        
-        // Shooter Boss properties        this.shootDelay = 3000; // 3 seconds between burst sequences
+        // Shooter Boss properties
+        this.shootDelay = 3000; // 3 seconds between burst sequences
         this.bulletSpeed = 4;   // Faster bullets than regular enemies
         this.health = 750;      // Increased health from 400 to 750
         this.maxHealth = 750;
-        this.size = 43;         // Reduced by 3 times from 130 to 43
+        this.size = 35;         // Larger than regular shooter but smaller than tank boss
         
         // Initialize state
         isJumping = false;
@@ -190,7 +191,9 @@ public class ShooterBoss extends Enemy {
             
             // If no special action and not too close, just stand and wait
             // No need to move toward optimal range anymore
-        }        // Update sprite counter for animations
+        }
+        
+        // Update sprite counter for animations
         updateSpriteCounter();
     }
     
@@ -288,25 +291,9 @@ public class ShooterBoss extends Enemy {
             int frame = spritenum % walkSprites.length;
             bimage = walkSprites[frame];
         }
-          // Draw with appropriate size while maintaining aspect ratio
-        if (bimage != null) {
-            int spriteWidth = bimage.getWidth();
-            int spriteHeight = bimage.getHeight();
-            
-            // Calculate scale factor to maintain aspect ratio
-            double scale = Math.min((double)(size*2) / spriteWidth, (double)(size*2) / spriteHeight);
-            
-            // Calculate new dimensions
-            int width = (int) (spriteWidth * scale);
-            int height = (int) (spriteHeight * scale);
-            
-            // Center the sprite
-            int xOffset = (size*2 - width) / 2;
-            int yOffset = (size*2 - height) / 2;
-            
-            // Draw the sprite with proper scaling
-            g.drawImage(bimage, ex + xOffset, ey + yOffset, width, height, null);
-        }
+        
+        // Draw with appropriate size
+        g.drawImage(bimage, ex, ey, size*2, size*2, null);
         
         // Visual effects based on state
         if (isJumping) {
