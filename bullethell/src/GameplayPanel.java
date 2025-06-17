@@ -462,50 +462,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }
     }
     
-    private void drawGame(Graphics2D g) {       
-        // Draw background
-        int vpw = getWidth() / ZOOM; // Adjust viewport width for zoom
-        int vph = getHeight() / ZOOM; // Adjust viewport height for zoom
-        
-        int mapPixelWidth = grid[0].length * TILE_SIZE;
-        int mapPixelHeight = grid.length * TILE_SIZE;
-
-        int playerCenterX = player.getX() + player.getSize() / 2;
-        int playerCenterY = player.getY() + player.getSize() / 2;
-
-        // Calculate max camera positions, but never less than 0
-        int maxCameraX = Math.max(0, mapPixelWidth - vpw);
-        int maxCameraY = Math.max(0, mapPixelHeight - vph);
-
-        cameraPixelX = Math.max(0, Math.min(playerCenterX - vpw/2, maxCameraX));
-        cameraPixelY = Math.max(0, Math.min(playerCenterY - vph/2, maxCameraY));
-
-        int startY = cameraPixelY / TILE_SIZE;
-        int startX = cameraPixelX / TILE_SIZE;
-        int endY = (cameraPixelY + vph) / TILE_SIZE + 1;
-        int endX = (cameraPixelX + vpw) / TILE_SIZE + 1;
-        for (int y = startY; y < endY; y++) {
-            for (int x = startX; x < endX; x++) {
-                // Convert tile position to screen coordinates
-                int drawX = (x * TILE_SIZE - cameraPixelX) * ZOOM;
-                int drawY = (y * TILE_SIZE - cameraPixelY) * ZOOM;
-                
-                // Draw tile or background if out of bounds
-                if (y >= 0 && y < grid.length && x >= 0 && x < grid[0].length) {
-                    int tileIndex = grid[y][x];
-                    if (tileIndex >= 0 && tileIndex < tilesSprite.length && tilesSprite[tileIndex] != null) {
-                        g.drawImage(tilesSprite[tileIndex], drawX, drawY, TILE_SIZE * ZOOM, TILE_SIZE * ZOOM, null);
-                    } else {
-
-                    }
-                } else {
-                    g.setColor(Color.BLUE);
-                    g.fillRect(drawX, drawY, TILE_SIZE * ZOOM, TILE_SIZE * ZOOM);
-                }
-            }
-        }
-    }    
-    
     private void drawWeaponHUD(Graphics2D g) {
         if (player == null) {
             return;
