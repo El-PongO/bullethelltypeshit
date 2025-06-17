@@ -1,9 +1,7 @@
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
-import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -11,7 +9,7 @@ public class WeaponSelectPanel extends JPanel {
     private static final Color BACKGROUND_COLOR = new Color(30, 34, 42); // Dark gray background
     private static String lastSelectedWeapon = null; // Track last selected weapon
     private static final String[] AVAILABLE_WEAPONS = {
-        "Revolver", "Shotgun", "SMG", "Glock", "Sniper", "Rocket Launcher"
+            "Revolver", "Shotgun", "SMG", "Glock", "Sniper", "Rocket Launcher"
     };
     JPanel[] weaponButtons;
 
@@ -30,7 +28,7 @@ public class WeaponSelectPanel extends JPanel {
         setBackground(BACKGROUND_COLOR);
         this.listener = listener;
         this.weaponButtons = new JPanel[3];
-        
+
         // Add component listener for layout
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -75,10 +73,10 @@ public class WeaponSelectPanel extends JPanel {
 
     private void layoutButtons() {
         int totalHeight = buttonHeight + 100; // Added extra height for description
-        int centerY = getHeight()/2 - totalHeight/2;
+        int centerY = getHeight() / 2 - totalHeight / 2;
         for (int i = 0; i < weaponButtons.length; i++) {
             if (weaponButtons[i] != null) {
-                int x = getWidth()/2 + (i-1)*(buttonWidth + spacing) - buttonWidth/2;
+                int x = getWidth() / 2 + (i - 1) * (buttonWidth + spacing) - buttonWidth / 2;
                 weaponButtons[i].setBounds(x, centerY, buttonWidth, totalHeight);
             }
         }
@@ -117,7 +115,7 @@ public class WeaponSelectPanel extends JPanel {
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
         container.setOpaque(false);
-    
+
         // Create weapon button
         JButton button = new JButton() {
             @Override
@@ -129,7 +127,7 @@ public class WeaponSelectPanel extends JPanel {
                 g2d.dispose();
             }
         };
-    
+
         // Style the button
         button.setText(name);
         button.setContentAreaFilled(false);
@@ -139,7 +137,7 @@ public class WeaponSelectPanel extends JPanel {
         button.setForeground(Color.WHITE);
         button.setFont(new Font("Arial", Font.BOLD, 16));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
-    
+
         // Load weapon icon
         if (iconPath != null) {
             try {
@@ -154,30 +152,30 @@ public class WeaponSelectPanel extends JPanel {
                 System.out.println("Could not load icon for " + name + ": " + e.getMessage());
             }
         }
-    
+
         // Create description label
         JLabel descLabel = new JLabel(getWeaponDescription(name));
         descLabel.setForeground(Color.WHITE);
         descLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         descLabel.setHorizontalAlignment(SwingConstants.CENTER);
         descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-    
+
         // Add components to container
         container.add(button);
         container.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing
         container.add(descLabel);
-    
+
         // Add hover effect
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBorder(BorderFactory.createLineBorder(Color.YELLOW, 2));
             }
-            
+
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
             }
         });
-    
+
         return container;
     }
 
@@ -185,46 +183,46 @@ public class WeaponSelectPanel extends JPanel {
         switch (weaponName) {
             case "Revolver":
                 return String.format("<html><div style='text-align: center;'>" +
-                                   "Ammo: 7<br>" +
-                                   "Damage: 150<br>" +
-                                   "Fire Rate: 433ms<br>" +
-                                   "Reload Time: 2.7s<br>" +
-                                   "<i>A reliable sidearm with good stopping power</i></div></html>");
+                        "Ammo: 7<br>" +
+                        "Damage: 150<br>" +
+                        "Fire Rate: 433ms<br>" +
+                        "Reload Time: 2.7s<br>" +
+                        "<i>A reliable sidearm with good stopping power</i></div></html>");
             case "Shotgun":
                 return String.format("<html><div style='text-align: center;'>" +
-                                   "Ammo: 8<br>" +
-                                   "Damage: 100 x 8 pellets<br>" +
-                                   "Fire Rate: 1000ms<br>" +
-                                   "Reload Time: 3.0s<br>" +
-                                   "<i>Devastating at close range with spread shot</i></div></html>");
+                        "Ammo: 8<br>" +
+                        "Damage: 100 x 8 pellets<br>" +
+                        "Fire Rate: 1000ms<br>" +
+                        "Reload Time: 3.0s<br>" +
+                        "<i>Devastating at close range with spread shot</i></div></html>");
             case "SMG":
                 return String.format("<html><div style='text-align: center;'>" +
-                                   "Ammo: 30<br>" +
-                                   "Damage: 30<br>" +
-                                   "Fire Rate: 80ms<br>" +
-                                   "Reload Time: 2.5s<br>" +
-                                   "<i>High rate of fire automatic weapon</i></div></html>");
+                        "Ammo: 30<br>" +
+                        "Damage: 30<br>" +
+                        "Fire Rate: 80ms<br>" +
+                        "Reload Time: 2.5s<br>" +
+                        "<i>High rate of fire automatic weapon</i></div></html>");
             case "Glock":
                 return String.format("<html><div style='text-align: center;'>" +
-                                   "Ammo: 18<br>" +
-                                   "Damage: 50<br>" +
-                                   "Fire Rate: 225ms<br>" +
-                                   "Reload Time: 2.0s<br>" +
-                                   "<i>Fast-firing pistol with good capacity</i></div></html>");
+                        "Ammo: 18<br>" +
+                        "Damage: 50<br>" +
+                        "Fire Rate: 225ms<br>" +
+                        "Reload Time: 2.0s<br>" +
+                        "<i>Fast-firing pistol with good capacity</i></div></html>");
             case "Sniper":
                 return String.format("<html><div style='text-align: center;'>" +
-                                   "Ammo: 5<br>" +
-                                   "Damage: 300<br>" +
-                                   "Fire Rate: 1600ms<br>" +
-                                   "Reload Time: 3.0s<br>" +
-                                   "<i>High damage rifle that can penetrate up to 3 targets</i></div></html>");
+                        "Ammo: 5<br>" +
+                        "Damage: 300<br>" +
+                        "Fire Rate: 1600ms<br>" +
+                        "Reload Time: 3.0s<br>" +
+                        "<i>High damage rifle that can penetrate up to 3 targets</i></div></html>");
             case "Rocket Launcher":
                 return String.format("<html><div style='text-align: center;'>" +
-                                   "Ammo: 1<br>" +
-                                   "Damage: 500<br>" +
-                                   "Fire Rate: N/A<br>" +
-                                   "Reload Time: 3.2s<br>" +
-                                   "<i>Explosive weapon with splash damage</i></div></html>");
+                        "Ammo: 1<br>" +
+                        "Damage: 500<br>" +
+                        "Fire Rate: N/A<br>" +
+                        "Reload Time: 3.2s<br>" +
+                        "<i>Explosive weapon with splash damage</i></div></html>");
             default:
                 return "";
         }
