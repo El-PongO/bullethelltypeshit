@@ -22,7 +22,7 @@ public class MainPanel extends JPanel {
         fpsCounter = new FPScounter("FPS:");        // Initialize panels
         gameplayPanel = new GameplayPanel(fpsCounter);
         menuPanel = new MenuPanel(this::showHeroSelect, this::showHeroSelect); // Go to hero select on start/restart
-        
+
         // Create a hero selection listener
         IHeroSelectPanel.HeroSelectListener heroSelectListener = heroName -> {
             switch (heroName) {
@@ -58,6 +58,7 @@ public class MainPanel extends JPanel {
             assignWeaponToHero();
             startGameWithHero();
         });
+
         cursormanager();
         Button.setupGlowCursor(cursormanager, "pointer", this);
         cursormanager.setCursor(this, "cursor"); // Default cursor
@@ -123,27 +124,52 @@ public class MainPanel extends JPanel {
     
     private void showWeaponSelect() {
         cardLayout.show(this, "WEAPONSELECT");
+        weaponSelectPanel.revalidate(); // This will trigger the componentShown event
         cursormanager.setCursor(this, "pointer");
-    }    private void assignWeaponToHero() {
+    }    
+    
+    private void assignWeaponToHero() {
         if (selectedHero != null && selectedWeaponName != null) {
             System.out.println("Assigning weapon: " + selectedWeaponName + " to hero");
             selectedHero.getWeapons().clear();
             boolean weaponAdded = false;
             try {
                 switch (selectedWeaponName) {
+                    case "Glock":
+                        selectedHero.getWeapons().add(new weapons.Glock());
+                        selectedHero.setWeaponIndex(0);
+                        weaponAdded = true;
+                        System.out.println("Added Glock to hero");
+                        break;
                     case "Revolver":
-                        // Add Revolver - uses the concrete implementation
                         selectedHero.getWeapons().add(new weapons.Revolver());
                         selectedHero.setWeaponIndex(0);
                         weaponAdded = true;
                         System.out.println("Added Revolver to hero");
                         break;
+                    case "Rocket Launcher":
+                        selectedHero.getWeapons().add(new weapons.Rocket());
+                        selectedHero.setWeaponIndex(0);
+                        weaponAdded = true;
+                        System.out.println("Added Rocket Launcher to hero");
+                        break;
                     case "Shotgun":
-                        // Add Shotgun - uses the concrete implementation
                         selectedHero.getWeapons().add(new weapons.Shotgun());
                         selectedHero.setWeaponIndex(0);
                         weaponAdded = true;
                         System.out.println("Added Shotgun to hero");
+                        break;
+                    case "SMG":
+                        selectedHero.getWeapons().add(new weapons.Smg());
+                        selectedHero.setWeaponIndex(0);
+                        weaponAdded = true;
+                        System.out.println("Added SMG to hero");
+                        break;
+                    case "Sniper":
+                        selectedHero.getWeapons().add(new weapons.Sniper());
+                        selectedHero.setWeaponIndex(0);
+                        weaponAdded = true;
+                        System.out.println("Added Sniper to hero");
                         break;
                     default:
                         System.out.println("Warning: Unknown weapon selected: " + selectedWeaponName);
