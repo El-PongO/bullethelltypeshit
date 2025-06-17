@@ -27,7 +27,7 @@ public class Game_clock {
         label.setFont(new Font("Arial", Font.PLAIN, 20));
         label.setForeground(Color.WHITE);
     }
-
+    //untuk waktu
     public String formatTime(int minutes, int seconds) {
         return String.format("<html>Time:<br>%02d : %02d</html>", minutes, seconds);
     }

@@ -3,9 +3,8 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class MenuPanel extends JPanel implements MouseListener, MouseMotionListener {    // ========================= UI =====================================================
-    private JFrame window; // JFrame for the main window
+    private JFrame window; 
     private MainMenu mainMenu = new MainMenu();
-    // Use the same settingmenu instance as GameplayPanel
     private Settingmenu settingmenu = null;
     private Game_over gameover = new Game_over();
     
@@ -26,9 +25,8 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     private Runnable onStartGame;
     private Runnable onRestartGame;
     private Runnable backButtonListener;
-      public MenuPanel(JFrame window) {
+      public MenuPanel(JFrame window) {//basically some static call
         this.window = window;
-        // Get the static settingmenu from GameplayPanel
         this.settingmenu = GameplayPanel.getSettingMenu();
     }    public MenuPanel(Runnable startGameCallback, Runnable restartGameCallback) {
         this.onStartGame = startGameCallback;
@@ -37,9 +35,7 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         setLayout(null);
         initButtons();
         
-        // Get the static settingmenu from GameplayPanel
         this.settingmenu = GameplayPanel.getSettingMenu();
-        // Only call settings if settingmenu is initialized
         if (this.settingmenu != null) {
             callsettings();
         }
@@ -49,14 +45,12 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     }
     
     private void initButtons() {
-        // Start Button
         buttonStart.addActionListener(e -> {
             if (onStartGame != null) {
                 onStartGame.run();
             }
         });
         
-        // Option Button
         buttonOption.addActionListener(e -> {
             currentState = MenuState.SETTINGS;
             settingmenu.setActiveTab("Video");
@@ -64,17 +58,14 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
             repaint();
         });
         
-        // Exit Button
         buttonExit.addActionListener(e -> System.exit(0));
         
-        // Restart Button
         buttonRestart.addActionListener(e -> {
             if (onRestartGame != null) {
                 onRestartGame.run();
             }
         });
         
-        // Back Button
         buttonBack.addActionListener(e -> {
             if (backButtonListener != null) {
                 backButtonListener.run();
@@ -89,7 +80,6 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         add(buttonRestart.new_button);
         add(buttonBack.new_button);
         
-        // Set initial button visibility
         setButtonVisibility(MenuState.MAIN_MENU);
     }
     
@@ -136,17 +126,16 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         int centerX = (panelWidth - buttonWidth) / 2;
         int spacing = 10;
         
-        // For MAIN_MENU
         if (currentState == MenuState.MAIN_MENU) {
-            int baseX = 20; // Slightly to the right from true bottom-left
-            int baseY = panelHeight - 3 * (buttonHeight + spacing) - 40; // Slightly upward from bottom
+            int baseX = 20; 
+            int baseY = panelHeight - 3 * (buttonHeight + spacing) - 40; 
             
             buttonStart.setBound(baseX, baseY, buttonWidth, buttonHeight);
             buttonOption.setBound(baseX, baseY + buttonHeight + spacing, buttonWidth, buttonHeight);
             buttonExit.setBound(baseX, baseY + 2 * (buttonHeight + spacing), buttonWidth, buttonHeight);
         }
         
-        // For SETTINGS
+        //setting
         else if (currentState == MenuState.SETTINGS) {
             buttonWidth = 160;
             buttonHeight = 50;
@@ -156,7 +145,6 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
             buttonBack.setBound(baseX, baseY, buttonWidth, buttonHeight);
         }
         
-        // For GAME_OVER
         else if (currentState == MenuState.GAME_OVER) {
             buttonRestart.setBound(centerX, panelHeight / 2, buttonWidth, buttonHeight);
             buttonBack.setBound(centerX, panelHeight / 2 + buttonHeight + spacing, buttonWidth, buttonHeight);
@@ -166,7 +154,6 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        // Position buttons before drawing
         positionButtons();
         
         switch (currentState) {
@@ -177,12 +164,10 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
                 if (settingmenu != null) {
                     settingmenu.draw(g, getWidth(), getHeight());
                 } else {
-                    // If settingmenu is not available, try to get it
                     settingmenu = GameplayPanel.getSettingMenu();
                     if (settingmenu != null) {
                         settingmenu.draw(g, getWidth(), getHeight());
                     } else {
-                        // Draw fallback message
                         g.setColor(Color.WHITE);
                         g.setFont(new Font("Arial", Font.BOLD, 18));
                         g.drawString("Settings not available", getWidth()/2 - 100, getHeight()/2);
@@ -196,7 +181,6 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         }
     }
     
-    // Called when the panel is resized
     @Override
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
@@ -204,10 +188,9 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     }
       public void callsettings(){
         if (settingmenu == null) {
-            // If settingmenu is not initialized, get it from GameplayPanel
+            // klo ga ada ambil dari gameplaypanel
             settingmenu = GameplayPanel.getSettingMenu();
             if (settingmenu == null) {
-                // Still null, can't proceed
                 return;
             }
         }
@@ -263,7 +246,6 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         }
     }
     
-    // Required interface methods
     @Override public void mousePressed(MouseEvent e) {}
     @Override public void mouseReleased(MouseEvent e) {}
     @Override public void mouseEntered(MouseEvent e) {}
@@ -274,7 +256,6 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         return settingmenu;
     }
     
-    // Add this method
     public void setBackButtonListener(Runnable listener) {
         this.backButtonListener = listener;
     }

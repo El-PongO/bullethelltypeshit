@@ -3,27 +3,24 @@ import javax.swing.*;
 import players.Player;
 
 public class MainPanel extends JPanel {
-    // Add this field
-    private boolean fromPauseMenu = false;    // Panels
+    private boolean fromPauseMenu = false;   
     private MenuPanel menuPanel;
     private GameplayPanel gameplayPanel;
     private FPScounter fpsCounter;
-    private JPanel heroSelectPanel;  // Using JPanel as the base type for flexibility
+    private JPanel heroSelectPanel;  
     private WeaponSelectPanel weaponSelectPanel;
     private Player selectedHero;
     private String selectedWeaponName;
     
-    // Panel visibility
     private CardLayout cardLayout = new CardLayout();
     CursorManager cursormanager = new CursorManager();
     
     public MainPanel() throws Exception {
         setLayout(cardLayout);
-        fpsCounter = new FPScounter("FPS:");        // Initialize panels
+        fpsCounter = new FPScounter("FPS:");        
         gameplayPanel = new GameplayPanel(fpsCounter);
-        menuPanel = new MenuPanel(this::showHeroSelect, this::showHeroSelect); // Go to hero select on start/restart
+        menuPanel = new MenuPanel(this::showHeroSelect, this::showHeroSelect); //hero select
         
-        // Create a hero selection listener
         IHeroSelectPanel.HeroSelectListener heroSelectListener = heroName -> {
             switch (heroName) {
                 case "Gunslinger":
@@ -42,7 +39,6 @@ public class MainPanel extends JPanel {
             showWeaponSelect();
         };
         
-        // Try to create the advanced hero select panel, fall back to simple if it fails
         try {
             System.out.println("Attempting to create advanced hero select panel...");
             heroSelectPanel = new HeroSelectPanel(heroSelectListener);
@@ -60,40 +56,37 @@ public class MainPanel extends JPanel {
         });
         cursormanager();
         Button.setupGlowCursor(cursormanager, "pointer", this);
-        cursormanager.setCursor(this, "cursor"); // Default cursor
-        // Add panels to card layout
+        cursormanager.setCursor(this, "cursor");
         add(menuPanel, "MENU");
         add(heroSelectPanel, "HEROSELECT");
         add(weaponSelectPanel, "WEAPONSELECT");
         add(gameplayPanel, "GAMEPLAY");
         
-        // Start with menu panel
         cardLayout.show(this, "MENU");
 
-        // JCheckBox for FPS counter
         JCheckBox fpsCheckbox = menuPanel.getSettingMenu().getFpsCheckbox();
         fpsCheckbox.addActionListener(e -> {
             boolean visible = fpsCheckbox.isSelected();
             fpsCounter.setVisible(visible);
         });
 
-        // Add this in the constructor after initializing gameplayPanel
+        //untuk gameplaypanel
         gameplayPanel.pauseMenu.setButtonListeners(
-            // Continue button
+            // resume
             () -> gameplayPanel.togglePause(),
             
-            // Settings button
+            // setting
             () -> {
-                fromPauseMenu = true; // Set the flag
+                fromPauseMenu = true; 
                 cardLayout.show(this, "MENU");
                 menuPanel.setMenuState(MenuPanel.MenuState.SETTINGS);
                 menuPanel.getSettingMenu().setActiveTab("Video");
                 cursormanager.setCursor(this, "cursor");
             },
             
-            // Leave button
+            // leave
             () -> {
-                fromPauseMenu = false; // Reset the flag
+                fromPauseMenu = false;
                 GameplayPanel.stopGame();
                 gameplayPanel.resetGame();
                 gameplayPanel.soundsfx.stopAll();
@@ -103,7 +96,7 @@ public class MainPanel extends JPanel {
             }
         );
 
-        // Add listener for the settings back button
+        //pause
         menuPanel.setBackButtonListener(() -> {
             if (fromPauseMenu) {
                 fromPauseMenu = false; // Reset flag
@@ -132,14 +125,12 @@ public class MainPanel extends JPanel {
             try {
                 switch (selectedWeaponName) {
                     case "Revolver":
-                        // Add Revolver - uses the concrete implementation
                         selectedHero.getWeapons().add(new weapons.Revolver());
                         selectedHero.setWeaponIndex(0);
                         weaponAdded = true;
                         System.out.println("Added Revolver to hero");
                         break;
                     case "Shotgun":
-                        // Add Shotgun - uses the concrete implementation
                         selectedHero.getWeapons().add(new weapons.Shotgun());
                         selectedHero.setWeaponIndex(0);
                         weaponAdded = true;
@@ -151,10 +142,8 @@ public class MainPanel extends JPanel {
                 }
             } catch (Exception e) {
                 System.out.println("Error assigning weapon to hero: " + e.getMessage());
-                // Don't print stack trace to keep console clean
             }
             
-            // Make sure hero has at least one weapon
             if (!weaponAdded || selectedHero.getWeapons().isEmpty()) {
                 try {
                     System.out.println("Adding default Revolver as fallback");
@@ -174,10 +163,9 @@ public class MainPanel extends JPanel {
         gameplayPanel.setPlayer(selectedHero);
         cardLayout.show(this, "GAMEPLAY");
         cursormanager.setCursor(this, "crosshair");
-        // Start the game
+        //start
         gameplayPanel.startGame();
         
-        // Need to request focus after a slight delay to ensure it works correctly
         Timer focusTimer = new Timer(100, e -> {
             gameplayPanel.requestFocusInWindow();
             ((Timer)e.getSource()).stop();
@@ -185,7 +173,6 @@ public class MainPanel extends JPanel {
         focusTimer.setRepeats(false);
         focusTimer.start();
         
-        // Start a timer to check if the game is over
         Timer gameStateChecker = new Timer(500, e -> {
             if (gameplayPanel.isGameOver()) {
                 gameOver();
@@ -196,10 +183,8 @@ public class MainPanel extends JPanel {
     }
     
     private void gameOver() {
-        // Stop the gameplay
         GameplayPanel.stopGame();
         cursormanager.setCursor(this, "cursor"); // ganti cursor ke default
-        // Show the game over screen in the menu panel
         menuPanel.setMenuState(MenuPanel.MenuState.GAME_OVER);
         cardLayout.show(this, "MENU");
     }

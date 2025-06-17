@@ -12,7 +12,6 @@ public class Customcheckbox extends JCheckBox {
         setOpaque(false);
         setUI(new CustomCheckBoxUI());
 
-        // Mouse listeners to detect hover state
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -51,22 +50,18 @@ public class Customcheckbox extends JCheckBox {
 
             int boxY = (c.getHeight() - BOX_SIZE) / 2;
 
-            // Glow effect (on hover only)
             if (checkbox.isHovered()) {
                 int glowSize = 6;
                 g2.setColor(GLOW_COLOR);
                 g2.fillOval(-glowSize / 2, boxY - glowSize / 2, BOX_SIZE + glowSize, BOX_SIZE + glowSize);
             }
 
-            // Draw checkbox background
             g2.setColor(new Color(255, 255, 255, 40));
             g2.fillRect(0, boxY, BOX_SIZE, BOX_SIZE);
 
-            // Draw border
             g2.setColor(BOX_BORDER_COLOR);
             g2.drawRect(0, boxY, BOX_SIZE, BOX_SIZE);
 
-            // Draw checkmark if selected
             if (model.isSelected()) {
                 g2.setColor(BOX_FILL_COLOR);
                 g2.fillRect(3, boxY + 3, BOX_SIZE - 5, BOX_SIZE - 5);
@@ -76,7 +71,6 @@ public class Customcheckbox extends JCheckBox {
                 g2.drawLine(7, boxY + 11, 12, boxY + 5);
             }
 
-            // Draw label text
             g2.setColor(checkbox.getForeground());
             g2.setFont(checkbox.getFont());
             g2.drawString(checkbox.getText(), textX, textY);
