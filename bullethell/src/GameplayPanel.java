@@ -49,6 +49,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     // Debug counters for boss spawns
     private static int tankBossSpawnCount = 0;
     private static int shooterBossSpawnCount = 0;
+    private static String[] weaponTypes = {"Glock","Revolver","Rocket","Shotgun","Smg","Sniper"};
 
     static int[][] grid;
     static BufferedImage[] tilesSprite = new BufferedImage[9];
@@ -821,6 +822,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     System.out.println("the bomb hit something!");
                     
                     if (enemy.isDead()) {
+
+
                         enemies.remove(i);
                         continue;
                     }
@@ -850,20 +853,17 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
         }
 
+        // Refactored: process all bullet-enemy collisions, collect enemies to remove, then remove after
+        java.util.List<Enemy> enemiesToRemove = new java.util.ArrayList<>();
         playerBullets.removeIf(bullet -> {
             Rectangle bulletBounds = new Rectangle((int)bullet.x, (int)bullet.y, bullet.getSize(), bullet.getSize());
             boolean shouldRemove = false;
-
             for (int i = enemies.size() - 1; i >= 0; i--) {
                 Enemy enemy = enemies.get(i);
                 Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
-                
                 if (bulletBounds.intersects(enemyBounds)) {
                     Weapon currentWeapon = player.getCurrentWeapon();
-
-                    // Check if the bullet is a RocketBullet
                     if (bullet instanceof Rocket.RocketBullet){
-                        // Create explosion effect
                         DamageCircle explosion = new DamageCircle(
                         (int)bullet.x, 
                         (int)bullet.y, 
@@ -874,42 +874,61 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                         );
                         activeExplosions.add(explosion);
                         int totalDamageDealt = 0;
-
-                        // Damage all enemies in blast radius
                         for (int j = enemies.size() - 1; j >= 0; j--) {
                             Enemy targetEnemy = enemies.get(j);
                             if (explosion.collides(targetEnemy.x, targetEnemy.y, targetEnemy.size)) {
                                 int damageDealt = Math.min(targetEnemy.getHealth(), currentWeapon.getWeaponDamage());
                                 targetEnemy.takeDamage(currentWeapon.getWeaponDamage());
                                 totalDamageDealt += damageDealt;
-                                
                                 if (targetEnemy.isDead()) {
-                                    enemies.remove(j);
+                                    enemiesToRemove.add(targetEnemy);
                                 }
                             }
                         }
-                        
-                        // Apply vampire healing based on total damage
                         if (player instanceof players.Vampire && totalDamageDealt > 0) {
                             ((players.Vampire) player).stealHealth(totalDamageDealt);
                         }
-
-                        // Play explosion sound
                         soundsfx.play("rpgexplode");
                         shouldRemove = true;
                         break;
-                    }else{
-                        // Deal damage to the enemy instead of immediately removing
+                    } else {
                         enemy.takeDamage(currentWeapon.getWeaponDamage());
                     }
-                    
-                    // If player is a Vampire with active skill, steal health
                     if (player instanceof players.Vampire) {
                         ((players.Vampire) player).stealHealth(currentWeapon.getWeaponDamage());
                     }
-                    
                     if (enemy.isDead()) {
-                        enemies.remove(i);
+                        if(enemy instanceof enemies.TankBoss || enemy instanceof enemies.ShooterBoss){
+                            Random rand = new Random();
+                            int idx = rand.nextInt(6);
+                            weapons.Weapon newWeapon = switch (idx){
+                                case 0 -> new weapons.Revolver();
+                                case 1 -> new weapons.Shotgun();
+                                case 2 -> new weapons.Smg();
+                                case 3 -> new weapons.Glock();
+                                case 4 -> new weapons.Sniper();
+                                case 5 -> new weapons.Rocket();
+                                default -> null;
+                            };
+                            if (newWeapon != null) {
+                                boolean alreadyHas = false;
+                                for (int p = 0; p < player.getWeapons().size(); p++) {
+                                    Weapon owned = player.getWeapons().get(p);
+                                    if (owned.getName().equals(newWeapon.getName())) {
+                                        alreadyHas = true;
+                                        break;
+                                    }
+                                }
+                                if (!alreadyHas) {
+                                    player.getWeapons().add(newWeapon);
+                                    System.out.println("Picked up new weapon: " + newWeapon.getName());
+                                } else {
+                                    System.out.println("Player already has weapon: " + newWeapon.getName());
+                                }
+                            }
+                            System.out.println("hero now has " + player.getWeapons().size() + " weapons!");
+                        }
+                        enemiesToRemove.add(enemy);
                     }
 
                     // Handle penetration for sniper bullets
@@ -917,17 +936,19 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                         Sniper.SniperBullet sniperBullet = (Sniper.SniperBullet) bullet;
                         if (sniperBullet.canPenetrate()) {
                             sniperBullet.penetrate();
-                            continue; // Don't remove the bullet yet
+                            continue;
                         }
                     }
-                    
                     shouldRemove = true;
                     break;
                 }
             }
-            
             return shouldRemove || bullet.isOutOfBounds(map1, tileW);
         });
+        // Remove all enemies marked for removal after bullet processing
+        if (!enemiesToRemove.isEmpty()) {
+            enemies.removeAll(enemiesToRemove);
+        }
 
         // Check enemy bullet-player collisions
         enemyBullets.removeIf(bullet -> {
@@ -1094,11 +1115,15 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         // Record the roll for debugging
         int roll = rand.nextInt(100); // Just for logging purposes
         
-        if (spawnTankBoss) {enemies.add(new TankBoss(spawnX, spawnY));
-            tankBossSpawnCount++;            System.out.println("Tank Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
+        if (spawnTankBoss) {
+            enemies.add(new TankBoss(spawnX, spawnY));
+            tankBossSpawnCount++;            
+            System.out.println("Tank Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
             System.out.println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
-        } else {            enemies.add(new ShooterBoss(spawnX, spawnY));
-            shooterBossSpawnCount++;            System.out.println("Shooter Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
+        } else {            
+            enemies.add(new ShooterBoss(spawnX, spawnY));
+            shooterBossSpawnCount++;            
+            System.out.println("Shooter Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
             System.out.println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
         }
     }
