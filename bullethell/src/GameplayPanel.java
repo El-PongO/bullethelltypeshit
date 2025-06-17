@@ -901,15 +901,30 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                         if(enemy instanceof enemies.TankBoss || enemy instanceof enemies.ShooterBoss){
                             Random rand = new Random();
                             int idx = rand.nextInt(6);
-                            weapons.Weapon newWeapon = switch (idx){
-                                case 0 -> new weapons.Revolver();
-                                case 1 -> new weapons.Shotgun();
-                                case 2 -> new weapons.Smg();
-                                case 3 -> new weapons.Glock();
-                                case 4 -> new weapons.Sniper();
-                                case 5 -> new weapons.Rocket();
-                                default -> null;
-                            };
+                            weapons.Weapon newWeapon = null;
+                            switch (idx) {
+                                case 0:
+                                    newWeapon = new weapons.Revolver();
+                                    break;
+                                case 1:
+                                    newWeapon = new weapons.Shotgun();
+                                    break;
+                                case 2:
+                                    newWeapon = new weapons.Smg();
+                                    break;
+                                case 3:
+                                    newWeapon = new weapons.Glock();
+                                    break;
+                                case 4:
+                                    newWeapon = new weapons.Sniper();
+                                    break;
+                                case 5:
+                                    newWeapon = new weapons.Rocket();
+                                    break;
+                                default:
+                                    newWeapon = null;
+                                    break;
+                                }   
                             if (newWeapon != null) {
                                 boolean alreadyHas = false;
                                 for (int p = 0; p < player.getWeapons().size(); p++) {
