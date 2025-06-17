@@ -423,4 +423,28 @@ public abstract class Player {
         skillStartTime = System.currentTimeMillis();
         lastSkillUseTime = System.currentTimeMillis();
     }
+
+    boolean speedBoostActive = false;
+    int boostCount = 0;
+    public void speedBoost(int duration, int amount) {
+        boostCount++;
+        if(!speedBoostActive) {
+            speedBoostActive = true;
+            speed += amount;
+        }
+        new Thread(() -> {
+            int count = boostCount;
+            try {
+                Thread.sleep(duration);
+                if(boostCount == count) {
+                    speed -= amount;
+                    speedBoostActive = false;
+                    System.out.println("Speed boost ended. Current speed: " + speed);
+                }
+                System.out.println("Boost Continue : " + boostCount + " " + count);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 }
