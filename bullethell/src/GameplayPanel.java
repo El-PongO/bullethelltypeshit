@@ -138,6 +138,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     }
 
     public void startGame() {
+        musicmanager();
         if (controlFade()){
             music1.fadeIn(1000);
         }
@@ -579,7 +580,17 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     public void musicmanager(){
         musiclobby.load("/Audio/Music/lobby.wav");
-        music1.load("/Audio/Music/game1.wav");
+        Random rand = new Random();
+        int n = rand.nextInt(4);
+        if(n==0){
+            music1.load("/Audio/Music/game1.wav");
+        } else if (n==1){
+            music1.load("/Audio/Music/Holocure Map 1.wav");
+        } else if (n==2){
+            music1.load("/Audio/Music/Undertale OST_ 072 - Song That Might Play When You Fight Sans.wav");
+        } else if (n==3){
+            music1.load("/Audio/Music/Undertale OST_ 080 - Finale.wav");
+        }
     }
 
     public void togglePause() {

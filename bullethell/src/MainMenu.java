@@ -4,9 +4,12 @@ import java.net.URI;
 
 public class MainMenu {
     private Hyperlink hyperlink; // New Hyperlink class to handle the link
+    private Music lobby;
 
     public MainMenu() {
         hyperlink = new Hyperlink("Visit Page");
+        lobby = new Music();
+        lobby.load("/Audio/Music/Doodle Song.wav"); 
     }
 
     public void draw(Graphics g, int panelWidth, int panelHeight) {
@@ -53,6 +56,18 @@ public class MainMenu {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+        }
+    }
+
+    public void playMusic() {
+        if (lobby != null) {
+            lobby.loop(); // Or .play() if you don't want looping
+        }
+    }
+
+    public void stopMusic() {
+        if (lobby != null) {
+            lobby.stop();
         }
     }
 }

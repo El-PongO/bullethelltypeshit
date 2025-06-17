@@ -42,6 +42,8 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         
         addMouseListener(this);
         addMouseMotionListener(this);
+
+        mainMenu.playMusic(); // Start playing music when the menu is initialized
     }
     
     private void initButtons() {
@@ -49,6 +51,7 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         buttonStart.addActionListener(e -> {
             if (onStartGame != null) {
                 onStartGame.run();
+                mainMenu.stopMusic();
             }
         });
         
@@ -92,6 +95,11 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
     public void setMenuState(MenuState state) {
         this.currentState = state;
         setButtonVisibility(state);
+        if (state == MenuState.MAIN_MENU) {
+            mainMenu.playMusic();
+        } else {
+            mainMenu.stopMusic();
+        }
         repaint();
     }
     
