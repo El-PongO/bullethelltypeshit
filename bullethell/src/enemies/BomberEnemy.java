@@ -7,7 +7,7 @@ import players.Player;
 import weapons.Bullet;
 
 public class BomberEnemy extends Enemy {
-    private double moveSpeed = 3.5; // Faster than normal enemies
+    private double moveSpeed = 2.5; // Faster than normal enemies
     public BufferedImage up1, up2, up3, up4, down1, down2, down3, down4, left1, left2, left3, left4, right1, right2, right3, right4;
     public String direction;
     public int spritecounter=0;
@@ -45,11 +45,12 @@ public class BomberEnemy extends Enemy {
     }
 
     @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         // Bomber always moves directly toward the player
         double angle = Math.atan2(player.getY() - y, player.getX() - x);
         double dx = Math.cos(angle) * moveSpeed;
         double dy = Math.sin(angle) * moveSpeed;
+        moveWithCollision(dx, dy, collisionMap, tileSize);
 
         if(dx > 0) {
             direction = "right";

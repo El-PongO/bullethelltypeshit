@@ -7,7 +7,6 @@ import java.util.Map;
     private final Map<String, Cursor> cursors = new HashMap<>();
     private final Toolkit toolkit = Toolkit.getDefaultToolkit();
 
-    // hotspot is the point in the image that will be the "click" point of the cursor
     public void loadCursor(String name, String imagePath, Point hotspot, int width, int height) {
         try {
             java.io.InputStream stream = getClass().getResourceAsStream(imagePath);
@@ -28,13 +27,13 @@ import java.util.Map;
     }
     
 
-    public void loadInvisibleCursor(String name) { // Create a transparent image for the invisible cursor
+    public void loadInvisibleCursor(String name) { 
         BufferedImage transparentImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         Cursor invisible = toolkit.createCustomCursor(transparentImg, new Point(0, 0), name);
         cursors.put(name, invisible);
     }
 
-    public void setCursor(Component component, String name) { // Set the cursor for the given component
+    public void setCursor(Component component, String name) { //cursor
         Cursor cursor = cursors.get(name);
         if (cursor != null) {
             component.setCursor(cursor);
@@ -43,7 +42,7 @@ import java.util.Map;
         }
     }
 
-    public void resetToDefault(Component component) { // Reset the cursor to default
+    public void resetToDefault(Component component) { // reset cursor ke normal
         System.out.println("Resetting cursor to default");
         component.setCursor(Cursor.getDefaultCursor());
     }

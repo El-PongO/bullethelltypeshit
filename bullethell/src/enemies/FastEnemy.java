@@ -22,7 +22,7 @@ public class FastEnemy extends Enemy {
     }
     
     @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         // Fast enemy uses erratic movement pattern
         
         // Periodically change direction
@@ -44,9 +44,7 @@ public class FastEnemy extends Enemy {
             changeDirectionCounter = 15 + rand.nextInt(30); // Change direction every 15-45 frames
         }
         
-        // Move faster than normal enemies
-        x += directionX * (speed + 1); // Move at speed + 2
-        y += directionY * (speed + 1);
+        moveWithCollision(directionX * (speed + 1), directionY * (speed + 1), collisionMap, tileSize);
         
         // Decrease the counter
         changeDirectionCounter--;
@@ -54,8 +52,7 @@ public class FastEnemy extends Enemy {
         // Occasionally dart toward the player
         if (rand.nextInt(50) == 0) { // 1 in 50 chance each frame
             double angle = Math.atan2(player.getY() - y, player.getX() - x);
-            x += Math.cos(angle) * (speed * 3);
-            y += Math.sin(angle) * (speed * 3);
+            moveWithCollision(Math.cos(angle) * (speed * 3), Math.sin(angle) * (speed * 3), collisionMap, tileSize);
         }
         
         // Shoot less frequently

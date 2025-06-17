@@ -2,20 +2,19 @@ import enemies.BomberEnemy;
 import enemies.Enemy;
 import enemies.LurkerEnemy;
 import enemies.NormalEnemy;
+import enemies.ShooterBoss;
 import enemies.ShooterEnemy;
+import enemies.TankBoss;
 import enemies.TankEnemy;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Iterator;
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import enemies.TankBoss;
-import enemies.ShooterBoss;
 import players.DamageCircle;
 import players.Gunslinger;
 import players.Player;
@@ -35,19 +34,22 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static ArrayList<Bullet> playerBullets = new ArrayList<>();
     private static ArrayList<Bullet> enemyBullets = new ArrayList<>();
 
-    // ========================= LOGIC =====================================================    private static JFrame window;
+    // ========================= LOGIC =====================================================
+    private static JFrame window;
     private Random rand;
     private int spawnDelay = 1000;
     private static Timer spawnTimer;
     private static Timer bossSpawnTimer; // Timer for spawning bosses
     private static Timer gameLoop;
     static boolean gameActive = false;
-    private static boolean isGameOver = false;    private FPScounter fpscounter = new FPScounter("FPS: ");
+    private static boolean isGameOver = false;
+    private FPScounter fpscounter = new FPScounter("FPS: ");
     private static Game_clock gameClock = new Game_clock();
     
     // Debug counters for boss spawns
     private static int tankBossSpawnCount = 0;
     private static int shooterBossSpawnCount = 0;
+    private static String[] weaponTypes = {"Glock","Revolver","Rocket","Shotgun","Smg","Sniper"};
 
     static int[][] grid;
     static BufferedImage[] tilesSprite = new BufferedImage[9];
@@ -64,6 +66,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private long outOfAmmoMsgTime = 0;
     private static final int OUT_OF_AMMO_MSG_DURATION = 1000; // ms
     private static List<DamageCircle> activeExplosions = new ArrayList<>();
+        // ========================= MAP AND TILE LOADING (NEW) =========================
+    private static int[][] map1, map2, map3; // main, decor, collision
+    private static boolean hasMap2, hasMap3;
+    private static ImageIcon[] tiles, decors;
+    private static int tileW = 32, tileH = 32;
     // ========================= SFX =====================================================
     public static Sfx soundsfx = new Sfx();
     private long lastEmptySfxTime = 0;
@@ -89,31 +96,72 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     // ========================= MAIN =====================================================
     public GameplayPanel(FPScounter fpscounter) throws Exception {
         this.rand = new Random();
-        grid = loadMapFromFile("bullethell/src/map.txt");
-        for (int i = 0; i < 9; i++) {
-            int idx;
-            switch (i) {
-                case 0: idx = 23; break;
-                case 1: idx = 1; break;
-                case 2: idx = 22; break;
-                case 3: idx = 24; break;
-                case 4: idx = 45; break;
-                case 5: idx = 0; break;
-                case 6: idx = 2; break;
-                case 7: idx = 44; break;
-                default: idx = 46; break;
+        // --- New map loading logic ---
+        java.util.function.Function<String, int[][]> loadMap = (filename) -> {
+            java.util.List<int[]> mapRows = new ArrayList<>();
+            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+                    if (line.isEmpty()) continue;
+                    String[] tokens = line.split(",");
+                    int[] row = new int[tokens.length];
+                    for (int i = 0; i < tokens.length; i++) {
+                        String t = tokens[i].trim();
+                        row[i] = t.isEmpty() ? -1 : Integer.parseInt(t);
+                    }
+                    mapRows.add(row);
+                }
+            } catch (Exception e) { return null; }
+            return mapRows.toArray(new int[mapRows.size()][]);
+        };
+        map1 = loadMap.apply("bullethell/src/map1.txt");
+        map2 = loadMap.apply("bullethell/src/map2.txt");
+        map3 = loadMap.apply("bullethell/src/map3.txt");
+        if (map1 == null) throw new RuntimeException("map1.txt missing or invalid");
+        grid = map1;
+        int rows = map1.length, cols = map1[0].length;
+        hasMap2 = map2 != null && map2.length == rows && map2[0].length == cols;
+        hasMap3 = map3 != null && map3.length == rows && map3[0].length == cols;
+        java.util.function.BiFunction<String, String, ImageIcon[]> loadSheet = (dirPath, prefix) -> {
+            File dir = new File(dirPath);
+            int maxIdx = -1;
+            if (dir.exists() && dir.isDirectory()) {
+                for (File f : dir.listFiles()) {
+                    String n = f.getName();
+                    if (n.startsWith(prefix) && n.endsWith(".png")) {
+                        try {
+                            int idx = Integer.parseInt(n.substring(prefix.length(), n.length() - 4));
+                            if (idx > maxIdx) maxIdx = idx;
+                        } catch (Exception ignore) {}
+                    }
+                }
             }
-            tilesSprite[i] = ImageIO.read(App.class.getResource("Assets/tile/tile0" + String.format("%02d", idx) + ".png"));
+            ImageIcon[] arr = new ImageIcon[maxIdx + 1];
+            for (int i = 0; i <= maxIdx; i++) {
+                File f = new File(dir, prefix + i + ".png");
+                if (f.exists()) arr[i] = new ImageIcon(f.getAbsolutePath());
+            }
+            return arr;
+        };
+        tiles = loadSheet.apply("bullethell/src/Assets/tiles", "tile");
+        decors = loadSheet.apply("bullethell/src/Assets/tiles", "decor");
+        // Determine tile size (use first non-null tile)
+        for (ImageIcon icon : tiles) {
+            if (icon != null) {
+                tileW = icon.getIconWidth();
+                tileH = icon.getIconHeight();
+                break;
+            }
         }
         add(gameClock.label);
         addMouseMotionListener(this);
         addMouseListener(this);
         addKeyListener(this);
-        setFocusable(true);//gae keyboard
-        requestFocusInWindow();
-        // innitmenubutton(); // buat button
+        setFocusable(true);
         sfxmanager();
-        musicmanager();        spawnTimer = new Timer(spawnDelay, e -> {
+        musicmanager();
+        spawnTimer = new Timer(spawnDelay, e -> {
             spawnEnemy();
             updateSpawnDelay();
         });
@@ -133,6 +181,15 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         pauseMenu = new PauseMenu();
         add(pauseMenu);
         setComponentZOrder(pauseMenu, 0); // Ensure pause menu is always on top
+
+        
+        // Add a mouse listener to request focus on click
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                requestFocusInWindow();
+            }
+        });
     }
 
     public void setPlayer(Player p) {
@@ -159,7 +216,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameActive = true;
 
         gameClock.setPosition(getWidth()/2, 5, 100, 50);
-        gameClock.setVisible(true);        gameClock.timer.start();
+        gameClock.setVisible(true);
+        gameClock.timer.start();
         
         spawnTimer.start();
         bossSpawnTimer.start(); // Start the boss spawn timer
@@ -202,7 +260,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         
         switch(enemyType) {
             case 0:
-                enemies.add(new ShooterEnemy(spawnX, spawnY, grid, TILE_SIZE)); // Only this enemy type shoots
+                enemies.add(new ShooterEnemy(spawnX, spawnY, map1, tileW)); // Only this enemy type shoots
                 break;
             case 1:
                 enemies.add(new NormalEnemy(spawnX, spawnY)); // Simple follower
@@ -231,16 +289,16 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private void updateGame() {
         if(!gameActive) return;
         else {
-            player.move(upPressed, downPressed, leftPressed, rightPressed, grid,TILE_SIZE); // PLAYER MOVEMENT + SPRITE
+            player.move(upPressed, downPressed, leftPressed, rightPressed, map3, tileW); // PLAYER MOVEMENT + SPRITE
             player.updateDash();
             player.updateSkill(); // Update skill status
             updateBullets();
             checkCollisions();            // Calculate map dimensions once for all enemies
-            int mapWidth = grid[0].length * TILE_SIZE;
-            int mapHeight = grid.length * TILE_SIZE;
+            int mapWidth = map1[0].length * tileW;
+            int mapHeight = map1.length * tileH;
             
             for (Enemy enemy : enemies) {   //gae musuh bisa nembak
-                enemy.update(player, enemyBullets);
+                enemy.update(player, enemyBullets, map3, tileW);
                 // Keep enemies within map boundaries
                 enemy.keepWithinMapBoundaries(mapWidth, mapHeight);
             }
@@ -274,46 +332,38 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        drawGame((Graphics2D)g);
-        // Center camera on player with bounds checking
-        int vpw = getWidth() / ZOOM; // Adjust viewport width for zoom
-        int vph = getHeight() / ZOOM; // Adjust viewport height for zoom
-        
-        int mapPixelWidth = grid[0].length * TILE_SIZE;
-        int mapPixelHeight = grid.length * TILE_SIZE;
-        
+        int rows = map1.length, cols = map1[0].length;
+        int vpw = getWidth() / ZOOM;
+        int vph = getHeight() / ZOOM;
+        int mapPixelWidth = cols * tileW;
+        int mapPixelHeight = rows * tileH;
         int playerCenterX = player.getX() + player.getSize() / 2;
         int playerCenterY = player.getY() + player.getSize() / 2;
-        
-        // Calculate max camera positions, but never less than 0
         int maxCameraX = Math.max(0, mapPixelWidth - vpw);
         int maxCameraY = Math.max(0, mapPixelHeight - vph);
-        
         cameraPixelX = Math.max(0, Math.min(playerCenterX - vpw/2, maxCameraX));
         cameraPixelY = Math.max(0, Math.min(playerCenterY - vph/2, maxCameraY));
+        int startY = cameraPixelY / tileH;
+        int startX = cameraPixelX / tileW;
+        int endY = (cameraPixelY + vph) / tileH + 1;
+        int endX = (cameraPixelX + vpw) / tileW + 1;
 
-        // Calculate visible tile range
-        int startY = cameraPixelY / TILE_SIZE;
-        int startX = cameraPixelX / TILE_SIZE;
-        int endY = (cameraPixelY + vph) / TILE_SIZE + 1;
-        int endX = (cameraPixelX + vpw) / TILE_SIZE + 1;
-
-        // Draw visible tiles
         for (int y = startY; y < endY; y++) {
             for (int x = startX; x < endX; x++) {
-                // Convert tile position to screen coordinates
-                int drawX = (x * TILE_SIZE - cameraPixelX) * ZOOM;
-                int drawY = (y * TILE_SIZE - cameraPixelY) * ZOOM;
-                
-                // Draw tile or background if out of bounds
-                if (y >= 0 && y < grid.length && x >= 0 && x < grid[0].length) {
-                    g.drawImage(tilesSprite[grid[y][x]], drawX, drawY, TILE_SIZE * ZOOM, TILE_SIZE * ZOOM, null);
+                int drawX = (x * tileW - cameraPixelX) * ZOOM;
+                int drawY = (y * tileH - cameraPixelY) * ZOOM;
+                if (y >= 0 && y < rows && x >= 0 && x < cols) {
+                    int idx1 = map1[y][x];
+                    if (idx1 >= 0 && idx1 < tiles.length && tiles[idx1] != null) {
+                        g.drawImage(tiles[idx1].getImage(), drawX, drawY, tileW * ZOOM, tileH * ZOOM, null);
+                    }
                 } else {
                     g.setColor(Color.BLUE);
-                    g.fillRect(drawX, drawY, TILE_SIZE * ZOOM, TILE_SIZE * ZOOM);
+                    g.fillRect(drawX, drawY, tileW * ZOOM, tileH * ZOOM);
                 }
             }
         }
+
         int px = (player.getX() - cameraPixelX) * ZOOM;
         int py = (player.getY() - cameraPixelY) * ZOOM;
         player.draw((Graphics2D) g, px, py, ZOOM);
@@ -332,16 +382,27 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             int ey = (bullet.y - cameraPixelY) * ZOOM;
             bullet.draw(g, ex, ey, Color.RED);
         }
+
+        if (hasMap2) {
+            for (int y = startY; y < endY; y++) {
+                for (int x = startX; x < endX; x++) {
+                    int drawX = (x * tileW - cameraPixelX) * ZOOM;
+                    int drawY = (y * tileH - cameraPixelY) * ZOOM;
+                    if (y >= 0 && y < rows && x >= 0 && x < cols) {
+                        int idx2 = map2[y][x];
+                        if (idx2 > 0 && idx2 < decors.length && decors[idx2] != null) {
+                            g.drawImage(decors[idx2].getImage(), drawX, drawY, tileW * ZOOM, tileH * ZOOM, null);
+                        }
+                    }
+                }
+            }
+        }
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 16));
-            g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
-            g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
+        g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
+        g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
         drawWeaponHUD((Graphics2D)g);
-        
-        // Draw the skill bar for all player types
         skillbar.draw((Graphics2D)g, player, getWidth(), getHeight());
-
-        // Draw Bomber's circle skill overlay if active (refactored)
         if (player instanceof players.Bomber) {
             players.Bomber bomber = (players.Bomber) player;
             players.DamageCircle circle = bomber.getCircleSkill();
@@ -395,7 +456,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 
                 // Draw tile or background if out of bounds
                 if (y >= 0 && y < grid.length && x >= 0 && x < grid[0].length) {
-                    g.drawImage(tilesSprite[grid[y][x]], drawX, drawY, TILE_SIZE * ZOOM, TILE_SIZE * ZOOM, null);
+                    int tileIndex = grid[y][x];
+                    if (tileIndex >= 0 && tileIndex < tilesSprite.length && tilesSprite[tileIndex] != null) {
+                        g.drawImage(tilesSprite[tileIndex], drawX, drawY, TILE_SIZE * ZOOM, TILE_SIZE * ZOOM, null);
+                    } else {
+
+                    }
                 } else {
                     g.setColor(Color.BLUE);
                     g.fillRect(drawX, drawY, TILE_SIZE * ZOOM, TILE_SIZE * ZOOM);
@@ -727,13 +793,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         playerBullets.removeIf(bullet -> {
             bullet.update();
             // Remove bullets that are out of bounds or hit walls
-            return bullet.isOutOfBounds(grid, TILE_SIZE);
+            return bullet.isOutOfBounds(map1, tileW);
         });
 
         // Update enemy bullets
         enemyBullets.removeIf(bullet -> {
             bullet.update();
-            return bullet.isOutOfBounds(grid, TILE_SIZE);
+            return bullet.isOutOfBounds(map1, tileW);
         });
     }    
     
@@ -756,6 +822,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     System.out.println("the bomb hit something!");
                     
                     if (enemy.isDead()) {
+
+
                         enemies.remove(i);
                         continue;
                     }
@@ -785,20 +853,17 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
         }
 
+        // Refactored: process all bullet-enemy collisions, collect enemies to remove, then remove after
+        java.util.List<Enemy> enemiesToRemove = new java.util.ArrayList<>();
         playerBullets.removeIf(bullet -> {
             Rectangle bulletBounds = new Rectangle((int)bullet.x, (int)bullet.y, bullet.getSize(), bullet.getSize());
             boolean shouldRemove = false;
-
             for (int i = enemies.size() - 1; i >= 0; i--) {
                 Enemy enemy = enemies.get(i);
                 Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
-                
                 if (bulletBounds.intersects(enemyBounds)) {
                     Weapon currentWeapon = player.getCurrentWeapon();
-
-                    // Check if the bullet is a RocketBullet
                     if (bullet instanceof Rocket.RocketBullet){
-                        // Create explosion effect
                         DamageCircle explosion = new DamageCircle(
                         (int)bullet.x, 
                         (int)bullet.y, 
@@ -809,42 +874,61 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                         );
                         activeExplosions.add(explosion);
                         int totalDamageDealt = 0;
-
-                        // Damage all enemies in blast radius
                         for (int j = enemies.size() - 1; j >= 0; j--) {
                             Enemy targetEnemy = enemies.get(j);
                             if (explosion.collides(targetEnemy.x, targetEnemy.y, targetEnemy.size)) {
                                 int damageDealt = Math.min(targetEnemy.getHealth(), currentWeapon.getWeaponDamage());
                                 targetEnemy.takeDamage(currentWeapon.getWeaponDamage());
                                 totalDamageDealt += damageDealt;
-                                
                                 if (targetEnemy.isDead()) {
-                                    enemies.remove(j);
+                                    enemiesToRemove.add(targetEnemy);
                                 }
                             }
                         }
-                        
-                        // Apply vampire healing based on total damage
                         if (player instanceof players.Vampire && totalDamageDealt > 0) {
                             ((players.Vampire) player).stealHealth(totalDamageDealt);
                         }
-
-                        // Play explosion sound
                         soundsfx.play("rpgexplode");
                         shouldRemove = true;
                         break;
-                    }else{
-                        // Deal damage to the enemy instead of immediately removing
+                    } else {
                         enemy.takeDamage(currentWeapon.getWeaponDamage());
                     }
-                    
-                    // If player is a Vampire with active skill, steal health
                     if (player instanceof players.Vampire) {
                         ((players.Vampire) player).stealHealth(currentWeapon.getWeaponDamage());
                     }
-                    
                     if (enemy.isDead()) {
-                        enemies.remove(i);
+                        if(enemy instanceof enemies.TankBoss || enemy instanceof enemies.ShooterBoss){
+                            Random rand = new Random();
+                            int idx = rand.nextInt(6);
+                            weapons.Weapon newWeapon = switch (idx){
+                                case 0 -> new weapons.Revolver();
+                                case 1 -> new weapons.Shotgun();
+                                case 2 -> new weapons.Smg();
+                                case 3 -> new weapons.Glock();
+                                case 4 -> new weapons.Sniper();
+                                case 5 -> new weapons.Rocket();
+                                default -> null;
+                            };
+                            if (newWeapon != null) {
+                                boolean alreadyHas = false;
+                                for (int p = 0; p < player.getWeapons().size(); p++) {
+                                    Weapon owned = player.getWeapons().get(p);
+                                    if (owned.getName().equals(newWeapon.getName())) {
+                                        alreadyHas = true;
+                                        break;
+                                    }
+                                }
+                                if (!alreadyHas) {
+                                    player.getWeapons().add(newWeapon);
+                                    System.out.println("Picked up new weapon: " + newWeapon.getName());
+                                } else {
+                                    System.out.println("Player already has weapon: " + newWeapon.getName());
+                                }
+                            }
+                            System.out.println("hero now has " + player.getWeapons().size() + " weapons!");
+                        }
+                        enemiesToRemove.add(enemy);
                     }
 
                     // Handle penetration for sniper bullets
@@ -852,17 +936,19 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                         Sniper.SniperBullet sniperBullet = (Sniper.SniperBullet) bullet;
                         if (sniperBullet.canPenetrate()) {
                             sniperBullet.penetrate();
-                            continue; // Don't remove the bullet yet
+                            continue;
                         }
                     }
-                    
                     shouldRemove = true;
                     break;
                 }
             }
-            
-            return shouldRemove || bullet.isOutOfBounds(grid, TILE_SIZE);
+            return shouldRemove || bullet.isOutOfBounds(map1, tileW);
         });
+        // Remove all enemies marked for removal after bullet processing
+        if (!enemiesToRemove.isEmpty()) {
+            enemies.removeAll(enemiesToRemove);
+        }
 
         // Check enemy bullet-player collisions
         enemyBullets.removeIf(bullet -> {
@@ -878,28 +964,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
             return false;
         });
-    }
-
-    public static int[][] loadMapFromFile(String filePath) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(filePath));
-        String line;
-        int rows = 0, cols = 0;
-        while ((line = reader.readLine()) != null) {
-            cols = line.length();
-            rows++;
-        }
-        reader.close();
-        int[][] grid = new int[rows][cols];
-        reader = new BufferedReader(new FileReader(filePath));
-        int row = 0;
-        while ((line = reader.readLine()) != null) {
-            for (int col = 0; col < line.length(); col++) {
-                grid[row][col] = Character.getNumericValue(line.charAt(col));
-            }
-            row++;
-        }
-        reader.close();
-        return grid;    
     }
 
     // GAME SETTINGS
@@ -1051,12 +1115,88 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         // Record the roll for debugging
         int roll = rand.nextInt(100); // Just for logging purposes
         
-        if (spawnTankBoss) {enemies.add(new TankBoss(spawnX, spawnY));
-            tankBossSpawnCount++;            System.out.println("Tank Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
+        if (spawnTankBoss) {
+            enemies.add(new TankBoss(spawnX, spawnY));
+            tankBossSpawnCount++;            
+            System.out.println("Tank Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
             System.out.println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
-        } else {            enemies.add(new ShooterBoss(spawnX, spawnY));
-            shooterBossSpawnCount++;            System.out.println("Shooter Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
+        } else {            
+            enemies.add(new ShooterBoss(spawnX, spawnY));
+            shooterBossSpawnCount++;            
+            System.out.println("Shooter Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
             System.out.println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
         }
     }
+    // --- New robust map/tile/decor loading logic (added, does not replace old logic) ---
+    // Map arrays
+    private int[][] newMap1, newMap2, newMap3;
+    private boolean newHasMap2, newHasMap3;
+    // Tile and decor arrays
+    private javax.swing.ImageIcon[] newTiles, newDecors;
+    private int newTileW = 32, newTileH = 32;
+
+    // Helper to load a map file (CSV style)
+    private int[][] loadMapCSV(String filename) {
+        java.util.List<int[]> mapRows = new java.util.ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                String[] tokens = line.split(",");
+                int[] row = new int[tokens.length];
+                for (int i = 0; i < tokens.length; i++) {
+                    String t = tokens[i].trim();
+                    row[i] = t.isEmpty() ? -1 : Integer.parseInt(t);
+                }
+                mapRows.add(row);
+            }
+        } catch (Exception e) { return null; }
+        return mapRows.toArray(new int[mapRows.size()][]);
+    }
+
+    // Helper to load a tilesheet
+    private javax.swing.ImageIcon[] loadSheet(String dirPath, String prefix) {
+        java.io.File dir = new java.io.File(dirPath);
+        int maxIdx = -1;
+        if (dir.exists() && dir.isDirectory()) {
+            for (java.io.File f : dir.listFiles()) {
+                String n = f.getName();
+                if (n.startsWith(prefix) && n.endsWith(".png")) {
+                    try {
+                        int idx = Integer.parseInt(n.substring(prefix.length(), n.length() - 4));
+                        if (idx > maxIdx) maxIdx = idx;
+                    } catch (Exception ignore) {}
+                }
+            }
+        }
+        javax.swing.ImageIcon[] arr = new javax.swing.ImageIcon[maxIdx + 1];
+        for (int i = 0; i <= maxIdx; i++) {
+            java.io.File f = new java.io.File(dir, prefix + i + ".png");
+            if (f.exists()) arr[i] = new javax.swing.ImageIcon(f.getAbsolutePath());
+        }
+        return arr;
+    }
+
+    // Call this method to initialize the new logic (does not affect old logic)
+    public void initNewMapAndTiles() {
+        newMap1 = loadMapCSV("bullethell/src/map1.txt");
+        newMap2 = loadMapCSV("bullethell/src/map2.txt");
+        newMap3 = loadMapCSV("bullethell/src/map3.txt");
+        if (newMap1 != null) {
+            int rows = newMap1.length, cols = newMap1[0].length;
+            newHasMap2 = newMap2 != null && newMap2.length == rows && newMap2[0].length == cols;
+            newHasMap3 = newMap3 != null && newMap3.length == rows && newMap3[0].length == cols;
+        }
+        newTiles = loadSheet("bullethell/src/Assets/tiles", "tile");
+        newDecors = loadSheet("bullethell/src/Assets/tiles", "decor");
+        for (javax.swing.ImageIcon icon : newTiles) {
+            if (icon != null) {
+                newTileW = icon.getIconWidth();
+                newTileH = icon.getIconHeight();
+                break;
+            }
+        }
+    }
+    // --- End of new logic addition ---
 }

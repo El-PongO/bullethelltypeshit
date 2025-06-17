@@ -34,8 +34,8 @@ public abstract class Enemy {
         }
         return null;
     }
-      // Making update abstract so each enemy type must implement it
-    public abstract void update(Player player, ArrayList<Bullet> enemyBullets);
+      // Update method for all enemies to support collision-aware movement
+    public abstract void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize);
       // Helper method to keep enemies within map boundaries
     public void keepWithinMapBoundaries(int mapWidth, int mapHeight) {
         // Apply boundary constraints with padding based on enemy size
@@ -100,5 +100,15 @@ public abstract class Enemy {
         int gridY = newY / tileSize;
         return gridX < 0 || gridY < 0 || gridX >= grid[0].length || gridY >= grid.length 
                || grid[gridY][gridX] != 0;
+    }
+    protected void moveWithCollision(double dx, double dy, int[][] collisionMap, int tileSize) {
+        int newX = (int) (x + dx);
+        int newY = (int) (y + dy);
+        int gridX = (newX + size / 2) / tileSize;
+        int gridY = (newY + size / 2) / tileSize;
+        if (gridY >= 0 && gridY < collisionMap.length && gridX >= 0 && gridX < collisionMap[0].length && collisionMap[gridY][gridX] == 0) {
+            x = newX;
+            y = newY;
+        }
     }
 }

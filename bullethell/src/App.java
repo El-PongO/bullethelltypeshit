@@ -4,13 +4,13 @@ import java.io.FileReader;
 import javax.swing.JFrame; 
 public class App {
     public static void main(String[] args) throws Exception {
-        int width = 1024, height = 768; // default width and height
+        int width = 1024, height = 768; // ukuran default
         boolean fullscreen = false;
         File config = new File("config.cfg");
         if (config.exists()) {
             try (BufferedReader br = new BufferedReader(new FileReader(config))) {
                 width = Integer.parseInt(br.readLine());
-                height = Integer.parseInt(br.readLine());
+                height = Integer.parseInt(br.readLine());//safe buat ukuran baru
                 String fs = br.readLine();
                 fullscreen = fs != null && fs.trim().equals("1");
             } catch (Exception ignored) {}
@@ -24,17 +24,17 @@ public class App {
             window.setUndecorated(true);
             window.setExtendedState(JFrame.MAXIMIZED_BOTH);
         }else{
-            window.setSize(width, height); // window size
+            window.setSize(width, height); 
         }
-            // Initialize the SettingMenu before creating MainPanel
-        GameplayPanel.initializeSettingMenu(window);
+            
+        GameplayPanel.initializeSettingMenu(window);//gamenya di inialisasi
         
-        // Make sure the SettingMenu is properly initialized
+        
         if (GameplayPanel.getSettingMenu() == null) {
             System.out.println("Warning: SettingMenu was not properly initialized.");
         }
         
-        // Use the new MainPanel instead of GamePanel
+        
         MainPanel panel = new MainPanel();
         window.add(panel); //buat windownya
         window.setVisible(true); // biar bisa di liat windownya

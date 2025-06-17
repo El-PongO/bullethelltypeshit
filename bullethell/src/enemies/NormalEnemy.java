@@ -43,7 +43,7 @@ public class NormalEnemy extends Enemy {
     }
     
     @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         // Simple movement: always go toward the player
         double angle = Math.atan2(player.getY() - y, player.getX() - x);
         this.idling = false; // Normal enemies are not idling
@@ -75,7 +75,7 @@ public class NormalEnemy extends Enemy {
         x += dx;
         y += dy;
         
-        // Normal enemies don't shoot
+        moveWithCollision(dx, dy, collisionMap, tileSize);
     }
     
     @Override

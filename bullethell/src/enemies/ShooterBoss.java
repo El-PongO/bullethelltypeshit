@@ -88,12 +88,11 @@ public class ShooterBoss extends Enemy {
     }
     
     @Override
-    public void update(Player player, ArrayList<Bullet> enemyBullets) {
+    public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         // Decrements cooldown if active
         if (jumpCooldown > 0) {
             jumpCooldown--;
         }
-        
         // Handle jump animation if we're currently jumping
         if (isJumping) {
             // Increase jump progress
@@ -176,21 +175,20 @@ public class ShooterBoss extends Enemy {
         }
         // Normal movement when not jumping or shooting
         else {
-            // Check if we should start a burst
             long currentTime = System.currentTimeMillis();
-            if (currentTime - lastShotTime > shootDelay && rand.nextInt(60) == 0) { // ~1.7% chance when ready
+            if (currentTime - lastShotTime > shootDelay && rand.nextInt(60) == 0) {
                 startBurst();
             }
-            
-            // If we're close to the player, try to jump away
             double distance = Math.hypot(player.getX() - x, player.getY() - y);
             if (distance < 150 && !isJumping && jumpCooldown <= 0) {
-                startJump(player, true); // Jump away when too close
+                startJump(player, true);
             }
-            
-            // If no special action and not too close, just stand and wait
-            // No need to move toward optimal range anymore
-        }        // Update sprite counter for animations
+            // Move toward player if not jumping or shooting
+            double angle = Math.atan2(player.getY() - y, player.getX() - x);
+            double dx = Math.cos(angle) * speed;
+            double dy = Math.sin(angle) * speed;
+            moveWithCollision(dx, dy, collisionMap, tileSize);
+        }
         updateSpriteCounter();
     }
     
