@@ -29,19 +29,16 @@ import weapons.Weapon;
 
 public class GameplayPanel extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
 
-    // ========================= ENTITY
-    // =====================================================
+    // ========================= ENTITY =====================================================
     private static Player player;
     private static ArrayList<Enemy> enemies = new ArrayList<>();
     private static ArrayList<PowerUp> power = new ArrayList<>();
 
-    // ========================= BULLET
-    // =====================================================
+    // ========================= BULLET =====================================================
     private static ArrayList<Bullet> playerBullets = new ArrayList<>();
     private static ArrayList<Bullet> enemyBullets = new ArrayList<>();
 
-    // ========================= LOGIC
-    // =====================================================
+    // ========================= LOGIC =====================================================
     private static JFrame window;
     private Random rand;
     private int spawnDelay = 1000;
@@ -74,14 +71,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private long outOfAmmoMsgTime = 0;
     private static final int OUT_OF_AMMO_MSG_DURATION = 1000; // ms
     private static List<DamageCircle> activeExplosions = new ArrayList<>();
-    // ========================= MAP AND TILE LOADING (NEW)
-    // =========================
+
+    // ========================= MAP AND TILE LOADING (NEW) =========================
     private static int[][] map1, map2, map3; // main, decor, collision
     private static boolean hasMap2, hasMap3;
     private static ImageIcon[] tiles, decors;
     private static int tileW = 32, tileH = 32;
-    // ========================= SFX
-    // =====================================================
+    // ========================= SFX =====================================================
     public static Sfx soundsfx = new Sfx();
     private long lastEmptySfxTime = 0;
     private static final int EMPTY_SFX_DELAY = 400; // ms, adjust to match your empty SFX duration
@@ -91,25 +87,20 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private Music musiclobby = new Music();
     private static Music music1 = new Music();
 
-    // ========================= KEY MOVEMENT
-    // =====================================================
+    // ========================= KEY MOVEMENT =====================================================
     private boolean upPressed, downPressed, leftPressed, rightPressed;
-    // ========================= GAME SETTING
-    // =====================================================
+    // ========================= GAME SETTING =====================================================
     private static Settingmenu settingmenu;
 
-    // ========================= PAUSE MENU
-    // =====================================================
+    // ========================= PAUSE MENU =====================================================
     PauseMenu pauseMenu;
     private boolean isPaused = false;
 
-    // ========================= SKILL BAR
-    // =====================================================
+    // ========================= SKILL BAR =====================================================
     // Skill bar for displaying skill status
     private Skillbar skillbar = new Skillbar();
 
-    // ========================= MAIN
-    // =====================================================
+    // ========================= MAIN =====================================================
     public GameplayPanel(FPScounter fpscounter) throws Exception {
         this.rand = new Random();
         // --- New map loading logic ---
@@ -278,8 +269,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameClock.setVisible(false);
     }
 
-    // ========================= SPAWN
-    // =====================================================
+    // ========================= SPAWN =====================================================
     private void spawnPower() {
         int spawnX = rand.nextInt(getWidth() - TILE_SIZE) + TILE_SIZE;
         int spawnY = rand.nextInt(getHeight() - TILE_SIZE) + TILE_SIZE;
@@ -328,8 +318,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         spawnTimer.restart();
     }
 
-    // ========================= GAME UPDATE
-    // =====================================================
+    // ========================= GAME UPDATE =====================================================
     private void updateSpawnDelay() {
         if (spawnDelay > 300) {
             spawnDelay -= 50;
@@ -405,8 +394,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }
     }
 
-    // ========================= PAINT COMPONENT
-    // =====================================================
+    // ========================= PAINT COMPONENT =====================================================
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -562,8 +550,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         g.drawRoundRect(offsetX - 2, offsetY - 2, iconSize + 4, iconSize + 4, 10, 10);
     }
 
-    // ========================= FUNCTION
-    // =====================================================
+    // ========================= FUNCTION =====================================================
     public void sfxmanager() {
         soundsfx.load("shoot", "/Audio/Sfx/Atk_LeweiGun.wav");
         soundsfx.load("explode", "/Audio/Sfx/Explode.wav");
@@ -1342,5 +1329,4 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
         }
     }
-    // --- End of new logic addition ---
 }

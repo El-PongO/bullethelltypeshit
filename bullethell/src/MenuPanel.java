@@ -2,34 +2,28 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-public class MenuPanel extends JPanel implements MouseListener, MouseMotionListener { // ========================= UI
-                                                                                      // =====================================================
+public class MenuPanel extends JPanel implements MouseListener, MouseMotionListener { 
+    // ========================= UI =====================================================                                                                              
     private JFrame window;
     private MainMenu mainMenu = new MainMenu();
     private Settingmenu settingmenu = null;
     private Game_over gameover = new Game_over();
 
-    // ========================= STATE
-    // =====================================================
+    // ========================= STATE =====================================================
     public enum MenuState {
         MAIN_MENU, SETTINGS, GAME_OVER
     }
 
     private MenuState currentState = MenuState.MAIN_MENU;
-
-    // ========================= BUTTON
-    // =====================================================
+ 
+    // ========================= BUTTON =====================================================
     private Button buttonStart = new Button("Play");
     private Button buttonOption = new Button("Option");
     private Button buttonExit = new Button("Exit");
     private Button buttonRestart = new Button("Restart");
     private Button buttonBack = new Button("Back");
 
-    // ========================= LAIN-LAIN
-    // =====================================================
-
-    // ========================= CALLBACKS
-    // =====================================================
+    // ========================= CALLBACKS =====================================================
     private Runnable onStartGame;
     private Runnable onRestartGame;
     private Runnable backButtonListener;
@@ -249,8 +243,7 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         add(settingmenu.getReloadCheckBox());
     }
 
-    // ========================= MOUSE EVENTS
-    // =====================================================
+    // ========================= MOUSE EVENTS =====================================================
     @Override
     public void mouseClicked(MouseEvent e) {
         if (currentState == MenuState.SETTINGS) {
