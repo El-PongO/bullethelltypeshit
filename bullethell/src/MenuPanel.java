@@ -233,6 +233,7 @@ public class MenuPanel extends JPanel implements MouseListener, MouseMotionListe
         // Others Settings
         add(settingmenu.getFpsCheckbox());
         add(settingmenu.getDevCheckbox());
+        add(settingmenu.getReloadCheckBox());
     }
 
     // ========================= MOUSE EVENTS =====================================================

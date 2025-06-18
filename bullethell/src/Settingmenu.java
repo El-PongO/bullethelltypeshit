@@ -1,9 +1,9 @@
 import java.awt.*;
-import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -24,6 +24,7 @@ public class Settingmenu extends JPanel{
     
     private JCheckBox fpsCheckbox; // Checkbox for FPS counter
     private JCheckBox devmodeCheckbox; // Checkbox for dev mode
+    private JCheckBox reloadCheckbox; // Checkbox for automatic reload
     private JLabel musicLabel, sfxLabel;
     private float musicVolume = 1.0f;
     private float sfxVolume = 1.0f;
@@ -138,6 +139,9 @@ public class Settingmenu extends JPanel{
 
             // Draw the dev mode checkbox
             devmodeCheckbox.setBounds(20, checkboxY + 30, 200, 30); 
+
+            // Draw the reload checkbox
+            reloadCheckbox.setBounds(20, checkboxY + 60, 400, 30);
         }
     }
 
@@ -161,6 +165,7 @@ public class Settingmenu extends JPanel{
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
                 setControlLabelsVisible(false);
+                reloadCheckbox.setVisible(false);
                 // Visible
                 resolutionDropdown.setVisible(true);
                 resolutionLabel.setVisible(true);
@@ -174,6 +179,7 @@ public class Settingmenu extends JPanel{
                 devmodeCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
                 setControlLabelsVisible(false);
+                reloadCheckbox.setVisible(false);
                 // Visible
                 setAudioControlsVisible(true);
                 break;
@@ -185,6 +191,7 @@ public class Settingmenu extends JPanel{
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
+                reloadCheckbox.setVisible(false);
                 // Visible
                 setControlLabelsVisible(true);
                 break;
@@ -198,6 +205,7 @@ public class Settingmenu extends JPanel{
                 // Visible
                 fpsCheckbox.setVisible(true);
                 devmodeCheckbox.setVisible(true);
+                reloadCheckbox.setVisible(true);
                 break;
             case "quit":
                 resolutionDropdown.setVisible(false);
@@ -205,6 +213,7 @@ public class Settingmenu extends JPanel{
                 setAudioControlsVisible(false);
                 fpsCheckbox.setVisible(false);
                 devmodeCheckbox.setVisible(false);
+                reloadCheckbox.setVisible(false);
                 fullscreen.setVisible(false);
                 setControlLabelsVisible(false);
                 break;
@@ -581,8 +590,11 @@ public class Settingmenu extends JPanel{
     public void Create_Settings_Others(){
         Create_fpsCheckbox();
         Create_devmodeCheckbox();
+        Create_reloadCheckbox();
         add(fpsCheckbox);
         add(devmodeCheckbox);
+        add(reloadCheckbox);
+        loadReloadCheckboxState(); // Load the state of the reload checkbox from config
     }
 
     public void Create_fpsCheckbox() {
@@ -671,12 +683,79 @@ public class Settingmenu extends JPanel{
         return false;
     }
 
+    public void Create_reloadCheckbox() { // masih belum ada fungsionalitas
+        reloadCheckbox = new Customcheckbox("Automaticly Reload when out of ammo");
+        reloadCheckbox.setFont(new Font("Arial", Font.PLAIN, 20));
+        reloadCheckbox.setForeground(Color.WHITE);
+        reloadCheckbox.setBackground(new Color(28, 51, 92)); // Match the background color
+        reloadCheckbox.setFocusPainted(false);
+        reloadCheckbox.setVisible(false); // Initially hidden
+        reloadCheckbox.setSelected(false); // Default state
+
+        reloadCheckbox.addActionListener(e -> {
+            saveReloadCheckboxState();
+        });
+    }
+
+    private void saveReloadCheckboxState() {
+        try {
+            File configFile = new File("config.cfg");
+            List<String> lines = new ArrayList<>();
+            // Read existing lines
+            if (configFile.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(configFile));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line);
+                }
+                reader.close();
+            }
+            // Ensure at least 5 lines (add empty if missing)
+            while (lines.size() < 5) lines.add("");
+            // Line 4 (index 4) is for reload checkbox
+            lines.set(4, reloadCheckbox.isSelected() ? "1" : "0");
+            PrintWriter writer = new PrintWriter(configFile);
+            for (String l : lines) writer.println(l);
+            writer.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public boolean isAutoReloadEnabled() {
+        try {
+            File configFile = new File("config.cfg");
+            if (configFile.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(configFile));
+                for (int i = 0; i < 5; i++) {
+                    String line = reader.readLine();
+                    if (i == 4 && line != null) {
+                        reader.close();
+                        return line.trim().equals("1");
+                    }
+                }
+                reader.close();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
+    public void loadReloadCheckboxState() {
+        reloadCheckbox.setSelected(isAutoReloadEnabled());
+    }
+
     public JCheckBox getFpsCheckbox() {
         return fpsCheckbox;
     }
 
     public JCheckBox getDevCheckbox() {
         return devmodeCheckbox;
+    }
+
+    public JCheckBox getReloadCheckBox() {
+        return reloadCheckbox;
     }
 
     public void setPlayer(players.Player player) {

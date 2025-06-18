@@ -83,6 +83,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private long lastEmptySfxTime = 0;
     private static final int EMPTY_SFX_DELAY = 400; // ms, adjust to match your empty SFX duration
     private long lastReloadSfxTime = 0;
+    private boolean playedEmptySfxForCurrentEmpty = false;
     // ========================= MUSIC =====================================================
     private Music musiclobby = new Music();
     private static Music music1 = new Music();
@@ -320,6 +321,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private void updateGame() {
         if(!gameActive) return;
         else {
+            if (player.getHealth() <= 0) {
+                gameOver();
+                return;
+            }
             player.move(upPressed, downPressed, leftPressed, rightPressed, map3, tileW); // PLAYER MOVEMENT + SPRITE
             player.updateDash();
             player.updateSkill(); // Update skill status
@@ -337,18 +342,39 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
             if (mouseHeld && player.getCurrentWeapon().isFullAuto()) {
                 Point mouse = getMousePosition();
+                boolean autoReload = settingmenu != null && settingmenu.isAutoReloadEnabled();
                 if (mouse != null) {
                     List<Bullet> bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
                     if (bullet != null && !bullet.isEmpty()) {
+                        if (playedEmptySfxForCurrentEmpty){
+                            playedEmptySfxForCurrentEmpty = false; // Reset for next shot
+                        }
                         playerBullets.addAll(bullet);
                         playsfx(false);
-                    } else if (player.getCurrentWeapon().getCurrentAmmo() == 0) {
+                    } 
+
+                    if (player.getCurrentWeapon().getCurrentAmmo() == 0) {
                         long now = System.currentTimeMillis();
-                        if (now - lastEmptySfxTime >= EMPTY_SFX_DELAY) {
-                            playsfx(true);
-                            lastEmptySfxTime = now;
-                            showOutOfAmmoMsg = true;
-                            outOfAmmoMsgTime = now;
+                        if (autoReload){
+                            if (!playedEmptySfxForCurrentEmpty) {
+                                playsfx(true);
+                                playedEmptySfxForCurrentEmpty = true;
+                                showOutOfAmmoMsg = true;
+                                outOfAmmoMsgTime = now;
+                            }
+
+                            // Automatically reload if not already reloading
+                            if (!player.getCurrentWeapon().isReloading()) {
+                                player.reloadCurrentWeapon();
+                                reloadsfx();
+                            }
+                        }else{
+                            if (now - lastEmptySfxTime >= EMPTY_SFX_DELAY) {
+                                playsfx(true);
+                                lastEmptySfxTime = now;
+                                showOutOfAmmoMsg = true;
+                                outOfAmmoMsgTime = now;
+                            }
                         }
                     }
                 }
@@ -774,12 +800,31 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             // For full auto, firing is handled in updateGame()
         } else {
             List<Bullet> bullet = player.shoot(e.getX()/ZOOM + cameraPixelX, e.getY()/ZOOM + cameraPixelY);
+            boolean autoReload = settingmenu != null && settingmenu.isAutoReloadEnabled();
+            long now = System.currentTimeMillis();
             if (bullet != null && !bullet.isEmpty()) {
                 playerBullets.addAll(bullet);
                 playsfx(false);
-            } else {
-                if (!weapon.hasAmmo()) {
-                    long now = System.currentTimeMillis();
+                if (autoReload && playedEmptySfxForCurrentEmpty){
+                    playedEmptySfxForCurrentEmpty = false;
+                }
+            } 
+
+            if (!weapon.hasAmmo()) {
+                if (autoReload){
+                    if (!playedEmptySfxForCurrentEmpty) {
+                        playsfx(true);
+                        playedEmptySfxForCurrentEmpty = true;
+                        showOutOfAmmoMsg = true;
+                        outOfAmmoMsgTime = now;
+                    }
+
+                    // Automatically reload if not already reloading
+                    if (!weapon.isReloading()) {
+                        player.reloadCurrentWeapon();
+                        reloadsfx();
+                    }
+                }else{
                     if (now - lastEmptySfxTime >= EMPTY_SFX_DELAY) {
                         playsfx(true); // Out of ammo
                         lastEmptySfxTime = now;
@@ -787,6 +832,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                         outOfAmmoMsgTime = now;
                     }
                 }
+                
+                
             }
         }
     }
