@@ -9,7 +9,7 @@ public class MainMenu {
     public MainMenu() {
         hyperlink = new Hyperlink("Visit Page");
         lobby = new Music();
-        lobby.load("/Audio/Music/Doodle Song.wav"); 
+        lobby.load("/Audio/Music/Doodle Song.wav");
     }
 
     public void draw(Graphics g, int panelWidth, int panelHeight) {
@@ -26,12 +26,12 @@ public class MainMenu {
         int textHeight = fm.getAscent();
 
         int x = ((panelWidth - textWidth) / 2) + 10;
-        int y = (panelHeight / 2) - 50;  
+        int y = (panelHeight / 2) - 50;
 
         g2d.drawString(title, x, y);
-        
+
         // Hyperlink (ni hyperlink cuma ngetes doang)
-        int marginRight = 20;  // Margin from the right side
+        int marginRight = 20; // Margin from the right side
         int marginBottom = 20; // Margin from the bottom
         int hyperlinkWidth = g2d.getFontMetrics().stringWidth(hyperlink.getText());
         int hyperlinkHeight = g2d.getFontMetrics().getAscent();
@@ -39,14 +39,14 @@ public class MainMenu {
         int hyperlinkX = panelWidth - hyperlinkWidth - marginRight;
         int hyperlinkY = panelHeight - marginBottom;
 
-        hyperlink.draw(g, (int) (panelWidth*1.88), panelHeight, hyperlinkY);
+        hyperlink.draw(g, (int) (panelWidth * 1.88), panelHeight, hyperlinkY);
     }
 
-    // function buat hyperlink pas linknya nanti di klik 
+    // function buat hyperlink pas linknya nanti di klik
     public void handleMouseClick(MouseEvent e) {
         if (hyperlink.isClicked(e.getPoint())) {
             try {
-                Desktop.getDesktop().browse(new URI("https://en.wikipedia.org/wiki/Bullet_Hell"));
+                Desktop.getDesktop().browse(new URI("https://github.com/El-PongO/bullethelltypeshit"));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -55,7 +55,7 @@ public class MainMenu {
 
     public void playMusic() {
         if (lobby != null) {
-            lobby.loop(); // Or .play() if you don't want looping
+            lobby.loop();
         }
     }
 

@@ -16,12 +16,13 @@ import javax.swing.JFrame;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
-public class Settingmenu extends JPanel{
-    private Rectangle[] categoryBounds; // Array to hold the bounding rectangles for each category (used for hover/click detection)
+public class Settingmenu extends JPanel {
+    private Rectangle[] categoryBounds; // Array to hold the bounding rectangles for each category (used for hover/click
+                                        // detection)
     private int hoveredIndex = -1; // cek tab yang di hover
     private int selectedIndex = -1; // current active tab
-    private String[] categories = {"Video", "Audio", "Controls", "Others"}; // list isinya
-    
+    private String[] categories = { "Video", "Audio", "Controls", "Others" }; // list isinya
+
     private JCheckBox fpsCheckbox; // Checkbox for FPS counter
     private JCheckBox devmodeCheckbox; // Checkbox for dev mode
     private JCheckBox reloadCheckbox; // Checkbox for automatic reload
@@ -41,12 +42,12 @@ public class Settingmenu extends JPanel{
     protected JLabel moveLabel, shootLabel, dashLabel, reloadLabel, weaponLabel, pause, skills;
 
     public Settingmenu(JFrame mainWindow) {
-        this.mainWindow = mainWindow; 
+        this.mainWindow = mainWindow;
         setLayout(null);
         categoryBounds = new Rectangle[categories.length];
-        Create_Setting_Video(); // Create video controls 
-        Create_Setting_Audio();    // Create audio controls 
-        Create_Settings_Others();   
+        Create_Setting_Video(); // Create video controls
+        Create_Setting_Audio(); // Create audio controls
+        Create_Settings_Others();
         Create_Setting_Controls();
     }
 
@@ -116,14 +117,14 @@ public class Settingmenu extends JPanel{
         g2d.drawLine(0, rowY - 25, panelWidth, rowY - 25);
 
         int checkboxY = rowY + 50;
-        if (selectedIndex == 0){
+        if (selectedIndex == 0) {
             setvisibleoption("Video");
             fullscreen.setBounds(20, checkboxY + 50, 200, 30); // Fullscreen checkbox
-        }else if (selectedIndex == 1){
+        } else if (selectedIndex == 1) {
             setvisibleoption("Audio");
-            muteAudio.setBounds(20, (checkboxY * 2) + y, 200, 30); 
+            muteAudio.setBounds(20, (checkboxY * 2) + y, 200, 30);
             disableFade.setBounds(20, ((checkboxY * 2) + y) + 30, 200, 30);
-        }else if (selectedIndex == 2){
+        } else if (selectedIndex == 2) {
             setvisibleoption("Controls");
             moveLabel.setBounds(20, checkboxY, 300, 30);
             shootLabel.setBounds(20, checkboxY + 40, 300, 30);
@@ -132,10 +133,10 @@ public class Settingmenu extends JPanel{
             weaponLabel.setBounds(20, checkboxY + 160, 300, 30);
             skills.setBounds(20, checkboxY + 200, 300, 30);
             pause.setBounds(20, checkboxY + 240, 300, 30);
-        }else if (selectedIndex == 3){
+        } else if (selectedIndex == 3) {
             setvisibleoption("Others");
             // Draw the FPS checkbox
-            fpsCheckbox.setBounds(20, checkboxY, 200, 30); 
+            fpsCheckbox.setBounds(20, checkboxY, 200, 30);
 
             // Draw the dev mode checkbox
             devmodeCheckbox.setBounds(20, checkboxY + 30, 200, 30); 
@@ -157,8 +158,8 @@ public class Settingmenu extends JPanel{
         }
     }
 
-    public void setvisibleoption(String tabname){
-        switch (tabname){
+    public void setvisibleoption(String tabname) {
+        switch (tabname) {
             case "Video":
                 // Invisible
                 setAudioControlsVisible(false);
@@ -222,8 +223,6 @@ public class Settingmenu extends JPanel{
         repaint();
     }
 
-    
-
     // Update the hovered index when the mouse moves
     public void handleMouseMoved(int mouseX, int mouseY) {
         hoveredIndex = -1;
@@ -244,10 +243,9 @@ public class Settingmenu extends JPanel{
         }
     }
 
-
     // Create the settings for the "Video" category
     protected enum VideoSettings {
-        RES_1024x768(1024, 768), // Default resolution 
+        RES_1024x768(1024, 768), // Default resolution
         RES_1280x720(1280, 720),
         RES_1366x768(1366, 768),
         RES_1920x1080(1920, 1080);
@@ -274,7 +272,7 @@ public class Settingmenu extends JPanel{
         }
     }
 
-    public void Create_Setting_Video(){
+    public void Create_Setting_Video() {
         resolutionDropdown = new JComboBox<>(VideoSettings.values());
         resolutionDropdown.setFont(new Font("Arial", Font.PLAIN, 20));
         resolutionDropdown.setBounds(20, 180, 200, 30);
@@ -289,10 +287,11 @@ public class Settingmenu extends JPanel{
                 currentHeight = Integer.parseInt(h.trim());
             }
 
-            if (fs != null){
+            if (fs != null) {
                 isFullscreen = fs.trim().equals("1");
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         // Set the selected item in the dropdown
         for (int i = 0; i < resolutionDropdown.getItemCount(); i++) {
@@ -308,7 +307,8 @@ public class Settingmenu extends JPanel{
             if (selectedResolution != null) {
                 // Set the game and restart resolution to the selected value
                 System.out.println("Selected resolution: " + selectedResolution);
-                restartWithResolution(selectedResolution.getEnumWidth(), selectedResolution.getEnumHeight(), fullscreen.isSelected());
+                restartWithResolution(selectedResolution.getEnumWidth(), selectedResolution.getEnumHeight(),
+                        fullscreen.isSelected());
             }
         });
         add(resolutionDropdown);
@@ -347,7 +347,8 @@ public class Settingmenu extends JPanel{
         // Restart the app
         try {
             String javaBin = System.getProperty("java.home") + "/bin/java";
-            String jarPath = new File(Settingmenu.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
+            String jarPath = new File(Settingmenu.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                    .getPath();
             ProcessBuilder builder = new ProcessBuilder(javaBin, "-cp", jarPath, "App");
             builder.start();
         } catch (Exception e) {
@@ -363,9 +364,9 @@ public class Settingmenu extends JPanel{
         fullscreen.setBackground(new Color(28, 51, 92)); // Match the background color
         fullscreen.setFocusPainted(false);
         fullscreen.setVisible(false); // Initially hidden
-        if (isFullscreen){
-            fullscreen.setSelected(true); 
-        }else{
+        if (isFullscreen) {
+            fullscreen.setSelected(true);
+        } else {
             fullscreen.setSelected(false);
         }
         fullscreen.addActionListener(e -> {
@@ -434,7 +435,7 @@ public class Settingmenu extends JPanel{
             musicSlider.setValue(newValue);
         });
         add(musicVolumeUpBtn);
-        
+
         // --- SFX CONTROLS ---
 
         // SFX Label
@@ -499,15 +500,15 @@ public class Settingmenu extends JPanel{
         musicValueLabel.setVisible(visible);
         sfxLabel.setVisible(visible);
         sfxValueLabel.setVisible(visible);
-        
+
         musicVolumeUpBtn.setVisible(visible);
         musicVolumeDownBtn.setVisible(visible);
         sfxVolumeUpBtn.setVisible(visible);
         sfxVolumeDownBtn.setVisible(visible);
-    
+
         musicSlider.setVisible(visible);
         sfxSlider.setVisible(visible);
-    
+
         muteAudio.setVisible(visible);
         disableFade.setVisible(visible);
     }
@@ -547,7 +548,7 @@ public class Settingmenu extends JPanel{
     }
 
     // Create the settings for the "Controls" category
-    public void Create_Setting_Controls(){
+    public void Create_Setting_Controls() {
         moveLabel = createControlLabel("Movement: WASD");
         shootLabel = createControlLabel("Shoot: M1");
         dashLabel = createControlLabel("Dash: Shift");
@@ -578,16 +579,36 @@ public class Settingmenu extends JPanel{
         skills.setVisible(visible);
     }
 
-    public JLabel getMoveLabel() { return moveLabel; }
-    public JLabel getShootLabel() { return shootLabel; }
-    public JLabel getDashLabel() { return dashLabel; }
-    public JLabel getReloadLabel() { return reloadLabel; }
-    public JLabel getWeaponLabel() { return weaponLabel; }
-    public JLabel getPauseLabel() { return pause; }
-    public JLabel getSkillsLabel() { return skills; }
-    
+    public JLabel getMoveLabel() {
+        return moveLabel;
+    }
+
+    public JLabel getShootLabel() {
+        return shootLabel;
+    }
+
+    public JLabel getDashLabel() {
+        return dashLabel;
+    }
+
+    public JLabel getReloadLabel() {
+        return reloadLabel;
+    }
+
+    public JLabel getWeaponLabel() {
+        return weaponLabel;
+    }
+
+    public JLabel getPauseLabel() {
+        return pause;
+    }
+
+    public JLabel getSkillsLabel() {
+        return skills;
+    }
+
     // Create the settings for the "Others" category
-    public void Create_Settings_Others(){
+    public void Create_Settings_Others() {
         Create_fpsCheckbox();
         Create_devmodeCheckbox();
         Create_reloadCheckbox();
@@ -615,7 +636,7 @@ public class Settingmenu extends JPanel{
         devmodeCheckbox.setFocusPainted(false);
         devmodeCheckbox.setVisible(false);
         devmodeCheckbox.setSelected(false);
-        
+
         try {
             File configFile = new File("config.cfg");
             if (configFile.exists()) {
@@ -646,7 +667,7 @@ public class Settingmenu extends JPanel{
                     fullscreenEnabled = reader.readLine().trim().equals("1");
                     reader.close();
                 }
-        
+
                 // Write all values back including devmode
                 PrintWriter writer = new PrintWriter("config.cfg");
                 writer.println(width);
@@ -654,17 +675,17 @@ public class Settingmenu extends JPanel{
                 writer.println(fullscreenEnabled ? "1" : "0");
                 writer.println(isEnabled ? "1" : "0");
                 writer.close();
-        
+
                 System.out.println("Dev mode " + (isEnabled ? "enabled" : "disabled"));
                 if (isEnabled && player != null) {
                     System.out.println("Applying cheats to player...");
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-            } 
-        });     
+            }
+        });
     }
-    
+
     public boolean isDevModeEnabled() {
         try {
             File configFile = new File("config.cfg");
@@ -762,17 +783,55 @@ public class Settingmenu extends JPanel{
         this.player = player;
     }
 
-    public JLabel getMusicLabel() { return musicLabel; }
-    public JLabel getSfxLabel() { return sfxLabel; }
-    public JLabel getMusicValueLabel() { return musicValueLabel; }
-    public JLabel getSfxValueLabel() { return sfxValueLabel; }
-    public JSlider getMusicSlider() { return musicSlider; }
-    public JSlider getSfxSlider() { return sfxSlider; }
-    public JButton getMusicVolumeUpBtn() { return musicVolumeUpBtn; }
-    public JButton getMusicVolumeDownBtn() { return musicVolumeDownBtn; }
-    public JButton getSfxVolumeUpBtn() { return sfxVolumeUpBtn; }
-    public JButton getSfxVolumeDownBtn() { return sfxVolumeDownBtn; }
-    public JCheckBox getMuteAudio() { return muteAudio; }
-    public JCheckBox getDisableFade() { return disableFade;}
-    public JCheckBox getFullscreen() { return fullscreen;}
+    public JLabel getMusicLabel() {
+        return musicLabel;
+    }
+
+    public JLabel getSfxLabel() {
+        return sfxLabel;
+    }
+
+    public JLabel getMusicValueLabel() {
+        return musicValueLabel;
+    }
+
+    public JLabel getSfxValueLabel() {
+        return sfxValueLabel;
+    }
+
+    public JSlider getMusicSlider() {
+        return musicSlider;
+    }
+
+    public JSlider getSfxSlider() {
+        return sfxSlider;
+    }
+
+    public JButton getMusicVolumeUpBtn() {
+        return musicVolumeUpBtn;
+    }
+
+    public JButton getMusicVolumeDownBtn() {
+        return musicVolumeDownBtn;
+    }
+
+    public JButton getSfxVolumeUpBtn() {
+        return sfxVolumeUpBtn;
+    }
+
+    public JButton getSfxVolumeDownBtn() {
+        return sfxVolumeDownBtn;
+    }
+
+    public JCheckBox getMuteAudio() {
+        return muteAudio;
+    }
+
+    public JCheckBox getDisableFade() {
+        return disableFade;
+    }
+
+    public JCheckBox getFullscreen() {
+        return fullscreen;
+    }
 }

@@ -27,20 +27,21 @@ import weapons.Rocket;
 import weapons.Sniper;
 import weapons.Weapon;
 
-
 public class GameplayPanel extends JPanel implements MouseMotionListener, MouseListener, KeyListener {
 
-    // ========================= ENTITY =====================================================
+    // ========================= ENTITY
+    // =====================================================
     private static Player player;
     private static ArrayList<Enemy> enemies = new ArrayList<>();
     private static ArrayList<PowerUp> power = new ArrayList<>();
 
-
-    // ========================= BULLET =====================================================
+    // ========================= BULLET
+    // =====================================================
     private static ArrayList<Bullet> playerBullets = new ArrayList<>();
     private static ArrayList<Bullet> enemyBullets = new ArrayList<>();
 
-    // ========================= LOGIC =====================================================
+    // ========================= LOGIC
+    // =====================================================
     private static JFrame window;
     private Random rand;
     private int spawnDelay = 1000;
@@ -52,19 +53,19 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private static boolean isGameOver = false;
     private FPScounter fpscounter = new FPScounter("FPS: ");
     private static Game_clock gameClock = new Game_clock();
-    
+
     // Debug counters for boss spawns
     private static int tankBossSpawnCount = 0;
     private static int shooterBossSpawnCount = 0;
-    private static String[] weaponTypes = {"Glock","Revolver","Rocket","Shotgun","Smg","Sniper"};
+    private static String[] weaponTypes = { "Glock", "Revolver", "Rocket", "Shotgun", "Smg", "Sniper" };
 
     static int[][] grid;
     static BufferedImage[] tilesSprite = new BufferedImage[9];
     static final int TILE_SIZE = 32;
-    static final int VIEWPORT_WIDTH = 16; 
+    static final int VIEWPORT_WIDTH = 16;
     static final int VIEWPORT_HEIGHT = 12;
-    static final int ZOOM = 2; 
-    static final int MAP_WIDTH = 16;  // Add map dimensions
+    static final int ZOOM = 2;
+    static final int MAP_WIDTH = 16; // Add map dimensions
     static final int MAP_HEIGHT = 12;
     static int cameraPixelX, cameraPixelY;
     CursorManager cursormanager = new CursorManager();
@@ -73,12 +74,14 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private long outOfAmmoMsgTime = 0;
     private static final int OUT_OF_AMMO_MSG_DURATION = 1000; // ms
     private static List<DamageCircle> activeExplosions = new ArrayList<>();
-        // ========================= MAP AND TILE LOADING (NEW) =========================
+    // ========================= MAP AND TILE LOADING (NEW)
+    // =========================
     private static int[][] map1, map2, map3; // main, decor, collision
     private static boolean hasMap2, hasMap3;
     private static ImageIcon[] tiles, decors;
     private static int tileW = 32, tileH = 32;
-    // ========================= SFX =====================================================
+    // ========================= SFX
+    // =====================================================
     public static Sfx soundsfx = new Sfx();
     private long lastEmptySfxTime = 0;
     private static final int EMPTY_SFX_DELAY = 400; // ms, adjust to match your empty SFX duration
@@ -88,20 +91,25 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     private Music musiclobby = new Music();
     private static Music music1 = new Music();
 
-    // ========================= KEY MOVEMENT =====================================================
+    // ========================= KEY MOVEMENT
+    // =====================================================
     private boolean upPressed, downPressed, leftPressed, rightPressed;
-      // ========================= GAME SETTING =====================================================
+    // ========================= GAME SETTING
+    // =====================================================
     private static Settingmenu settingmenu;
 
-    // ========================= PAUSE MENU =====================================================
+    // ========================= PAUSE MENU
+    // =====================================================
     PauseMenu pauseMenu;
     private boolean isPaused = false;
 
-    // ========================= SKILL BAR =====================================================
+    // ========================= SKILL BAR
+    // =====================================================
     // Skill bar for displaying skill status
     private Skillbar skillbar = new Skillbar();
 
-    // ========================= MAIN =====================================================
+    // ========================= MAIN
+    // =====================================================
     public GameplayPanel(FPScounter fpscounter) throws Exception {
         this.rand = new Random();
         // --- New map loading logic ---
@@ -111,7 +119,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 String line;
                 while ((line = br.readLine()) != null) {
                     line = line.trim();
-                    if (line.isEmpty()) continue;
+                    if (line.isEmpty())
+                        continue;
                     String[] tokens = line.split(",");
                     int[] row = new int[tokens.length];
                     for (int i = 0; i < tokens.length; i++) {
@@ -120,13 +129,16 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     }
                     mapRows.add(row);
                 }
-            } catch (Exception e) { return null; }
+            } catch (Exception e) {
+                return null;
+            }
             return mapRows.toArray(new int[mapRows.size()][]);
         };
         map1 = loadMap.apply("bullethell/src/map1.txt");
         map2 = loadMap.apply("bullethell/src/map2.txt");
         map3 = loadMap.apply("bullethell/src/map3.txt");
-        if (map1 == null) throw new RuntimeException("map1.txt missing or invalid");
+        if (map1 == null)
+            throw new RuntimeException("map1.txt missing or invalid");
         grid = map1;
         int rows = map1.length, cols = map1[0].length;
         hasMap2 = map2 != null && map2.length == rows && map2[0].length == cols;
@@ -140,15 +152,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     if (n.startsWith(prefix) && n.endsWith(".png")) {
                         try {
                             int idx = Integer.parseInt(n.substring(prefix.length(), n.length() - 4));
-                            if (idx > maxIdx) maxIdx = idx;
-                        } catch (Exception ignore) {}
+                            if (idx > maxIdx)
+                                maxIdx = idx;
+                        } catch (Exception ignore) {
+                        }
                     }
                 }
             }
             ImageIcon[] arr = new ImageIcon[maxIdx + 1];
             for (int i = 0; i <= maxIdx; i++) {
                 File f = new File(dir, prefix + i + ".png");
-                if (f.exists()) arr[i] = new ImageIcon(f.getAbsolutePath());
+                if (f.exists())
+                    arr[i] = new ImageIcon(f.getAbsolutePath());
             }
             return arr;
         };
@@ -175,13 +190,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             updateSpawnDelay();
         });
         spawnTimer.setRepeats(false);
-        
+
         // Create boss spawn timer - Every 60 seconds (1 minute)
         bossSpawnTimer = new Timer(60000, e -> {
             spawnBoss();
         });
         bossSpawnTimer.setRepeats(true); // Keep spawning bosses every minute
-        
+
         gameLoop = new Timer(16, e -> updateGame());
         setLayout(null);
         initializeFPSconfig(fpscounter);
@@ -191,7 +206,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         add(pauseMenu);
         setComponentZOrder(pauseMenu, 0); // Ensure pause menu is always on top
 
-        
         // Add a mouse listener to request focus on click
         addMouseListener(new MouseAdapter() {
             @Override
@@ -207,17 +221,17 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     public void startGame() {
         musicmanager();
-        if (controlFade()){
+        if (controlFade()) {
             music1.fadeIn(1000);
         }
         music1.loop();
         if (player == null) {
-            player = new Gunslinger(getWidth()/2, getHeight()/2); // fallback default
+            player = new Gunslinger(getWidth() / 2, getHeight() / 2); // fallback default
         } else {
             // Always reset the selected hero's position to center
-            player.setPosition(getWidth()/2, getHeight()/2);
+            player.setPosition(getWidth() / 2, getHeight() / 2);
         }
-        enemies.clear();//spawn enemy sama pelurunya
+        enemies.clear();// spawn enemy sama pelurunya
         enemyBullets.clear();
         playerBullets.clear();
         spawnDelay = 2000;
@@ -225,19 +239,21 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         isGameOver = false;
         gameActive = true;
 
-        gameClock.setPosition(getWidth()/2, 5, 100, 50);
+        gameClock.setPosition(getWidth() / 2, 5, 100, 50);
         gameClock.setVisible(true);
         gameClock.timer.start();
-        
+
         spawnTimer.start();
         bossSpawnTimer.start(); // Start the boss spawn timer
         gameLoop.start();
-        
+
         // set button to invisible when game start
         requestFocusInWindow();
         settingmenu.setPlayer(player); // Always update the reference
         cheats();
-    }    public static void stopGame() {
+    }
+
+    public static void stopGame() {
         gameActive = false;
         spawnTimer.stop();
         bossSpawnTimer.stop(); // Stop the boss spawn timer
@@ -251,9 +267,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private static void gameOver() {
         isGameOver = true;
-        if (controlFade()){
+        if (controlFade()) {
             music1.fadeOut(2500);
-        }else{
+        } else {
             music1.stop();
         }
         soundsfx.stopAll();
@@ -262,13 +278,14 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameClock.setVisible(false);
     }
 
-    // ========================= SPAWN =====================================================        
+    // ========================= SPAWN
+    // =====================================================
     private void spawnPower() {
-        int spawnX = rand.nextInt(getWidth()-TILE_SIZE) + TILE_SIZE;
-        int spawnY = rand.nextInt(getHeight()-TILE_SIZE) + TILE_SIZE;
+        int spawnX = rand.nextInt(getWidth() - TILE_SIZE) + TILE_SIZE;
+        int spawnY = rand.nextInt(getHeight() - TILE_SIZE) + TILE_SIZE;
         int powerType = rand.nextInt(3); // 0 = Heal, 1 = Max Ammo, 2 = Speed
-        if(power.size() < 10) {
-            switch(powerType) {
+        if (power.size() < 10) {
+            switch (powerType) {
                 case 0:
                     power.add(new HealPower(spawnX, spawnY, player)); // Heal Power
                     break;
@@ -280,17 +297,17 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     break;
             }
         }
-        
+
     }
-    
+
     private void spawnEnemy() {
         int spawnX = rand.nextInt(getWidth());
         int spawnY = rand.nextInt(getHeight());
-        
+
         // Regular enemy spawning - bosses now spawn on timer
         int enemyType = rand.nextInt(5); // 0 = Shooter, 1 = Normal, 2 = Tank, 3 = Lurker, 4 = Bomber
-        
-        switch(enemyType) {
+
+        switch (enemyType) {
             case 0:
                 enemies.add(new ShooterEnemy(spawnX, spawnY, map1, tileW)); // Only this enemy type shoots
                 break;
@@ -307,19 +324,21 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 enemies.add(new BomberEnemy(spawnX, spawnY)); // Fast toward player
                 break;
         }
-          spawnTimer.setInitialDelay(spawnDelay);
+        spawnTimer.setInitialDelay(spawnDelay);
         spawnTimer.restart();
     }
-    
-    // ========================= GAME UPDATE =====================================================
+
+    // ========================= GAME UPDATE
+    // =====================================================
     private void updateSpawnDelay() {
         if (spawnDelay > 300) {
             spawnDelay -= 50;
-        } 
+        }
     }
 
     private void updateGame() {
-        if(!gameActive) return;
+        if (!gameActive)
+            return;
         else {
             if (player.getHealth() <= 0) {
                 gameOver();
@@ -329,22 +348,23 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             player.updateDash();
             player.updateSkill(); // Update skill status
             updateBullets();
-            checkCollisions();            // Calculate map dimensions once for all enemies
+            checkCollisions(); // Calculate map dimensions once for all enemies
             int mapWidth = map1[0].length * tileW;
             int mapHeight = map1.length * tileH;
-            
-            for (Enemy enemy : enemies) {   //gae musuh bisa nembak
+
+            for (Enemy enemy : enemies) { // gae musuh bisa nembak
                 enemy.update(player, enemyBullets, map3, tileW);
                 // Keep enemies within map boundaries
                 enemy.keepWithinMapBoundaries(mapWidth, mapHeight);
             }
-            
-            //gae bullet e musuh idk why chatgpt literally makes it another new variable tp haruse bullet isa dewek so idk
+
+            // gae bullet e musuh idk why chatgpt literally makes it another new variable tp
+            // haruse bullet isa dewek so idk
             if (mouseHeld && player.getCurrentWeapon().isFullAuto()) {
                 Point mouse = getMousePosition();
                 boolean autoReload = settingmenu != null && settingmenu.isAutoReloadEnabled();
                 if (mouse != null) {
-                    List<Bullet> bullet = player.shoot(mouse.x/ZOOM + cameraPixelX, mouse.y/ZOOM + cameraPixelY);
+                    List<Bullet> bullet = player.shoot(mouse.x / ZOOM + cameraPixelX, mouse.y / ZOOM + cameraPixelY);
                     if (bullet != null && !bullet.isEmpty()) {
                         if (playedEmptySfxForCurrentEmpty){
                             playedEmptySfxForCurrentEmpty = false; // Reset for next shot
@@ -384,8 +404,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             repaint();
         }
     }
-    
-    // ========================= PAINT COMPONENT =====================================================
+
+    // ========================= PAINT COMPONENT
+    // =====================================================
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -398,8 +419,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         int playerCenterY = player.getY() + player.getSize() / 2;
         int maxCameraX = Math.max(0, mapPixelWidth - vpw);
         int maxCameraY = Math.max(0, mapPixelHeight - vph);
-        cameraPixelX = Math.max(0, Math.min(playerCenterX - vpw/2, maxCameraX));
-        cameraPixelY = Math.max(0, Math.min(playerCenterY - vph/2, maxCameraY));
+        cameraPixelX = Math.max(0, Math.min(playerCenterX - vpw / 2, maxCameraX));
+        cameraPixelY = Math.max(0, Math.min(playerCenterY - vph / 2, maxCameraY));
         int startY = cameraPixelY / tileH;
         int startX = cameraPixelX / tileW;
         int endY = (cameraPixelY + vph) / tileH + 1;
@@ -432,7 +453,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         for (Enemy enemy : enemies) {
             int ex = (enemy.x - cameraPixelX) * ZOOM;
             int ey = (enemy.y - cameraPixelY) * ZOOM;
-            enemy.draw(g,ex,ey);
+            enemy.draw(g, ex, ey);
         }
         for (Bullet bullet : enemyBullets) {
             int ex = (bullet.x - cameraPixelX) * ZOOM;
@@ -459,27 +480,27 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 }
             }
         }
-        g.setColor(Color.WHITE);
+        g.setColor(Color.DARK_GRAY);
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString("Health: " + player.getHealth() + "/" + player.getMaxHealth(), 10, 20);
         g.drawString("Dash Charges: " + player.getCurrentDashCharges() + "/" + player.getMaxDashCharges(), 10, 40);
-        drawWeaponHUD((Graphics2D)g);
-        skillbar.draw((Graphics2D)g, player, getWidth(), getHeight());
+        drawWeaponHUD((Graphics2D) g);
+        skillbar.draw((Graphics2D) g, player, getWidth(), getHeight());
         if (player instanceof players.Bomber) {
             players.Bomber bomber = (players.Bomber) player;
             players.DamageCircle circle = bomber.getCircleSkill();
             if (circle != null) {
-                circle.draw((Graphics2D)g, cameraPixelX, cameraPixelY, ZOOM);
+                circle.draw((Graphics2D) g, cameraPixelX, cameraPixelY, ZOOM);
             }
         }
-        
+
         Iterator<DamageCircle> it = activeExplosions.iterator();
         while (it.hasNext()) {
             DamageCircle explosion = it.next();
             if (explosion.isActive()) {
-                explosion.draw((Graphics2D)g, cameraPixelX, cameraPixelY, ZOOM);
+                explosion.draw((Graphics2D) g, cameraPixelX, cameraPixelY, ZOOM);
             } else {
-                it.remove();  // Remove inactive explosions
+                it.remove(); // Remove inactive explosions
             }
         }
 
@@ -487,37 +508,37 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             pauseMenu.draw(g, getWidth(), getHeight());
         }
     }
-    
+
     private void drawWeaponHUD(Graphics2D g) {
         if (player == null) {
             return;
         }
-        
+
         Weapon currentWeapon = player.getCurrentWeapon();
-        
+
         // If there's no weapon, don't try to draw the weapon HUD
         if (currentWeapon == null) {
             return;
         }
-        
+
         int iconSize = 48;
         int margin = 20;
         int offsetX = getWidth() - iconSize - margin;
         int offsetY = margin;
-    
+
         g.setColor(Color.WHITE);
         g.fillRect(offsetX, offsetY, iconSize, iconSize);
-    
+
         if (currentWeapon.getSprite() != null) {
             g.drawImage(currentWeapon.getSprite(), offsetX, offsetY, iconSize, iconSize, null);
         } else {
             g.setColor(Color.RED);
             g.fillRect(offsetX, offsetY, iconSize, iconSize);
         }
-    
+
         g.setColor(Color.RED);
         g.drawRect(offsetX, offsetY, iconSize, iconSize);
-    
+
         // Draw ammo count
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 14));
@@ -526,22 +547,24 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
         if (player.changewp != null) {
             int changeSize = 32;
-            g.drawImage(player.changewp, offsetX + iconSize - changeSize/2, offsetY + iconSize - changeSize/2, changeSize, changeSize, null);
+            g.drawImage(player.changewp, offsetX + iconSize - changeSize / 2, offsetY + iconSize - changeSize / 2,
+                    changeSize, changeSize, null);
         }
-        
+
         if (currentWeapon.isReloading()) {
-            g.setColor(Color.ORANGE);
+            g.setColor(Color.DARK_GRAY);
             g.setFont(new Font("Arial", Font.BOLD, 14));
             g.drawString("Reloading...", offsetX - 8, offsetY - 4);
         }
 
         g.setColor(new Color(255, 215, 0, 180));
         g.setStroke(new BasicStroke(3));
-        g.drawRoundRect(offsetX-2, offsetY-2, iconSize+4, iconSize+4, 10, 10);
+        g.drawRoundRect(offsetX - 2, offsetY - 2, iconSize + 4, iconSize + 4, 10, 10);
     }
 
-    // ========================= FUNCTION =====================================================
-    public void sfxmanager(){
+    // ========================= FUNCTION
+    // =====================================================
+    public void sfxmanager() {
         soundsfx.load("shoot", "/Audio/Sfx/Atk_LeweiGun.wav");
         soundsfx.load("explode", "/Audio/Sfx/Explode.wav");
         soundsfx.load("empty", "/Audio/Sfx/wep_empty.wav");
@@ -581,7 +604,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         soundsfx.load("snipereload", "/Audio/Sfx/SniperReload.wav");
     }
 
-    public void playsfx(boolean isEmpty){
+    public void playsfx(boolean isEmpty) {
         Weapon current = player.getCurrentWeapon();
         if (current == null) {
             System.out.println("No current weapon to play sound for.");
@@ -591,39 +614,39 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if (!isEmpty) {
             if (current instanceof weapons.Revolver) {
                 soundsfx.playWithRandomPitch("shootrevolver");
-            }else if (current instanceof weapons.Shotgun) {
+            } else if (current instanceof weapons.Shotgun) {
                 soundsfx.playWithRandomPitch("shootshotgun");
                 // Get the duration of the shotgun fire SFX (in ms)
                 int fireDuration = soundsfx.getClipDurationMs("shootshotgun");
                 // Schedule the load SFX after the fire SFX ends
                 new javax.swing.Timer(fireDuration, evt -> {
-                    if (current.getCurrentAmmo() <= 0){
+                    if (current.getCurrentAmmo() <= 0) {
                         soundsfx.playWithRandomPitch("shotgunlock");
-                    }else{
+                    } else {
                         soundsfx.playWithRandomPitch("shotgunload");
                     }
-                    ((javax.swing.Timer)evt.getSource()).stop();
+                    ((javax.swing.Timer) evt.getSource()).stop();
                 }).start();
-            }else if (current instanceof weapons.Sniper){
+            } else if (current instanceof weapons.Sniper) {
                 soundsfx.playWithRandomPitch("sniperfire");
-            }else if (current instanceof weapons.Rocket) {
+            } else if (current instanceof weapons.Rocket) {
                 soundsfx.playWithRandomPitch("rpgfire");
-            }else{
+            } else {
                 soundsfx.playWithRandomPitch("shoot");
             }
-        }else{
+        } else {
             System.out.println("Playing weapon empty sfx");
             if (current instanceof weapons.Revolver) {
                 soundsfx.play("emptyrevolver");
-            }else if (current instanceof weapons.Shotgun) {
+            } else if (current instanceof weapons.Shotgun) {
                 soundsfx.play("shogunempty");
-            }else{
+            } else {
                 soundsfx.play("empty");
             }
         }
     }
 
-    public void reloadsfx(){
+    public void reloadsfx() {
         Weapon current = player.getCurrentWeapon();
         if (current == null) {
             System.out.println("No current weapon to play sound for.");
@@ -645,30 +668,30 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
         if (current instanceof weapons.Shotgun) {
             soundsfx.play("shotgunreload");
-        }else if (current instanceof weapons.Revolver) {
+        } else if (current instanceof weapons.Revolver) {
             soundsfx.play("reloadrevolver");
-        }else if (current instanceof weapons.Smg) {
+        } else if (current instanceof weapons.Smg) {
             soundsfx.play("smgreload");
-        }else if (current instanceof weapons.Rocket) {
+        } else if (current instanceof weapons.Rocket) {
             soundsfx.play("rpgreload");
-        }else if (current instanceof weapons.Sniper) {
+        } else if (current instanceof weapons.Sniper) {
             soundsfx.play("snipereload");
-        }else{
+        } else {
             soundsfx.play("reload");
         }
     }
 
-    public void musicmanager(){
+    public void musicmanager() {
         musiclobby.load("/Audio/Music/lobby.wav");
         Random rand = new Random();
         int n = rand.nextInt(4);
-        if(n==0){
+        if (n == 0) {
             music1.load("/Audio/Music/game1.wav");
-        } else if (n==1){
+        } else if (n == 1) {
             music1.load("/Audio/Music/Holocure Map 1.wav");
-        } else if (n==2){
+        } else if (n == 2) {
             music1.load("/Audio/Music/Undertale OST_ 072 - Song That Might Play When You Fight Sans.wav");
-        } else if (n==3){
+        } else if (n == 3) {
             music1.load("/Audio/Music/Undertale OST_ 080 - Finale.wav");
         }
     }
@@ -682,7 +705,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             soundsfx.pauseAll();
             pauseMenu.setVisibility(true);
             if (getParent() instanceof MainPanel) {
-                ((MainPanel)getParent()).cursormanager.setCursor(getParent(), "cursor");
+                ((MainPanel) getParent()).cursormanager.setCursor(getParent(), "cursor");
             }
             repaint();
         } else {
@@ -693,19 +716,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             pauseMenu.setVisibility(false);
             requestFocusInWindow();
             if (getParent() instanceof MainPanel) {
-                ((MainPanel)getParent()).cursormanager.setCursor(getParent(), "crosshair");
+                ((MainPanel) getParent()).cursormanager.setCursor(getParent(), "crosshair");
             }
         }
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (gameActive && e.getButton() == MouseEvent.BUTTON1){
+        if (gameActive && e.getButton() == MouseEvent.BUTTON1) {
             mouseHeld = true;
             tryFire(e);
         }
     }
-    
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -714,27 +736,31 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             togglePause();
             return;
         }
-        if (code == KeyEvent.VK_W) upPressed = true;
-        if (code == KeyEvent.VK_S) downPressed = true;
-        if (code == KeyEvent.VK_A) leftPressed = true;
-        if (code == KeyEvent.VK_D) rightPressed = true;
+        if (code == KeyEvent.VK_W)
+            upPressed = true;
+        if (code == KeyEvent.VK_S)
+            downPressed = true;
+        if (code == KeyEvent.VK_A)
+            leftPressed = true;
+        if (code == KeyEvent.VK_D)
+            rightPressed = true;
         if (code == KeyEvent.VK_SHIFT) {
             player.dash(); // dash
             soundsfx.play("dash");
             System.out.println("Dash activated! " + player.direction);
         }
-        if (code == KeyEvent.VK_Q){
-            if (player.getCurrentWeaponIndex() == player.getWeaponMinIndex()){
-                player.switchWeapon(player.getWeaponMaxIndex()); // switch to max 
-            }else{
+        if (code == KeyEvent.VK_Q) {
+            if (player.getCurrentWeaponIndex() == player.getWeaponMinIndex()) {
+                player.switchWeapon(player.getWeaponMaxIndex()); // switch to max
+            } else {
                 player.switchWeapon(-1); // switch weapon left
             }
-        }  
+        }
 
-        if (code == KeyEvent.VK_E){
-            if (player.getCurrentWeaponIndex() == player.getWeaponMaxIndex()){
+        if (code == KeyEvent.VK_E) {
+            if (player.getCurrentWeaponIndex() == player.getWeaponMaxIndex()) {
                 player.setWeaponIndex(player.getWeaponMinIndex()); // wrap to min
-            }else{
+            } else {
                 player.switchWeapon(1); // switch weapon right
             }
         }
@@ -744,7 +770,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             reloadsfx();
             System.out.println("Reloading " + player.getCurrentWeapon().getName() + "...");
         }
-          // Use skill for any player type when pressing F
+        // Use skill for any player type when pressing F
         if (code == KeyEvent.VK_F) {
             boolean wasActive = player.isSkillOnCooldown();
             player.useSkill();
@@ -754,7 +780,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 } else if (player instanceof players.Gunslinger) {
                     soundsfx.play("gunslinger_skill");
                 } else if (player instanceof players.Vampire) {
-                    soundsfx.play("vampire_skill"); 
+                    soundsfx.play("vampire_skill");
                 } else if (player instanceof players.Brute) {
                     soundsfx.play("brute_skill");
                 }
@@ -765,37 +791,60 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     @Override
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
-        if (code == KeyEvent.VK_W) upPressed = false;
-        if (code == KeyEvent.VK_S) downPressed = false;
-        if (code == KeyEvent.VK_A) leftPressed = false;
-        if (code == KeyEvent.VK_D) rightPressed = false;
+        if (code == KeyEvent.VK_W)
+            upPressed = false;
+        if (code == KeyEvent.VK_S)
+            downPressed = false;
+        if (code == KeyEvent.VK_A)
+            leftPressed = false;
+        if (code == KeyEvent.VK_D)
+            rightPressed = false;
     }
 
-    @Override public void keyTyped(KeyEvent e) {} // unused
-    @Override public void mouseClicked(MouseEvent e) {}
-    @Override public void mouseMoved(MouseEvent e) {}
-    @Override public void mouseDragged(MouseEvent e) {
+    @Override
+    public void keyTyped(KeyEvent e) {
+    } // unused
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
         if (gameActive && mouseHeld) {
             tryFire(e);
         }
-    } //gerakkan mouse
-    @Override public void mouseReleased(MouseEvent e) {
+    } // gerakkan mouse
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             mouseHeld = false;
-        }    } // lepas mouse
-    @Override public void mouseEntered(MouseEvent e) {} // masuk mouse ke dalam window
-    @Override public void mouseExited(MouseEvent e) {} // ya bisa di baca sendiri lah km ws tua berjembut
-    
+        }
+    } // lepas mouse
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    } // masuk mouse ke dalam window
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    } // ya bisa di baca sendiri lah km ws tua berjembut
+
     private void tryFire(MouseEvent e) {
         if (player == null) {
             return;
         }
-        
+
         Weapon weapon = player.getCurrentWeapon();
         if (weapon == null) {
             return;
         }
-        
+
         if (weapon.isFullAuto()) {
             // For full auto, firing is handled in updateGame()
         } else {
@@ -851,12 +900,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             bullet.update();
             return bullet.isOutOfBounds(map1, tileW);
         });
-    }    
-    
+    }
+
     private static void checkCollisions() {
         // hitboxnya aku kecilin dikit (90% dari sprite)
         int fullSize = player.getSize();
-        int hitboxSize = (int)(fullSize * 0.9);
+        int hitboxSize = (int) (fullSize * 0.9);
         int offset = (fullSize - hitboxSize) / 2;
 
         Rectangle playerBounds = new Rectangle(player.getX() + offset, player.getY() + offset, hitboxSize, hitboxSize);
@@ -870,9 +919,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 if (circle != null && circle.collides(enemy.x, enemy.y, enemy.size)) {
                     enemy.takeDamage(circle.getDamage());
                     System.out.println("the bomb hit something!");
-                    
-                    if (enemy.isDead()) {
 
+                    if (enemy.isDead()) {
 
                         enemies.remove(i);
                         continue;
@@ -903,25 +951,25 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             }
         }
 
-        // Refactored: process all bullet-enemy collisions, collect enemies to remove, then remove after
+        // Refactored: process all bullet-enemy collisions, collect enemies to remove,
+        // then remove after
         java.util.List<Enemy> enemiesToRemove = new java.util.ArrayList<>();
         playerBullets.removeIf(bullet -> {
-            Rectangle bulletBounds = new Rectangle((int)bullet.x, (int)bullet.y, bullet.getSize(), bullet.getSize());
+            Rectangle bulletBounds = new Rectangle((int) bullet.x, (int) bullet.y, bullet.getSize(), bullet.getSize());
             boolean shouldRemove = false;
             for (int i = enemies.size() - 1; i >= 0; i--) {
                 Enemy enemy = enemies.get(i);
                 Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
                 if (bulletBounds.intersects(enemyBounds)) {
                     Weapon currentWeapon = player.getCurrentWeapon();
-                    if (bullet instanceof Rocket.RocketBullet){
+                    if (bullet instanceof Rocket.RocketBullet) {
                         DamageCircle explosion = new DamageCircle(
-                        (int)bullet.x, 
-                        (int)bullet.y, 
-                        100, // explosion radius
-                        currentWeapon.getWeaponDamage(), 
-                        500, // duration in ms
-                        Color.ORANGE
-                        );
+                                (int) bullet.x,
+                                (int) bullet.y,
+                                100, // explosion radius
+                                currentWeapon.getWeaponDamage(),
+                                500, // duration in ms
+                                Color.ORANGE);
                         activeExplosions.add(explosion);
                         int totalDamageDealt = 0;
                         for (int j = enemies.size() - 1; j >= 0; j--) {
@@ -948,7 +996,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                         ((players.Vampire) player).stealHealth(currentWeapon.getWeaponDamage());
                     }
                     if (enemy.isDead()) {
-                        if(enemy instanceof enemies.TankBoss || enemy instanceof enemies.ShooterBoss){
+                        if (enemy instanceof enemies.TankBoss || enemy instanceof enemies.ShooterBoss) {
                             Random rand = new Random();
                             int idx = rand.nextInt(6);
                             weapons.Weapon newWeapon = null;
@@ -974,7 +1022,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                                 default:
                                     newWeapon = null;
                                     break;
-                                }   
+                            }
                             if (newWeapon != null) {
                                 boolean alreadyHas = false;
                                 for (int p = 0; p < player.getWeapons().size(); p++) {
@@ -1045,14 +1093,14 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     // GAME SETTINGS
     public static boolean controlFade() {
-        if (settingmenu != null && settingmenu.getDisableFade() != null && settingmenu.getDisableFade().isSelected()){
+        if (settingmenu != null && settingmenu.getDisableFade() != null && settingmenu.getDisableFade().isSelected()) {
             return false;
         } else {
             return true;
         }
     }
 
-    public void cheats(){
+    public void cheats() {
         if (settingmenu.isDevModeEnabled() && player != null) {
             player.setMaxHealth(1000);
             player.heal(1000, true);
@@ -1063,26 +1111,32 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 boolean hasPistol = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Glock"));
                 boolean hasSniper = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Sniper"));
                 boolean hasRpg = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Rocket Launcher"));
-                if (!hasRpg) player.getWeapons().add(new weapons.Rocket());
-                if (!hasSniper) player.getWeapons().add(new weapons.Sniper());
-                if (!hasRevolver) player.getWeapons().add(new weapons.Revolver());
-                if (!hasShotgun) player.getWeapons().add(new weapons.Shotgun());
-                if (!hasSmg) player.getWeapons().add(new weapons.Smg());
-                if (!hasPistol) player.getWeapons().add(new weapons.Glock());
+                if (!hasRpg)
+                    player.getWeapons().add(new weapons.Rocket());
+                if (!hasSniper)
+                    player.getWeapons().add(new weapons.Sniper());
+                if (!hasRevolver)
+                    player.getWeapons().add(new weapons.Revolver());
+                if (!hasShotgun)
+                    player.getWeapons().add(new weapons.Shotgun());
+                if (!hasSmg)
+                    player.getWeapons().add(new weapons.Smg());
+                if (!hasPistol)
+                    player.getWeapons().add(new weapons.Glock());
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
     }
 
-    private void initializeFPSconfig(FPScounter fpscounter){
+    private void initializeFPSconfig(FPScounter fpscounter) {
         this.fpscounter = fpscounter;
         add(fpscounter);
         updateFPSCounterVisibility();
         positionFPSCounter();
         addFPSCounterResizeListener();
     }
-    
+
     private void updateFPSCounterVisibility() {
         // Check if settingmenu is initialized
         if (settingmenu != null && settingmenu.getFpsCheckbox() != null) {
@@ -1115,45 +1169,48 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         gameActive = false;
         isGameOver = false;
         isPaused = false;
-        
+
         // Clear all entities
         enemies.clear();
         playerBullets.clear();
         enemyBullets.clear();
-        
+
         // Reset timers
         spawnTimer.stop();
         gameLoop.stop();
         gameClock.reset();
-        
+
         // Reset spawn delay
         spawnDelay = 1000;
-        
+
         // Reset movement flags
         upPressed = false;
         downPressed = false;
         leftPressed = false;
         rightPressed = false;
-        
+
         // Stop music
         // music1.fadeOut(3000);
         music1.stop();
-        
+
         // Reset pause menu
         pauseMenu.setVisibility(false);
-    }    public static void initializeSettingMenu(JFrame frame) {
+    }
+
+    public static void initializeSettingMenu(JFrame frame) {
         // Initialize the settingmenu with the provided JFrame
         settingmenu = new Settingmenu(frame);
     }
-      public static Settingmenu getSettingMenu() {
+
+    public static Settingmenu getSettingMenu() {
         return settingmenu;
     }
-    
+
     // Accessor methods for map dimensions
     public static int[][] getGrid() {
         return grid;
     }
-    
+
     public static int getTileSize() {
         return TILE_SIZE;
     }
@@ -1162,22 +1219,22 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         // Calculate spawn position - away from the player
         int playerX = player.getX();
         int playerY = player.getY();
-        
+
         // Determine spawn position at a safe distance from player (300-500 pixels)
         int distance = 300 + rand.nextInt(200); // Between 300-500 pixels away
         double angle = Math.random() * 2 * Math.PI; // Random angle
-        
-        int spawnX = (int)(playerX + distance * Math.cos(angle));
-        int spawnY = (int)(playerY + distance * Math.sin(angle));
-        
+
+        int spawnX = (int) (playerX + distance * Math.cos(angle));
+        int spawnY = (int) (playerY + distance * Math.sin(angle));
+
         // Keep spawn position within map bounds
         int mapWidth = grid[0].length * TILE_SIZE;
         int mapHeight = grid.length * TILE_SIZE;
-          spawnX = Math.max(50, Math.min(spawnX, mapWidth - 50));
+        spawnX = Math.max(50, Math.min(spawnX, mapWidth - 50));
         spawnY = Math.max(50, Math.min(spawnY, mapHeight - 50));
-          // Ensure more balanced distribution over time
+        // Ensure more balanced distribution over time
         boolean spawnTankBoss;
-        
+
         // If we've spawned significantly more of one type, bias toward the other
         int difference = Math.abs(tankBossSpawnCount - shooterBossSpawnCount);
         if (difference >= 2) {
@@ -1188,23 +1245,27 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             // Normal 50/50 chance
             spawnTankBoss = rand.nextBoolean();
         }
-        
+
         // Record the roll for debugging
         int roll = rand.nextInt(100); // Just for logging purposes
-        
+
         if (spawnTankBoss) {
             enemies.add(new TankBoss(spawnX, spawnY));
-            tankBossSpawnCount++;            
+            tankBossSpawnCount++;
             System.out.println("Tank Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
-            System.out.println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
-        } else {            
+            System.out
+                    .println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
+        } else {
             enemies.add(new ShooterBoss(spawnX, spawnY));
-            shooterBossSpawnCount++;            
+            shooterBossSpawnCount++;
             System.out.println("Shooter Boss spawned at minute " + gameClock.getMinutes() + "! (Roll: " + roll + ")");
-            System.out.println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
+            System.out
+                    .println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
         }
     }
-    // --- New robust map/tile/decor loading logic (added, does not replace old logic) ---
+
+    // --- New robust map/tile/decor loading logic (added, does not replace old
+    // logic) ---
     // Map arrays
     private int[][] newMap1, newMap2, newMap3;
     private boolean newHasMap2, newHasMap3;
@@ -1219,7 +1280,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty()) continue;
+                if (line.isEmpty())
+                    continue;
                 String[] tokens = line.split(",");
                 int[] row = new int[tokens.length];
                 for (int i = 0; i < tokens.length; i++) {
@@ -1228,7 +1290,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 }
                 mapRows.add(row);
             }
-        } catch (Exception e) { return null; }
+        } catch (Exception e) {
+            return null;
+        }
         return mapRows.toArray(new int[mapRows.size()][]);
     }
 
@@ -1242,15 +1306,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 if (n.startsWith(prefix) && n.endsWith(".png")) {
                     try {
                         int idx = Integer.parseInt(n.substring(prefix.length(), n.length() - 4));
-                        if (idx > maxIdx) maxIdx = idx;
-                    } catch (Exception ignore) {}
+                        if (idx > maxIdx)
+                            maxIdx = idx;
+                    } catch (Exception ignore) {
+                    }
                 }
             }
         }
         javax.swing.ImageIcon[] arr = new javax.swing.ImageIcon[maxIdx + 1];
         for (int i = 0; i <= maxIdx; i++) {
             java.io.File f = new java.io.File(dir, prefix + i + ".png");
-            if (f.exists()) arr[i] = new javax.swing.ImageIcon(f.getAbsolutePath());
+            if (f.exists())
+                arr[i] = new javax.swing.ImageIcon(f.getAbsolutePath());
         }
         return arr;
     }
