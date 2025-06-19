@@ -280,9 +280,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 gameOver();
                 return;
             }
-            player.move(upPressed, downPressed, leftPressed, rightPressed, map3, tileW); // PLAYER MOVEMENT + SPRITE
+            player.move(upPressed, downPressed, leftPressed, rightPressed, map3, tileW, mouseHeld); // PLAYER MOVEMENT + SPRITE
             player.updateDash();
             player.updateSkill(); // Update skill status
+            shootingDirection();
             updateBullets();
             checkCollisions(); // Calculate map dimensions once for all enemies
             int mapWidth = map1[0].length * tileW;
@@ -722,6 +723,25 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         }
     }
 
+    public void shootingDirection(){
+        if(mouseHeld){
+            Point mouse = getMousePosition();
+            int targetX = mouse.x / ZOOM + cameraPixelX;
+            int targetY =  mouse.y / ZOOM + cameraPixelY;
+            double angle = Math.atan2(targetY - (player.getY() + player.getSize() / 2), targetX - (player.getX() + player.getSize() / 2));
+            double deg = Math.toDegrees(angle);
+            if (deg >= -45 && deg < 45) {
+                player.direction = "right";
+            } else if (deg >= 45 && deg < 135) {
+                player.direction = "down";
+            } else if (deg >= -135 && deg < -45) {
+                player.direction = "up";
+            } else {
+                player.direction = "left";
+            }
+        }
+    }
+
     @Override
     public void mousePressed(MouseEvent e) {
         if (gameActive && e.getButton() == MouseEvent.BUTTON1) {
@@ -819,6 +839,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         if (gameActive && mouseHeld) {
             tryFire(e);
         }
+        
     } // gerakkan mouse
 
     @Override

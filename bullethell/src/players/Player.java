@@ -192,26 +192,29 @@ public abstract class Player {
         return weapon.fire(x, y, targetX, targetY, size);
     }
 
-    public void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int[][] grid, int tileSize){       
+    public void move(boolean upPressed,boolean downPressed, boolean leftPressed, boolean rightPressed,int[][] grid, int tileSize, boolean mouseHeld){       
         if (upPressed || downPressed || leftPressed || rightPressed){
             this.idling=false; // cek player kalau jalan berati tidak idle
             int dx = 0, dy = 0;
             if (upPressed) {
                 dy -= speed;
-                this.direction="up";
             }
             if (downPressed){
                 dy += speed;
-                this.direction="down";
             } 
             if (leftPressed){
                 dx -= speed;
-                this.direction="left";
             } 
             if (rightPressed){
                 dx += speed;
-                this.direction="right";
             } 
+            if(!mouseHeld){
+                if (dx > 0) direction = "right";
+                else if (dx < 0) direction = "left";
+                else if (dy > 0) direction = "down";
+                else if (dy < 0) direction = "up";
+            }
+
             int currentSpeed = isDashing ? dashspeed/3 : 1;
             int newX = x + dx*currentSpeed, newY = y + dy*currentSpeed;
             int gridX = (newX + size / 2) / tileSize;
