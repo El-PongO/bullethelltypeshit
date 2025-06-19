@@ -11,6 +11,7 @@ public class MainPanel extends JPanel {
     private WeaponSelectPanel weaponSelectPanel;
     private Player selectedHero;
     private String selectedWeaponName;
+    private Music selectionMusic = new Music();
     
     private CardLayout cardLayout = new CardLayout();
     CursorManager cursormanager = new CursorManager();
@@ -114,12 +115,22 @@ public class MainPanel extends JPanel {
     private void showHeroSelect() {
         cardLayout.show(this, "HEROSELECT");
         cursormanager.setCursor(this, "pointer");
+
+        if (!musicIsPlaying(selectionMusic)) {
+            selectionMusic.load("/Audio/Music/selection_music.wav");
+            selectionMusic.loop();
+        }
     }
     
     private void showWeaponSelect() {
         cardLayout.show(this, "WEAPONSELECT");
         weaponSelectPanel.revalidate(); // This will trigger the componentShown event
         cursormanager.setCursor(this, "pointer");
+
+        if (!musicIsPlaying(selectionMusic)) {
+            selectionMusic.load("/Audio/Music/selection_music.wav");
+            selectionMusic.loop();
+        }
     }    
     
     private void assignWeaponToHero() {
@@ -192,6 +203,7 @@ public class MainPanel extends JPanel {
         gameplayPanel.setPlayer(selectedHero);
         cardLayout.show(this, "GAMEPLAY");
         cursormanager.setCursor(this, "crosshair");
+        selectionMusic.stop();
         //start
         gameplayPanel.startGame();
         
@@ -216,6 +228,17 @@ public class MainPanel extends JPanel {
         cursormanager.setCursor(this, "cursor"); // ganti cursor ke default
         menuPanel.setMenuState(MenuPanel.MenuState.GAME_OVER);
         cardLayout.show(this, "MENU");
+    }
+
+    private boolean musicIsPlaying(Music music) {
+        try {
+            java.lang.reflect.Field clipField = Music.class.getDeclaredField("clip");
+            clipField.setAccessible(true);
+            javax.sound.sampled.Clip clip = (javax.sound.sampled.Clip) clipField.get(music);
+            return clip != null && clip.isRunning();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void cursormanager() { // aku gak bisa nemu crosshair yang lebih bagus dari ini, kalo ketemu boleh coba pasang

@@ -86,6 +86,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     // ========================= MUSIC =====================================================
     private Music musiclobby = new Music();
     private static Music music1 = new Music();
+    private static Music music2 = new Music();
+    private static Music music3 = new Music();
 
     // ========================= KEY MOVEMENT =====================================================
     private boolean upPressed, downPressed, leftPressed, rightPressed;
@@ -174,7 +176,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         addKeyListener(this);
         setFocusable(true);
         sfxmanager();
-        musicmanager();
+        // musicmanager();
         spawnTimer = new Timer(spawnDelay, e -> {
             spawnPower();
             spawnEnemy();
@@ -212,10 +214,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     public void startGame() {
         musicmanager();
-        if (controlFade()) {
-            music1.fadeIn(1000);
-        }
-        music1.loop();
+        // if (controlFade()) {
+        //     music1.fadeIn(1000);
+        // }
+        // music1.loop();
         if (player == null) {
             player = new Gunslinger(getWidth() / 2, getHeight() / 2); // fallback default
         } else {
@@ -258,11 +260,12 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private static void gameOver() {
         isGameOver = true;
-        if (controlFade()) {
-            music1.fadeOut(2500);
-        } else {
-            music1.stop();
-        }
+        // if (controlFade()) {
+        //     music1.fadeOut(2500);
+        // } else {
+        //     music1.stop();
+        // }
+        stopAllMusic();
         soundsfx.stopAll();
         stopGame();
         gameClock.reset();
@@ -552,6 +555,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     // ========================= FUNCTION =====================================================
     public void sfxmanager() {
+        soundsfx.load("dice", "/Audio/Sfx/Dice_Roll.wav");
         soundsfx.load("shoot", "/Audio/Sfx/Atk_LeweiGun.wav");
         soundsfx.load("explode", "/Audio/Sfx/Explode.wav");
         soundsfx.load("empty", "/Audio/Sfx/wep_empty.wav");
@@ -671,16 +675,82 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     public void musicmanager() {
         musiclobby.load("/Audio/Music/lobby.wav");
         Random rand = new Random();
-        int n = rand.nextInt(4);
+        int n = rand.nextInt(6); // Randomly select a music track from 0 to 5
         if (n == 0) {
-            music1.load("/Audio/Music/game1.wav");
+            music1.load("/Audio/Music/netzach1.wav");
+            music2.load("/Audio/Music/netzach2.wav");
+            music3.load("/Audio/Music/netzach3.wav");
         } else if (n == 1) {
-            music1.load("/Audio/Music/Holocure Map 1.wav");
+            music1.load("/Audio/Music/hod1.wav");
+            music2.load("/Audio/Music/hod2.wav");
+            music3.load("/Audio/Music/hod3.wav");
         } else if (n == 2) {
-            music1.load("/Audio/Music/Undertale OST_ 072 - Song That Might Play When You Fight Sans.wav");
+            music1.load("/Audio/Music/malkuth1.wav");
+            music2.load("/Audio/Music/malkuth2.wav");
+            music3.load("/Audio/Music/malkuth3.wav");
         } else if (n == 3) {
+            music1.load("/Audio/Music/Undertale OST_ 072 - Song That Might Play When You Fight Sans.wav");
+        }else if (n == 4){
             music1.load("/Audio/Music/Undertale OST_ 080 - Finale.wav");
+        }else if (n == 5){
+            music1.load("/Audio/Music/Holocure Map 1.wav");
         }
+
+        // --- Custom transition logic for n == 0,1,2 ---
+        if (n == 0 || n == 1 || n == 2) {
+            // Play music1 (no loop)
+            music1.play();
+
+            // When music1 ends, fade out, play dice, fade in music2
+            new Thread(() -> {
+                waitForMusicToEnd(music1);
+                // Start fade out, dice SFX, and fade in next music at the same time
+                music1.fadeOut(1000);
+                soundsfx.play("dice");
+                music2.play();
+                music2.fadeIn(1000);
+                // sleep a bit to avoid overlapping transitions too quickly
+                try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+
+                // When music2 ends, play dice SFX, fade out music2, and start music3
+                waitForMusicToEnd(music2);
+                soundsfx.play("dice");
+                music3.play();
+                music3.loop(); // Loop music3 until game over
+            }).start();
+        } else {
+            // --- Default: just loop music1 as before ---
+            music1.loop();
+        }
+    }
+
+    // Helper method to block until a Music finishes playing
+    private void waitForMusicToEnd(Music music) {
+        while (true) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ignored) {}
+            if (music == null) break;
+            if (!musicIsPlaying(music)) break;
+        }
+    }
+
+    // Helper to check if a Music is playing
+    private boolean musicIsPlaying(Music music) {
+        try {
+            java.lang.reflect.Field clipField = Music.class.getDeclaredField("clip");
+            clipField.setAccessible(true);
+            javax.sound.sampled.Clip clip = (javax.sound.sampled.Clip) clipField.get(music);
+            return clip != null && clip.isRunning();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static void stopAllMusic() {
+        if (music1 != null) music1.stop();
+        if (music2 != null) music2.stop();
+        if (music3 != null) music3.stop();
     }
 
     public void togglePause() {
@@ -1177,8 +1247,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         rightPressed = false;
 
         // Stop music
-        // music1.fadeOut(3000);
-        music1.stop();
+        stopAllMusic();
 
         // Reset pause menu
         pauseMenu.setVisibility(false);
