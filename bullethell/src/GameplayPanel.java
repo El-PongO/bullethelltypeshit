@@ -274,8 +274,19 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     // ========================= SPAWN =====================================================
     private void spawnPower() {
-        int spawnX = rand.nextInt(getWidth() - TILE_SIZE) + TILE_SIZE;
-        int spawnY = rand.nextInt(getHeight() - TILE_SIZE) + TILE_SIZE;
+        int spawnX,spawnY;
+        while(true){
+            spawnX = rand.nextInt(getWidth() - TILE_SIZE) + TILE_SIZE;
+            spawnY = rand.nextInt(getHeight() - TILE_SIZE) + TILE_SIZE;
+            int gridX = spawnX / TILE_SIZE;
+            int gridY = spawnY / TILE_SIZE;
+            if(gridX < 0 || gridY < 0 || gridX >= map3[0].length || gridY >= map3.length 
+               || map3[gridY][gridX] == 0){
+                break;
+            }
+        }
+        
+
         int powerType = rand.nextInt(3); // 0 = Heal, 1 = Max Ammo, 2 = Speed
         if (power.size() < 10) {
             switch (powerType) {
@@ -1231,6 +1242,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         enemies.clear();
         playerBullets.clear();
         enemyBullets.clear();
+        power.clear();
 
         // Reset timers
         spawnTimer.stop();
