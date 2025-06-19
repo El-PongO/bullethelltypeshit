@@ -100,15 +100,49 @@ public abstract class Enemy {
         int gridY = newY / tileSize;
         return gridX < 0 || gridY < 0 || gridX >= grid[0].length || gridY >= grid.length 
                || grid[gridY][gridX] != 0;
-    }
-    protected void moveWithCollision(double dx, double dy, int[][] collisionMap, int tileSize) {
-        int newX = (int) (x + dx);
-        int newY = (int) (y + dy);
-        int gridX = (newX + size / 2) / tileSize;
-        int gridY = (newY + size / 2) / tileSize;
-        if (gridY >= 0 && gridY < collisionMap.length && gridX >= 0 && gridX < collisionMap[0].length && collisionMap[gridY][gridX] == 0) {
-            x = newX;
-            y = newY;
+    }    protected void moveWithCollision(double dx, double dy, int[][] collisionMap, int tileSize) {
+        // Check if we're trying to move horizontally
+        if (dx != 0) {
+            int newX = (int) (x + dx);
+            
+            // Check multiple points for collision detection (top, middle, bottom)
+            boolean canMoveX = true;
+            
+            // Check center point
+            int gridCenterX = (newX + size / 2) / tileSize;
+            int gridCenterY = (y + size / 2) / tileSize;
+            
+            if (gridCenterX < 0 || gridCenterX >= collisionMap[0].length || 
+                gridCenterY < 0 || gridCenterY >= collisionMap.length || 
+                collisionMap[gridCenterY][gridCenterX] != 0) {
+                canMoveX = false;
+            }
+            
+            if (canMoveX) {
+                x = newX;
+            }
+        }
+        
+        // Check if we're trying to move vertically
+        if (dy != 0) {
+            int newY = (int) (y + dy);
+            
+            // Check multiple points for collision detection (left, middle, right)
+            boolean canMoveY = true;
+            
+            // Check center point
+            int gridCenterX = (x + size / 2) / tileSize;
+            int gridCenterY = (newY + size / 2) / tileSize;
+            
+            if (gridCenterX < 0 || gridCenterX >= collisionMap[0].length || 
+                gridCenterY < 0 || gridCenterY >= collisionMap.length || 
+                collisionMap[gridCenterY][gridCenterX] != 0) {
+                canMoveY = false;
+            }
+            
+            if (canMoveY) {
+                y = newY;
+            }
         }
     }
 }

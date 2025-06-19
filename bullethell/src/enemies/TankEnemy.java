@@ -17,11 +17,11 @@ public class TankEnemy extends Enemy {
     public int spritenum=1;
       public TankEnemy(int x, int y) {
         super(x, y);
-        // Tank enemies have quick shooting but move slowly
-        this.shootDelay = 1300; // 1.3 seconds between shots
+        // Tank enemies are slow and beefy, but don't shoot
+        this.shootDelay = Integer.MAX_VALUE; // Effectively disable shooting
         this.health = 200; // More health than basic enemies
         this.maxHealth = 200;
-        this.bulletSpeed = 2; // Slower but more frequent bullets
+        this.bulletSpeed = 2; // Slower but more frequent bullets (if it were to shoot)
         this.size = 30; // Larger size
         
         // Initialize movement variables
@@ -50,17 +50,45 @@ public class TankEnemy extends Enemy {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    
-    @Override
+    }    @Override
     public void update(Player player, ArrayList<Bullet> enemyBullets, int[][] collisionMap, int tileSize) {
         // Tank enemy moves slowly with periodic pauses
         double dx = 0, dy = 0;
         if (isMoving) {
             double angle = Math.atan2(player.getY() - y, player.getX() - x);
-            dx = Math.cos(angle) * (speed - 1);
-            dy = Math.sin(angle) * (speed - 1);
-            moveWithCollision(dx, dy, collisionMap, tileSize);
+            // Fix: Use a fixed speed value that's more than 0
+            // Previous calculation (speed - 1) might result in speed of 1 which is too slow
+            double tankSpeed = 1.5; // Use a specific speed for tank enemy
+            dx = Math.cos(angle) * tankSpeed;
+            dy = Math.sin(angle) * tankSpeed;
+            
+            // Ensure downward movement is more pronounced when player is below
+            if (player.getY() > y) {
+                dy = Math.abs(dy); // Force positive dy (downward)
+                direction = "down"; // Set direction to down
+            }
+            
+            // Update direction before movement to ensure proper animation
+            if(Math.abs(dy) > Math.abs(dx)) {
+                // Vertical movement is more significant
+                if(dy > 0) {
+                    direction = "down";
+                } else if(dy < 0) {
+                    direction = "up";
+                }
+            } else {
+                // Horizontal movement is more significant
+                if(dx > 0) {
+                    direction = "right";
+                } else if(dx < 0) {
+                    direction = "left";
+                }
+            }
+            
+            // Move with collision handling - try vertical movement first
+            moveWithCollision(0, dy, collisionMap, tileSize);
+            moveWithCollision(dx, 0, collisionMap, tileSize);
+            
             moveTimer--;
             if (moveTimer <= 0) {
                 isMoving = false;
@@ -77,18 +105,7 @@ public class TankEnemy extends Enemy {
         // Sprite animation logic
         if (isMoving) {
             this.idling = false; // Tank enemies are not idling
-            if(dx > 0) {
-                direction = "right";
-            } 
-            else if(dx < 0) {
-                direction = "left";
-            }
-            if(dy > 0 && dx < 1 && dx > -1) {
-                direction = "down";
-            } 
-            else if(dy < 0) {
-                direction = "up";
-            }
+            
             this.spritecounter++; // delay buat ganti jenis sprite
             if (this.spritecounter > 12){ // di panggil 5x tiap jalan program (60/12)
                 if (this.spritenum==1){
@@ -102,8 +119,7 @@ public class TankEnemy extends Enemy {
             this.idling = true; // Tank enemies are idling when paused
         }
     }
-    
-    @Override
+      @Override
     public void draw(Graphics g, int ex, int ey) {
         BufferedImage bimage = null;
         if (idling){
@@ -112,7 +128,7 @@ public class TankEnemy extends Enemy {
                 case "down": bimage=idledown; break;
                 case "left": bimage=idleleft; break;
                 case "right": bimage=idleright; break;
-                default: break;
+                default: bimage=idledown; break; // Default to down if no direction
             }
         }else{
             switch (direction) {
@@ -155,5 +171,11 @@ public class TankEnemy extends Enemy {
         // Draw tank "turret"
         // g.setColor(new Color(100, 100, 200));
         // g.fillOval(ex + size/4, ey + size/4, size/2, size/2);
+    }
+    
+    @Override
+    protected Bullet tryShoot(int playerX, int playerY) {
+        // Tank enemies don't shoot at all
+        return null;
     }
 }
