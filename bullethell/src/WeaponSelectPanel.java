@@ -9,7 +9,7 @@ public class WeaponSelectPanel extends JPanel {
     private static final Color BACKGROUND_COLOR = new Color(30, 34, 42); // Dark gray background
     private static String lastSelectedWeapon = null; // Track last selected weapon
     private static final String[] AVAILABLE_WEAPONS = {
-            "Revolver", "Shotgun", "SMG", "Glock", "Sniper", "Rocket Launcher"
+            "Revolver", "Shotgun", "SMG", "Glock", "Sniper", "Rocket Launcher", "MG"
     };
     JPanel[] weaponButtons;
 
@@ -105,6 +105,8 @@ public class WeaponSelectPanel extends JPanel {
                 return "/Assets/player/Guns/sniper.png";
             case "Rocket Launcher":
                 return "/Assets/player/Guns/m20.png";
+            case "MG":
+                return "/Assets/player/Guns/M249.png";
             default:
                 return null; // No icon available
         }
@@ -223,6 +225,13 @@ public class WeaponSelectPanel extends JPanel {
                         "Fire Rate: N/A<br>" +
                         "Reload Time: 3.2s<br>" +
                         "<i>Explosive weapon with splash damage</i></div></html>");
+            case "MG":
+                return String.format("<html><div style='text-align: center;'>" +
+                        "Ammo: 200<br>" +
+                        "Damage: 40<br>" +
+                        "Fire Rate: 120ms<br>" +
+                        "Reload Time: 3.5s<br>" +
+                        "<i>High-capacity machine gun with sustained fire</i></div></html>");
             default:
                 return "";
         }

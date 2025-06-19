@@ -9,9 +9,9 @@ public class MG extends Weapon {
         super("MG",
               loadImage("mg.png"),
               loadImage("mg_bullet.png"),
-              150, // max ammo
-              3000, // reload delay in ms
-              100, // fire rate in ms
+              200, // max ammo
+              3500, // reload delay in ms
+              120, // fire rate in ms
               true, // full auto
               40); // damage per shot
     }
@@ -19,12 +19,12 @@ public class MG extends Weapon {
     private static BufferedImage loadImage(String filename) {
         try {
             if (filename.equals("mg.png")) {
-                return ImageIO.read(MG.class.getResourceAsStream("/Assets/player/Guns/glock.png"));
+                return ImageIO.read(MG.class.getResourceAsStream("/Assets/player/Guns/M249.png"));
             } else if (filename.equals("mg_bullet.png")) {
                 BufferedImage img = null;
                 
                 // Try to load the specific bullet
-                img = ImageIO.read(MG.class.getResourceAsStream("/Assets/player/bullets/PistolAmmoBig.png"));
+                img = ImageIO.read(MG.class.getResourceAsStream("/Assets/player/bullets/RifleAmmoBig.png"));
                 
                 // If that failed, try with lowercase
                 if (img == null) {

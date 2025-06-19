@@ -184,6 +184,11 @@ public class MainPanel extends JPanel {
                         weaponAdded = true;
                         System.out.println("Added Sniper to hero");
                         break;
+                    case "MG":
+                        selectedHero.getWeapons().add(new weapons.MG());
+                        selectedHero.setWeaponIndex(0);
+                        weaponAdded = true;
+                        System.out.println("Added Machine Gun to hero");
                     default:
                         System.out.println("Warning: Unknown weapon selected: " + selectedWeaponName);
                         break;
@@ -259,5 +264,9 @@ public class MainPanel extends JPanel {
     private void showMapSelect() {
         cardLayout.show(this, "MAPSELECT");
         cursormanager.setCursor(this, "pointer");
+        if (!musicIsPlaying(selectionMusic)) {
+            selectionMusic.load("/Audio/Music/selection_music.wav");
+            selectionMusic.loop();
+        }
     }
 }

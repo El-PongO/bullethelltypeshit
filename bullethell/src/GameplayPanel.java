@@ -113,7 +113,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         addKeyListener(this);
         setFocusable(true);
         sfxmanager();
-        // musicmanager();
         spawnTimer = new Timer(spawnDelay, e -> {
             spawnPower();
             spawnEnemy();
@@ -147,10 +146,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     public void startGame() {
         musicmanager();
-        // if (controlFade()) {
-        //     music1.fadeIn(1000);
-        // }
-        // music1.loop();
         if (player == null) {
             player = new Gunslinger(getWidth() / 2, getHeight() / 2); // fallback default
         } else {
@@ -193,11 +188,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
     private static void gameOver() {
         isGameOver = true;
-        // if (controlFade()) {
-        //     music1.fadeOut(2500);
-        // } else {
-        //     music1.stop();
-        // }
         stopAllMusic();
         soundsfx.stopAll();
         stopGame();
@@ -538,6 +528,10 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         // sniper
         soundsfx.load("sniperfire", "/Audio/Sfx/sniper_fire.wav");
         soundsfx.load("snipereload", "/Audio/Sfx/SniperReload.wav");
+
+        // MG
+        soundsfx.load("mgfire", "/Audio/Sfx/machine_gun_fire.wav");
+        soundsfx.load("mgreload", "/Audio/Sfx/machine_gun_reload.wav");
     }
 
     public void playsfx(boolean isEmpty) {
@@ -567,7 +561,9 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 soundsfx.playWithRandomPitch("sniperfire");
             } else if (current instanceof weapons.Rocket) {
                 soundsfx.playWithRandomPitch("rpgfire");
-            } else {
+            } else if (current instanceof weapons.MG){
+                soundsfx.playWithRandomPitch("mgfire");
+            }else {
                 soundsfx.playWithRandomPitch("shoot");
             }
         } else {
@@ -612,6 +608,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             soundsfx.play("rpgreload");
         } else if (current instanceof weapons.Sniper) {
             soundsfx.play("snipereload");
+        } else if (current instanceof weapons.MG) {
+            soundsfx.play("mgreload");
         } else {
             soundsfx.play("reload");
         }
@@ -649,6 +647,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             // When music1 ends, fade out, play dice, fade in music2
             new Thread(() -> {
                 waitForMusicToEnd(music1);
+                if (!gameActive || isGameOver) {
+                    // Stop all music to be sure
+                    stopAllMusic();
+                    return;
+                }
                 // Start fade out, dice SFX, and fade in next music at the same time
                 music1.fadeOut(1000);
                 soundsfx.play("dice");
@@ -659,6 +662,13 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
                 // When music2 ends, play dice SFX, fade out music2, and start music3
                 waitForMusicToEnd(music2);
+
+                if (!gameActive || isGameOver) {
+                    // Stop all music to be sure
+                    stopAllMusic();
+                    return;
+                }
+
                 soundsfx.play("dice");
                 music3.play();
                 music3.loop(); // Loop music3 until game over
@@ -1020,7 +1030,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     if (enemy.isDead()) {
                         if (enemy instanceof enemies.TankBoss || enemy instanceof enemies.ShooterBoss) {
                             Random rand = new Random();
-                            int idx = rand.nextInt(6);
+                            int idx = rand.nextInt(7);
                             weapons.Weapon newWeapon = null;
                             switch (idx) {
                                 case 0:
@@ -1041,6 +1051,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                                 case 5:
                                     newWeapon = new weapons.Rocket();
                                     break;
+                                case 6:
+                                    newWeapon = new weapons.MG();
                                 default:
                                     newWeapon = null;
                                     break;
@@ -1133,6 +1145,7 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                 boolean hasPistol = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Glock"));
                 boolean hasSniper = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Sniper"));
                 boolean hasRpg = player.getWeapons().stream().anyMatch(w -> w.getName().equals("Rocket Launcher"));
+                boolean hasMG = player.getWeapons().stream().anyMatch(w -> w.getName().equals("MG"));
                 if (!hasRpg)
                     player.getWeapons().add(new weapons.Rocket());
                 if (!hasSniper)
@@ -1145,6 +1158,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     player.getWeapons().add(new weapons.Smg());
                 if (!hasPistol)
                     player.getWeapons().add(new weapons.Glock());
+                if (!hasMG)
+                    player.getWeapons().add(new weapons.MG());
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
