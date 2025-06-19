@@ -11,6 +11,8 @@ public class MainPanel extends JPanel {
     private WeaponSelectPanel weaponSelectPanel;
     private Player selectedHero;
     private String selectedWeaponName;
+    private MapSelectPanel mapSelectPanel;
+    private int selectedMapSet = 1;
     private Music selectionMusic = new Music();
     
     private CardLayout cardLayout = new CardLayout();
@@ -20,8 +22,8 @@ public class MainPanel extends JPanel {
         setLayout(cardLayout);
         fpsCounter = new FPScounter("FPS:");        
         gameplayPanel = new GameplayPanel(fpsCounter);
-        menuPanel = new MenuPanel(this::showHeroSelect, this::showHeroSelect); // Go to hero select on start/restart
-
+        menuPanel = new MenuPanel(this::showMapSelect, this::showMapSelect); // Go to map select on start/restart
+        
         // Create a hero selection listener
         IHeroSelectPanel.HeroSelectListener heroSelectListener = heroName -> {
             switch (heroName) {
@@ -56,7 +58,12 @@ public class MainPanel extends JPanel {
             assignWeaponToHero();
             startGameWithHero();
         });
-
+        // Map select panel
+        mapSelectPanel = new MapSelectPanel(mapSet -> {
+            selectedMapSet = mapSet;
+            gameplayPanel.loadMapSet(selectedMapSet);
+            showHeroSelect();
+        });
         cursormanager();
         Button.setupGlowCursor(cursormanager, "pointer", this);
         cursormanager.setCursor(this, "cursor");
@@ -64,6 +71,7 @@ public class MainPanel extends JPanel {
         add(heroSelectPanel, "HEROSELECT");
         add(weaponSelectPanel, "WEAPONSELECT");
         add(gameplayPanel, "GAMEPLAY");
+        add(mapSelectPanel, "MAPSELECT");
         
         cardLayout.show(this, "MENU");
 
@@ -246,5 +254,10 @@ public class MainPanel extends JPanel {
         cursormanager.loadCursor("cursor", "/custom/cursor.png", new Point(0, 0), 32, 32);
         cursormanager.loadCursor("pointer", "/custom/pointer.png", new Point(5, 2), 32, 32);
         cursormanager.loadCursor("crosshair", "/custom/crosshair.png", new Point(16, 16), 32, 32);
+    }
+    
+    private void showMapSelect() {
+        cardLayout.show(this, "MAPSELECT");
+        cursormanager.setCursor(this, "pointer");
     }
 }

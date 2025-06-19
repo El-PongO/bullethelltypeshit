@@ -105,71 +105,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
     // ========================= MAIN =====================================================
     public GameplayPanel(FPScounter fpscounter) throws Exception {
         this.rand = new Random();
-        // --- New map loading logic ---
-        java.util.function.Function<String, int[][]> loadMap = (filename) -> {
-            java.util.List<int[]> mapRows = new ArrayList<>();
-            try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    line = line.trim();
-                    if (line.isEmpty())
-                        continue;
-                    String[] tokens = line.split(",");
-                    int[] row = new int[tokens.length];
-                    for (int i = 0; i < tokens.length; i++) {
-                        String t = tokens[i].trim();
-                        row[i] = t.isEmpty() ? -1 : Integer.parseInt(t);
-                    }
-                    mapRows.add(row);
-                }
-            } catch (Exception e) {
-                return null;
-            }
-            return mapRows.toArray(new int[mapRows.size()][]);
-        };
-        map1 = loadMap.apply("bullethell/src/map1.txt");
-        map2 = loadMap.apply("bullethell/src/map2.txt");
-        map3 = loadMap.apply("bullethell/src/map3.txt");
-        if (map1 == null)
-            throw new RuntimeException("map1.txt missing or invalid");
-        grid = map1;
-        int rows = map1.length, cols = map1[0].length;
-        hasMap2 = map2 != null && map2.length == rows && map2[0].length == cols;
-        hasMap3 = map3 != null && map3.length == rows && map3[0].length == cols;
-        java.util.function.BiFunction<String, String, ImageIcon[]> loadSheet = (dirPath, prefix) -> {
-            File dir = new File(dirPath);
-            int maxIdx = -1;
-            if (dir.exists() && dir.isDirectory()) {
-                for (File f : dir.listFiles()) {
-                    String n = f.getName();
-                    if (n.startsWith(prefix) && n.endsWith(".png")) {
-                        try {
-                            int idx = Integer.parseInt(n.substring(prefix.length(), n.length() - 4));
-                            if (idx > maxIdx)
-                                maxIdx = idx;
-                        } catch (Exception ignore) {
-                        }
-                    }
-                }
-            }
-            ImageIcon[] arr = new ImageIcon[maxIdx + 1];
-            for (int i = 0; i <= maxIdx; i++) {
-                File f = new File(dir, prefix + i + ".png");
-                if (f.exists())
-                    arr[i] = new ImageIcon(f.getAbsolutePath());
-            }
-            return arr;
-        };
-        tiles = loadSheet.apply("bullethell/src/Assets/tiles", "tile");
-        decors = loadSheet.apply("bullethell/src/Assets/tiles", "decor");
-        // Determine tile size (use first non-null tile)
-        for (ImageIcon icon : tiles) {
-            if (icon != null) {
-                tileW = icon.getIconWidth();
-                tileH = icon.getIconHeight();
-                break;
-            }
-        }
+        // --- Use new map loading logic ---
+        loadMapSet(1); // Default to map set 1; change to 2 for the second map set
         add(gameClock.label);
         addMouseMotionListener(this);
         addMouseListener(this);
@@ -183,22 +120,18 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             updateSpawnDelay();
         });
         spawnTimer.setRepeats(false);
-
         // Create boss spawn timer - Every 60 seconds (1 minute)
         bossSpawnTimer = new Timer(60000, e -> {
             spawnBoss();
         });
         bossSpawnTimer.setRepeats(true); // Keep spawning bosses every minute
-
         gameLoop = new Timer(16, e -> updateGame());
         setLayout(null);
         initializeFPSconfig(fpscounter);
-
         // PAUSE MENU INITIALIZATION
         pauseMenu = new PauseMenu();
         add(pauseMenu);
         setComponentZOrder(pauseMenu, 0); // Ensure pause menu is always on top
-
         // Add a mouse listener to request focus on click
         addMouseListener(new MouseAdapter() {
             @Override
@@ -1331,17 +1264,11 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
                     .println("Boss Spawn Counts - Tank: " + tankBossSpawnCount + ", Shooter: " + shooterBossSpawnCount);
         }
     }
-
-    // --- New robust map/tile/decor loading logic (added, does not replace old
-    // logic) ---
-    // Map arrays
     private int[][] newMap1, newMap2, newMap3;
     private boolean newHasMap2, newHasMap3;
-    // Tile and decor arrays
     private javax.swing.ImageIcon[] newTiles, newDecors;
     private int newTileW = 32, newTileH = 32;
 
-    // Helper to load a map file (CSV style)
     private int[][] loadMapCSV(String filename) {
         java.util.List<int[]> mapRows = new java.util.ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
@@ -1364,7 +1291,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         return mapRows.toArray(new int[mapRows.size()][]);
     }
 
-    // Helper to load a tilesheet
     private javax.swing.ImageIcon[] loadSheet(String dirPath, String prefix) {
         java.io.File dir = new java.io.File(dirPath);
         int maxIdx = -1;
@@ -1390,7 +1316,6 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
         return arr;
     }
 
-    // Call this method to initialize the new logic (does not affect old logic)
     public void initNewMapAndTiles() {
         newMap1 = loadMapCSV("bullethell/src/map1.txt");
         newMap2 = loadMapCSV("bullethell/src/map2.txt");
@@ -1406,6 +1331,41 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
             if (icon != null) {
                 newTileW = icon.getIconWidth();
                 newTileH = icon.getIconHeight();
+                break;
+            }
+        }
+    }
+
+    public void loadMapSet(int mapSetNumber) {
+        // Map file names
+        String basePath = "bullethell/src/";
+        String mapMain = basePath + "map" + mapSetNumber + "1.txt";
+        String mapDecor = basePath + "map" + mapSetNumber + "2.txt";
+        String mapColl = basePath + "map" + mapSetNumber + "3.txt";
+        // Tile folder
+        String tileFolder = "bullethell/src/Assets/tiles" + mapSetNumber;
+
+        // Load maps
+        int[][] loadedMap1 = loadMapCSV(mapMain);
+        int[][] loadedMap2 = loadMapCSV(mapDecor);
+        int[][] loadedMap3 = loadMapCSV(mapColl);
+        if (loadedMap1 == null) throw new RuntimeException("Missing or invalid map file: " + mapMain);
+        grid = loadedMap1;
+        int rows = loadedMap1.length, cols = loadedMap1[0].length;
+        hasMap2 = loadedMap2 != null && loadedMap2.length == rows && loadedMap2[0].length == cols;
+        hasMap3 = loadedMap3 != null && loadedMap3.length == rows && loadedMap3[0].length == cols;
+        map1 = loadedMap1;
+        map2 = loadedMap2;
+        map3 = loadedMap3;
+
+        // Load tiles and decors
+        tiles = loadSheet(tileFolder, "tile");
+        decors = loadSheet(tileFolder, "decor");
+        // Set tile size
+        for (ImageIcon icon : tiles) {
+            if (icon != null) {
+                tileW = icon.getIconWidth();
+                tileH = icon.getIconHeight();
                 break;
             }
         }
