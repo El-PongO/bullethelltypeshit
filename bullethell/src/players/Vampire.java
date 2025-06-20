@@ -3,6 +3,7 @@ package players;
 import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
@@ -105,8 +106,8 @@ public class Vampire extends Player {
     }
 
     @Override
-    public void draw(Graphics2D g, int px, int py, int zoom) {
-        super.draw(g, px, py, zoom);
+    public void draw(Graphics2D g, int px, int py, int zoom, Point mouse) {
+        super.draw(g, px, py, zoom, mouse);
         
         if (showHealEffect) {
             long currentTime = System.currentTimeMillis();

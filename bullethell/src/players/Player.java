@@ -74,7 +74,7 @@ public abstract class Player {
         }
     }
 
-    public void draw(Graphics2D g, int px, int py, int zoom) {
+    public void draw(Graphics2D g, int px, int py, int zoom, Point mouse) {
         BufferedImage bimage = null;
         //////////////////////////////////////
             int barlength = size * zoom;
@@ -165,6 +165,45 @@ public abstract class Player {
         // Reset composite if it was changed for invincibility effect
         if (isInvincible() && !isDashing) {
             g.setComposite(oldComp);
+        }
+
+        
+        if (mouse != null) {
+            Graphics2D g2d = (Graphics2D) g.create();
+            int playerCenterX = px + getSize() * zoom / 2;
+            int playerCenterY = py + getSize() * zoom / 2;
+
+            // Calculate angle to cursor
+            double dx = mouse.x - playerCenterX;
+            double dy = mouse.y - playerCenterY;
+            double angle = Math.atan2(dy, dx);
+
+            int radius = getSize() * zoom / 2 + 30;
+
+            // Arrow tip position
+            int arrowTipX = (int) (playerCenterX + Math.cos(angle) * radius);
+            int arrowTipY = (int) (playerCenterY + Math.sin(angle) * radius);
+
+            // Arrow base points (triangle)
+            int arrowLength = 16;
+            int arrowWidth = 16;
+            double baseAngle1 = angle + Math.toRadians(150);
+            double baseAngle2 = angle - Math.toRadians(150);
+
+            int base1X = (int) (arrowTipX + Math.cos(baseAngle1) * arrowLength);
+            int base1Y = (int) (arrowTipY + Math.sin(baseAngle1) * arrowLength);
+            int base2X = (int) (arrowTipX + Math.cos(baseAngle2) * arrowLength);
+            int base2Y = (int) (arrowTipY + Math.sin(baseAngle2) * arrowLength);
+
+            int[] xPoints = {arrowTipX, base1X, base2X};
+            int[] yPoints = {arrowTipY, base1Y, base2Y};
+
+            g2d.setColor(Color.BLUE);
+            g2d.fillPolygon(xPoints, yPoints, 3);
+            g2d.setColor(Color.WHITE);
+            g2d.drawPolygon(xPoints, yPoints, 3);
+
+            g2d.dispose();
         }
     }
 

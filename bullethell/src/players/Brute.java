@@ -2,6 +2,7 @@ package players;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
@@ -22,7 +23,6 @@ public class Brute extends Player {
         maxHealth = 90;
         dashspeed = 20;
         dashDuration = 180;
-        invincibilityDuration = 180;
         maxDashCharges = 4;
         currentDashCharges = maxDashCharges;
         dashChargeCooldown = 3000;
@@ -109,8 +109,8 @@ public class Brute extends Player {
         }
     }
     @Override
-    public void draw(Graphics2D g, int px, int py, int zoom) {
-        super.draw(g, px, py, zoom);
+    public void draw(Graphics2D g, int px, int py, int zoom, Point mouse) {
+        super.draw(g, px, py, zoom, mouse);
         
         if (skillActive && shieldEffectSprites != null) {
             BufferedImage shieldImage = shieldEffectSprites[currentShieldFrame];

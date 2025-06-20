@@ -370,7 +370,8 @@ public class GameplayPanel extends JPanel implements MouseMotionListener, MouseL
 
         int px = (player.getX() - cameraPixelX) * ZOOM;
         int py = (player.getY() - cameraPixelY) * ZOOM;
-        player.draw((Graphics2D) g, px, py, ZOOM);
+        Point mouse = getMousePosition();
+        player.draw((Graphics2D) g, px, py, ZOOM, mouse);
         for (Bullet bullet : playerBullets) {
             int ex = (bullet.x - cameraPixelX) * ZOOM;
             int ey = (bullet.y - cameraPixelY) * ZOOM;
