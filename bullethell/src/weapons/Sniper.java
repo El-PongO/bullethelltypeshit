@@ -68,10 +68,10 @@ public class Sniper extends Weapon{
         if (getCurrentAmmo() > 0) {
             double angle = Math.atan2(targetY - (y + playerSize/2), targetX - (x + playerSize/2));
             // Double the bullet speed (6 instead of 3)
-            int dx = (int)(Math.cos(angle) * 6) * 3;
-            int dy = (int)(Math.sin(angle) * 6) * 3;
+            double dx = (Math.cos(angle) * 6) * 3; 
+            double dy = (Math.sin(angle) * 6) * 3;
             
-            bullets.add(new SniperBullet(x + playerSize/2, y + playerSize/2, dx, dy, getBulletSprite()));
+            bullets.add(new SniperBullet(x + playerSize/2, y + playerSize/2, (int)dx, (int)dy, getBulletSprite()));
             
             useAmmo();
             recordShot();

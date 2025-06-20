@@ -45,9 +45,9 @@ public class Smg extends Weapon {
         
         if (getCurrentAmmo() > 0) {
             double angle = Math.atan2(targetY - (y + playerSize/2), targetX - (x + playerSize/2));
-            int dx = (int)(Math.cos(angle) * 3) * 3; // 3 is bullet speed
-            int dy = (int)(Math.sin(angle) * 3) * 3;
-            bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, dx, dy, getBulletSprite()));
+            double dx = (Math.cos(angle) * 3) * 3; // 3 is bullet speed
+            double dy = (Math.sin(angle) * 3) * 3;
+            bullets.add(new Bullet(x + playerSize/2, y + playerSize/2, (int)dx, (int)dy, getBulletSprite()));
             
             useAmmo();
             recordShot();
